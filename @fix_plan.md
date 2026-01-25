@@ -1,21 +1,27 @@
 # Ralph Fix Plan
 
+See @specs/tv-bingo-prd.md for detailed requirements.
+
 ## High Priority
-- [ ] Set up basic project structure and build system
-- [ ] Define core data structures and types
-- [ ] Implement basic input/output handling
+- [x] Set up basic project structure and build system
+- [x] Define core data structures and types
+- [x] Implement basic input/output handling
 - [ ] Create test framework and initial tests
+- [ ] Migrate frontend from IndexedDB to REST API
 
 ## Medium Priority
-- [ ] Add error handling and validation
-- [ ] Implement core business logic
-- [ ] Add configuration management
-- [ ] Create user documentation
+- [ ] User authentication (registered users vs. guests)
+- [ ] Phrase validation (50 character max, duplicate detection)
+- [ ] Bulk phrase import via CSV
+- [ ] Shareable show links
+- [ ] UI/UX visual design improvements
+- [ ] Navigation flow improvements
 
 ## Low Priority
+- [ ] Mobile responsiveness enhancements
+- [ ] Add configuration management
+- [ ] Create user documentation
 - [ ] Performance optimization
-- [ ] Extended feature set
-- [ ] Integration with external services
 - [ ] Advanced error recovery
 
 ## Completed
