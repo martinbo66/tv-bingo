@@ -39,12 +39,18 @@ COPY gradle/ gradle/
 COPY build.gradle settings.gradle ./
 COPY spring-tvbingo/ spring-tvbingo/
 
+# Copy vue-tvbingo directory (needed by root build.gradle evaluation)
+# We only need the package.json files, not the full source
+COPY vue-tvbingo/package.json vue-tvbingo/package-lock.json vue-tvbingo/
+
 # Copy frontend build output to Spring Boot static resources
 COPY --from=frontend-builder /app/frontend/dist/ spring-tvbingo/src/main/resources/static/
 
 # Make gradlew executable and build the JAR
+# We manually copied frontend resources, so skip copyFrontendToBackend task
+# Use -PskipFrontendTasks to disable frontend dependencies
 RUN chmod +x gradlew && \
-    ./gradlew :spring-tvbingo:bootJar --no-daemon -x test
+    ./gradlew :spring-tvbingo:bootJar --no-daemon -x test -x copyFrontendToBackend -x frontendBuild -x frontendInstall
 
 # -----------------------------------------------------------------------------
 # Stage 3: Runtime Image
