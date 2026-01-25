@@ -26,10 +26,15 @@ graph TD
     
     subgraph Services["Services"]
         ShowService["showService.ts"]
+        ApiClient["apiClient.ts"]
     end
     
-    subgraph Database["IndexedDB"]
-        IDB["TV-Bingo Database"]
+    subgraph API["REST API"]
+        Backend["Spring Boot Backend"]
+    end
+    
+    subgraph Database["PostgreSQL"]
+        DB["TV-Bingo Database"]
     end
     
     subgraph DataModel["Data Model"]
@@ -48,7 +53,9 @@ graph TD
     CreateShowPage --> CreateShow
     CreateShow --> ShowService
     
-    ShowService --> IDB
+    ShowService --> ApiClient
+    ApiClient --> Backend
+    Backend --> DB
     ShowService -.-> Show
 ```
 
@@ -58,7 +65,8 @@ The application follows a typical Vue.js architecture with:
 - Components for UI elements
 - Pages for full screen views
 - Services for data access
-- IndexedDB for client-side storage
+- REST API for backend communication
+- PostgreSQL database for data persistence
 
 ### Page Flow
 
@@ -106,46 +114,58 @@ sequenceDiagram
     participant User
     participant UI as User Interface
     participant Service as Show Service
-    participant DB as IndexedDB
+    participant API as REST API
+    participant DB as PostgreSQL
     
     %% Load Shows List
     User->>UI: Visit Home Page
     UI->>Service: getShows()
-    Service->>DB: Query all shows
-    DB-->>Service: Return shows data
-    Service-->>UI: Return shows array
+    Service->>API: GET /api/shows
+    API->>DB: SELECT * FROM shows
+    DB-->>API: ResultSet
+    API-->>Service: JSON Array
+    Service-->>UI: Show[]
     UI-->>User: Display shows list
     
     %% Create Show
     User->>UI: Fill create show form
     User->>UI: Submit form
-    UI->>Service: addShow(newShow)
-    Service->>DB: Add show to database
-    DB-->>Service: Confirm addition
-    Service-->>UI: Confirm success
+    UI->>Service: addShow(showInput)
+    Service->>API: POST /api/shows
+    API->>API: Validate request
+    API->>DB: INSERT INTO shows
+    DB-->>API: New show with ID
+    API-->>Service: 201 Created + JSON
+    Service-->>UI: Show with ID
     UI-->>User: Navigate to home page
     
     %% Edit Show
     User->>UI: Click edit button
     UI->>Service: getShowById(id)
-    Service->>DB: Query show by ID
-    DB-->>Service: Return show data
-    Service-->>UI: Return show object
+    Service->>API: GET /api/shows/{id}
+    API->>DB: SELECT * FROM shows WHERE id = ?
+    DB-->>API: ResultSet
+    API-->>Service: JSON Object
+    Service-->>UI: Show object
     UI-->>User: Display edit form
     User->>UI: Edit show details
     User->>UI: Save changes
     UI->>Service: updateShow(show)
-    Service->>DB: Update show in database
-    DB-->>Service: Confirm update
-    Service-->>UI: Confirm success
+    Service->>API: PUT /api/shows/{id}
+    API->>DB: UPDATE shows SET ...
+    DB-->>API: Updated show
+    API-->>Service: 200 OK + JSON
+    Service-->>UI: Updated Show
     UI-->>User: Navigate to home page
     
     %% Play Bingo
     User->>UI: Click on show card
     UI->>Service: getShowById(id)
-    Service->>DB: Query show by ID
-    DB-->>Service: Return show data
-    Service-->>UI: Return show object
+    Service->>API: GET /api/shows/{id}
+    API->>DB: SELECT * FROM shows WHERE id = ?
+    DB-->>API: ResultSet
+    API-->>Service: JSON Object
+    Service-->>UI: Show object
     UI->>UI: Generate bingo grid
     UI-->>User: Display bingo card
     User->>UI: Mark bingo squares
@@ -253,26 +273,25 @@ Each component has specific responsibilities and communicates with other compone
 
 ### Database Schema
 
-The application uses IndexedDB for client-side storage with a simple schema:
+The application uses PostgreSQL for data persistence with the following schema:
 
 ```mermaid
 erDiagram
     SHOWS {
-        number id PK
-        string showTitle
-        string gameTitle
-        string centerSquare
-        array phrases
+        bigint id PK
+        varchar show_title UK
+        varchar game_title
+        varchar center_square
+        text_array phrases
     }
     
-    INDEXES {
-        string by-title "Index on showTitle"
+    SHOWS {
+        idx_shows_show_title "Index on show_title"
+        uk_shows_show_title "Unique constraint on show_title"
     }
-    
-    SHOWS ||--o{ INDEXES : has
 ```
 
-This schema allows for efficient storage and retrieval of show data, including titles, phrases, and other metadata.
+This schema allows for efficient storage and retrieval of show data, including titles, phrases, and other metadata. The backend API handles all database operations.
 
 ### Bingo Card Generation Process
 
@@ -306,4 +325,4 @@ Users can then click on cells to mark phrases they've heard/seen, and the applic
 
 ## Conclusion
 
-The TV Bingo application demonstrates a well-structured Vue.js application with clear separation of concerns, efficient data management, and an intuitive user interface. The use of IndexedDB for client-side storage allows the application to function offline and persist user data without requiring a backend server.
+The TV Bingo application demonstrates a well-structured Vue.js application with clear separation of concerns, efficient data management, and an intuitive user interface. The application communicates with a Spring Boot REST API backend, which handles all data persistence in a PostgreSQL database. This architecture provides centralized data management, validation, and scalability.

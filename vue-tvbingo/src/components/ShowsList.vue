@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showService } from '../services/showService'
 import type { Show } from '../types/Show'
+import { ApiError } from '../services/apiClient'
 
 const router = useRouter()
 const shows = ref<Show[]>([])
@@ -15,7 +16,11 @@ const fetchShows = async () => {
   try {
     shows.value = await showService.getShows()
   } catch (e) {
-    error.value = 'Failed to load shows'
+    if (e instanceof ApiError) {
+      error.value = `Failed to load shows: ${e.message}`
+    } else {
+      error.value = 'Failed to load shows. Please try again.'
+    }
     console.error(e)
   } finally {
     loading.value = false
@@ -38,7 +43,15 @@ const handleDelete = async (event: Event, showId: number) => {
       await showService.deleteShow(showId)
       await fetchShows()
     } catch (e) {
-      error.value = 'Failed to delete show'
+      if (e instanceof ApiError) {
+        if (e.status === 404) {
+          error.value = 'Show not found. It may have already been deleted.'
+        } else {
+          error.value = `Failed to delete show: ${e.message}`
+        }
+      } else {
+        error.value = 'Failed to delete show. Please try again.'
+      }
       console.error(e)
     }
   }
