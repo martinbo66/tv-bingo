@@ -56,6 +56,10 @@ vue-tvbingo/dist/
 !.env.example
 !.envrc.template
 
+# Kubernetes secrets (keep .example files)
+k8s/**/secret.yaml
+!k8s/**/secret.yaml.example
+
 # ============================================================================
 # Test and Coverage
 # ============================================================================

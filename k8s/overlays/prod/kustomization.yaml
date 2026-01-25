@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: tv-bingo-prod
+
+namespace: tv-bingo
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml  # In production, consider using external-secrets or sealed-secrets
+
+# Production-specific patches
+patches:
+  # Use a real container registry image
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: your-registry.com/tv-bingo:latest
+    target:
+      kind: Deployment
+      name: tv-bingo
+  # Increase replicas for production
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: tv-bingo
+  # Increase resources for production
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+    target:
+      kind: Deployment
+      name: tv-bingo

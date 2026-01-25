@@ -250,6 +250,130 @@ task dockerRun(type: Exec) {
     commandLine 'docker', 'run', '-p', '8080:8080', '-e', "TVBINGO_DB_PASSWORD=${dbPassword}", 'tv-bingo'
 }
 
+// ============================================================================
+// KinD (Kubernetes in Docker) Tasks
+// ============================================================================
+
+def kindClusterName = 'chunk1'
+def kindNamespace = 'tv-bingo'
+def kindOverlayPath = 'k8s/overlays/kind'
+
+task kindLoadImage(type: Exec) {
+    description = 'Load Docker image into KinD cluster'
+    group = 'kind'
+    dependsOn dockerBuild
+    commandLine 'kind', 'load', 'docker-image', 'tv-bingo:latest', '--name', kindClusterName
+
+    doFirst {
+        println "Loading tv-bingo:latest into KinD cluster '${kindClusterName}'..."
+    }
+    doLast {
+        println "✓ Image loaded into KinD"
+    }
+}
+
+task kindDeploy(type: Exec) {
+    description = 'Deploy TV Bingo to KinD cluster'
+    group = 'kind'
+    commandLine 'kubectl', 'apply', '-k', kindOverlayPath
+
+    doFirst {
+        println "Deploying to KinD using ${kindOverlayPath}..."
+    }
+    doLast {
+        println "\n✓ Deployment applied!"
+        println "  Watch pods: kubectl -n ${kindNamespace} get pods -w"
+        println "  Port forward: ./gradlew kindPortForward"
+    }
+}
+
+task kindUndeploy(type: Exec) {
+    description = 'Remove TV Bingo deployment from KinD cluster'
+    group = 'kind'
+    commandLine 'kubectl', 'delete', '-k', kindOverlayPath, '--ignore-not-found'
+
+    doLast {
+        println "✓ Deployment removed from KinD"
+    }
+}
+
+task kindStatus(type: Exec) {
+    description = 'Show TV Bingo pod status in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'get', 'pods,svc,pvc'
+}
+
+task kindLogs(type: Exec) {
+    description = 'Show TV Bingo application logs'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'logs', '-l', 'app=tv-bingo', '--tail=100', '-f'
+}
+
+task kindLogsPostgres(type: Exec) {
+    description = 'Show PostgreSQL logs in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'logs', '-l', 'app=postgres', '--tail=100', '-f'
+}
+
+task kindPortForward(type: Exec) {
+    description = 'Port forward TV Bingo service to localhost:8080'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'port-forward', 'svc/tv-bingo', '8080:80'
+
+    doFirst {
+        println "Port forwarding to http://localhost:8080"
+        println "Press Ctrl+C to stop"
+    }
+}
+
+task kindRestart(type: Exec) {
+    description = 'Restart TV Bingo deployment in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'rollout', 'restart', 'deployment/tv-bingo'
+
+    doLast {
+        println "✓ Deployment restarted"
+        println "  Watch rollout: kubectl -n ${kindNamespace} rollout status deployment/tv-bingo"
+    }
+}
+
+task kindFullDeploy {
+    description = 'Build, load, and deploy TV Bingo to KinD (full workflow)'
+    group = 'kind'
+    dependsOn kindLoadImage, kindDeploy
+
+    doLast {
+        println """
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  ✓ TV Bingo deployed to KinD!                                                  ║
+║                                                                                 ║
+║  Next steps:                                                                    ║
+║    ./gradlew kindStatus       - Check pod status                               ║
+║    ./gradlew kindPortForward  - Access at http://localhost:8080                ║
+║    ./gradlew kindLogs         - View application logs                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+"""
+    }
+}
+
+// Ensure kindDeploy runs after kindLoadImage when both are in the task graph
+kindDeploy.mustRunAfter kindLoadImage
+
+task kindRedeploy {
+    description = 'Rebuild and redeploy TV Bingo to KinD (for code changes)'
+    group = 'kind'
+    dependsOn kindLoadImage, kindRestart
+
+    doLast {
+        println "✓ Redeployed with latest changes"
+    }
+}
+
+// Ensure kindRestart runs after kindLoadImage
+tasks.named('kindRestart').configure {
+    mustRunAfter kindLoadImage
+}
+
 // Print available tasks
 task showTasks {
     description = 'Show commonly used tasks'
@@ -276,10 +400,18 @@ task showTasks {
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
-║ DOCKER / DEPLOYMENT                                                            ║
+║ DOCKER                                                                         ║
 ║   ./gradlew buildUnifiedJar  Build JAR with frontend embedded                  ║
 ║   ./gradlew dockerBuild      Build Docker image                                ║
 ║   ./gradlew dockerRun        Run Docker container                              ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ KIND (Kubernetes in Docker)                                                    ║
+║   ./gradlew kindFullDeploy   Build, load image, and deploy to KinD             ║
+║   ./gradlew kindRedeploy     Rebuild and redeploy (for code changes)           ║
+║   ./gradlew kindStatus       Show pod/service status                           ║
+║   ./gradlew kindPortForward  Forward localhost:8080 to the app                 ║
+║   ./gradlew kindLogs         Tail application logs                             ║
+║   ./gradlew kindUndeploy     Remove deployment from KinD                       ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
     }
