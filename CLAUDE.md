@@ -164,6 +164,62 @@ vue-tvbingo/src/
 - Backend: JUnit 5, Embedded Postgres for integration tests
 - Frontend: Vitest (planned), TypeScript type checking
 
+## Git Commit Guidelines
+
+### Commit Message Format
+
+Follow conventional commit style:
+- Start with a verb in imperative mood (e.g., "Add", "Fix", "Update", "Remove")
+- Keep the first line under 72 characters
+- Add a blank line, then detailed description if needed
+- Always end with the co-authored-by line
+
+### Creating Commits
+
+**DO:**
+```bash
+git commit -m "Fix test configuration for CI environment
+
+Add @ActiveProfiles(\"test\") annotation to ensure tests use
+embedded Postgres instead of connecting to localhost database.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+**DON'T:**
+- ❌ Use heredoc syntax (`cat <<EOF`) inside git commit commands - this can capture ANSI escape sequences
+- ❌ Use echo with special characters that might be interpreted
+- ❌ Include unprintable characters or color codes in commit messages
+
+### Example Workflow
+
+```bash
+# Stage changes
+git add path/to/file
+
+# Commit with clean message
+git commit -m "Add feature X
+
+Detailed description of the changes.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+# Push to remote
+git push
+```
+
+### Fixing Bad Commits
+
+If a commit contains escape sequences or unprintable characters:
+
+```bash
+# Amend the last commit with a clean message
+git commit --amend -m "Clean commit message here"
+
+# Force push (only if not yet merged to main)
+git push --force-with-lease
+```
+
 ## Product Requirements
 
 See `specs/tv-bingo-prd.md` for:
