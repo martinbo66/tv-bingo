@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Show } from '../types/Show'
 import { showService } from '../services/showService'
+import { ApiError } from '../services/apiClient'
 
 const props = defineProps<{
   id: string
@@ -46,16 +47,44 @@ const removePhrase = (index: number) => {
   show.value.phrases.splice(index, 1)
 }
 
+const formatValidationErrors = (errorData: any): string => {
+  if (!errorData || typeof errorData !== 'object') {
+    return 'Validation error occurred'
+  }
+  
+  // Extract field-specific error messages
+  const errorMessages = Object.entries(errorData)
+    .map(([field, message]) => `${field}: ${message}`)
+    .join(', ')
+  
+  return errorMessages || 'Validation error occurred'
+}
+
 const saveShow = async () => {
   if (!show.value) return
   
+  error.value = null
   try {
     // Create a plain JavaScript object copy without reactive proxies
     const plainShow = JSON.parse(JSON.stringify(show.value))
     await showService.updateShow(plainShow)
     router.push('/')
   } catch (e) {
-    error.value = 'Failed to save show'
+    if (e instanceof ApiError) {
+      if (e.status === 400) {
+        // Validation errors - show field-specific messages
+        error.value = formatValidationErrors(e.data)
+      } else if (e.status === 409) {
+        // Conflict - duplicate show title
+        error.value = e.data?.showTitle || 'Show title must be unique'
+      } else if (e.status === 404) {
+        error.value = 'Show not found. It may have been deleted.'
+      } else {
+        error.value = `Failed to save show: ${e.message}`
+      }
+    } else {
+      error.value = 'Failed to save show. Please try again.'
+    }
     console.error(e)
   }
 }

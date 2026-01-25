@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tv-bingo-config
+data:
+  # Update with your production database URL
+  database-url: "jdbc:postgresql://your-prod-db-host:5432/tvbingo?currentSchema=tvbingo_schema"

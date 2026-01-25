@@ -4,12 +4,7 @@ spring:
   
   test:
     database:
-      replace: none
-  datasource:
-    url: jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema
-    username: tvbingo_user
-    password: tvbingo_password
-    driver-class-name: org.postgresql.Driver
+      replace: any
 
 management:
   health:

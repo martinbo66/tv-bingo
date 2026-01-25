@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: tv-bingo-kind
+
+namespace: tv-bingo
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - postgres.yaml
+  - configmap.yaml
+  - secret.yaml
+  - ingress.yaml
+
+# Patches for KinD-specific configuration
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+    target:
+      kind: Deployment
+      name: tv-bingo

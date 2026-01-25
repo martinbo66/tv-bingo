@@ -17,10 +17,15 @@ graph TD
     
     subgraph Services["Services"]
         ShowService["showService.ts"]
+        ApiClient["apiClient.ts"]
     end
     
-    subgraph Database["IndexedDB"]
-        IDB["TV-Bingo Database"]
+    subgraph API["REST API"]
+        Backend["Spring Boot Backend"]
+    end
+    
+    subgraph Database["PostgreSQL"]
+        DB["TV-Bingo Database"]
     end
     
     subgraph DataModel["Data Model"]
@@ -39,5 +44,7 @@ graph TD
     CreateShowPage --> CreateShow
     CreateShow --> ShowService
     
-    ShowService --> IDB
+    ShowService --> ApiClient
+    ApiClient --> Backend
+    Backend --> DB
     ShowService -.-> Show

@@ -1,0 +1,47 @@
+# =============================================================================
+# Docker Build Ignore File
+# =============================================================================
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.cursor/
+.claude/
+
+# Build outputs (we rebuild in Docker)
+**/build/
+**/dist/
+**/node_modules/
+**/target/
+
+# Logs
+*.log
+logs/
+
+# Local configuration
+*.local
+.env
+.env.*
+!.env.example
+
+# Test artifacts
+**/test-results/
+**/coverage/
+
+# Documentation (not needed in image)
+*.md
+!README.md
+specs/
+docs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Gradle caches (we use fresh build)
+.gradle/

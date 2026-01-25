@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tv-bingo-config
+data:
+  # PostgreSQL service DNS within the cluster
+  database-url: "jdbc:postgresql://postgres:5432/tvbingo?currentSchema=tvbingo_schema"

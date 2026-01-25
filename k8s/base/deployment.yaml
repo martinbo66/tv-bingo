@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tv-bingo
+  labels:
+    app: tv-bingo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tv-bingo
+  template:
+    metadata:
+      labels:
+        app: tv-bingo
+    spec:
+      containers:
+        - name: tv-bingo
+          image: tv-bingo:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: TVBINGO_DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: tv-bingo-config
+                  key: database-url
+            - name: TVBINGO_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: tv-bingo-secrets
+                  key: database-username
+            - name: TVBINGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tv-bingo-secrets
+                  key: database-password
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3

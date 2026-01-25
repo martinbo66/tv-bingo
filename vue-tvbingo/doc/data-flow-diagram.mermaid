@@ -2,46 +2,58 @@ sequenceDiagram
     participant User
     participant UI as User Interface
     participant Service as Show Service
-    participant DB as IndexedDB
+    participant API as REST API
+    participant DB as PostgreSQL
     
     %% Load Shows List
     User->>UI: Visit Home Page
     UI->>Service: getShows()
-    Service->>DB: Query all shows
-    DB-->>Service: Return shows data
-    Service-->>UI: Return shows array
+    Service->>API: GET /api/shows
+    API->>DB: SELECT * FROM shows
+    DB-->>API: ResultSet
+    API-->>Service: JSON Array
+    Service-->>UI: Show[]
     UI-->>User: Display shows list
     
     %% Create Show
     User->>UI: Fill create show form
     User->>UI: Submit form
-    UI->>Service: addShow(newShow)
-    Service->>DB: Add show to database
-    DB-->>Service: Confirm addition
-    Service-->>UI: Confirm success
+    UI->>Service: addShow(showInput)
+    Service->>API: POST /api/shows
+    API->>API: Validate request
+    API->>DB: INSERT INTO shows
+    DB-->>API: New show with ID
+    API-->>Service: 201 Created + JSON
+    Service-->>UI: Show with ID
     UI-->>User: Navigate to home page
     
     %% Edit Show
     User->>UI: Click edit button
     UI->>Service: getShowById(id)
-    Service->>DB: Query show by ID
-    DB-->>Service: Return show data
-    Service-->>UI: Return show object
+    Service->>API: GET /api/shows/{id}
+    API->>DB: SELECT * FROM shows WHERE id = ?
+    DB-->>API: ResultSet
+    API-->>Service: JSON Object
+    Service-->>UI: Show object
     UI-->>User: Display edit form
     User->>UI: Edit show details
     User->>UI: Save changes
     UI->>Service: updateShow(show)
-    Service->>DB: Update show in database
-    DB-->>Service: Confirm update
-    Service-->>UI: Confirm success
+    Service->>API: PUT /api/shows/{id}
+    API->>DB: UPDATE shows SET ...
+    DB-->>API: Updated show
+    API-->>Service: 200 OK + JSON
+    Service-->>UI: Updated Show
     UI-->>User: Navigate to home page
     
     %% Play Bingo
     User->>UI: Click on show card
     UI->>Service: getShowById(id)
-    Service->>DB: Query show by ID
-    DB-->>Service: Return show data
-    Service-->>UI: Return show object
+    Service->>API: GET /api/shows/{id}
+    API->>DB: SELECT * FROM shows WHERE id = ?
+    DB-->>API: ResultSet
+    API-->>Service: JSON Object
+    Service-->>UI: Show object
     UI->>UI: Generate bingo grid
     UI-->>User: Display bingo card
     User->>UI: Mark bingo squares

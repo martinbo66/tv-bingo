@@ -15,23 +15,46 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import CreateShow from '../components/CreateShow.vue'
-import type { Show, CreateShowInput } from '../types/Show'
+import type { CreateShowInput } from '../types/Show'
 import { showService } from '../services/showService'
+import { ApiError } from '../services/apiClient'
 
 const router = useRouter()
 const error = ref<string | null>(null)
 
+const formatValidationErrors = (errorData: any): string => {
+  if (!errorData || typeof errorData !== 'object') {
+    return 'Validation error occurred'
+  }
+  
+  // Extract field-specific error messages
+  const errorMessages = Object.entries(errorData)
+    .map(([field, message]) => `${field}: ${message}`)
+    .join(', ')
+  
+  return errorMessages || 'Validation error occurred'
+}
+
 const onShowCreated = async (showInput: CreateShowInput) => {
+  error.value = null
   try {
-    // Get all shows to determine the next ID
-    const shows = await showService.getShows()
-    const maxId = shows.reduce((max, s) => Math.max(max, s.id), 0)
-    const newShow: Show = { ...showInput, id: maxId + 1 }
-    
-    await showService.addShow(newShow)
+    // API will assign the ID - no need to generate it client-side
+    await showService.addShow(showInput)
     router.push('/')
   } catch (e) {
-    error.value = 'Failed to create show'
+    if (e instanceof ApiError) {
+      if (e.status === 400) {
+        // Validation errors - show field-specific messages
+        error.value = formatValidationErrors(e.data)
+      } else if (e.status === 409) {
+        // Conflict - duplicate show title
+        error.value = e.data?.showTitle || 'Show title must be unique'
+      } else {
+        error.value = `Failed to create show: ${e.message}`
+      }
+    } else {
+      error.value = 'Failed to create show. Please try again.'
+    }
     console.error(e)
   }
 }

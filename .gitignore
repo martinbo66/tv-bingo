@@ -28,6 +28,9 @@ build/
 *.log
 spring-tvbingo/bin/
 
+# Generated static resources (frontend embedded in backend)
+spring-tvbingo/src/main/resources/static/
+
 # ============================================================================
 # Frontend (Vue / Node)
 # ============================================================================
@@ -52,6 +55,10 @@ vue-tvbingo/dist/
 .envrc
 !.env.example
 !.envrc.template
+
+# Kubernetes secrets (keep .example files)
+k8s/**/secret.yaml
+!k8s/**/secret.yaml.example
 
 # ============================================================================
 # Test and Coverage

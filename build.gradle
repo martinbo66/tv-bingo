@@ -177,6 +177,10 @@ task ci {
     description = 'Full CI pipeline: clean, build, and test everything'
     group = 'ci'
     dependsOn clean, build, test
+    
+    // Ensure proper execution order: clean -> build -> test
+    build.mustRunAfter clean
+    test.mustRunAfter build
 }
 
 task ciBackend {
@@ -189,6 +193,256 @@ task ciFrontend {
     description = 'CI pipeline for frontend only'
     group = 'ci'
     dependsOn frontendClean, frontendBuild, frontendTypeCheck
+}
+
+// ============================================================================
+// Docker / Unified JAR Tasks
+// ============================================================================
+
+task copyFrontendToBackend(type: Copy) {
+    description = 'Copy frontend build to Spring Boot static resources'
+    group = 'docker'
+    dependsOn frontendBuild
+    
+    from "${frontendDir}/dist"
+    into "${projectDir}/spring-tvbingo/src/main/resources/static"
+}
+
+task cleanStaticResources(type: Delete) {
+    description = 'Clean frontend files from Spring Boot static resources'
+    group = 'docker'
+    delete "${projectDir}/spring-tvbingo/src/main/resources/static"
+}
+
+task buildUnifiedJar {
+    description = 'Build a single JAR with frontend embedded'
+    group = 'docker'
+    dependsOn ':spring-tvbingo:bootJar'
+    
+    doLast {
+        println "\n✓ Unified JAR built at: spring-tvbingo/build/libs/"
+        println "  Run with: java -jar spring-tvbingo/build/libs/spring-tvbingo-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod"
+    }
+}
+
+// Make processResources depend on copyFrontendToBackend to guarantee execution order
+// This ensures frontend resources are copied BEFORE Spring Boot processes resources
+// Since bootJar depends on processResources, this guarantees correct ordering
+project(':spring-tvbingo').afterEvaluate {
+    it.tasks.named('processResources').configure {
+        dependsOn rootProject.tasks.copyFrontendToBackend
+    }
+}
+
+task dockerBuild(type: Exec) {
+    description = 'Build Docker image for TV Bingo'
+    group = 'docker'
+    commandLine 'docker', 'build', '-t', 'tv-bingo', '.'
+    
+    doFirst {
+        println "Building Docker image 'tv-bingo'..."
+    }
+    doLast {
+        println "\n✓ Docker image built successfully!"
+        println "  Run with: docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo"
+    }
+}
+
+task dockerRun(type: Exec) {
+    description = 'Run TV Bingo Docker container (requires TVBINGO_DB_PASSWORD env var)'
+    group = 'docker'
+    
+    def dbPassword = System.getenv('TVBINGO_DB_PASSWORD') ?: 'changeme'
+    commandLine 'docker', 'run', '-p', '8080:8080', '-e', "TVBINGO_DB_PASSWORD=${dbPassword}", 'tv-bingo'
+}
+
+// ============================================================================
+// KinD (Kubernetes in Docker) Tasks
+// ============================================================================
+
+def kindClusterName = 'tv-bingo'
+def kindNamespace = 'tv-bingo'
+def kindOverlayPath = 'k8s/overlays/kind'
+def kindConfigPath = 'k8s/overlays/kind/kind-config.yaml'
+
+task kindCreateCluster(type: Exec) {
+    description = 'Create KinD cluster with Ingress support'
+    group = 'kind'
+    commandLine 'kind', 'create', 'cluster', '--name', kindClusterName, '--config', kindConfigPath
+
+    doFirst {
+        println "Creating KinD cluster '${kindClusterName}' with Ingress support..."
+    }
+    doLast {
+        println "✓ Cluster created"
+    }
+}
+
+task kindDeleteCluster(type: Exec) {
+    description = 'Delete the KinD cluster'
+    group = 'kind'
+    commandLine 'kind', 'delete', 'cluster', '--name', kindClusterName
+
+    doLast {
+        println "✓ Cluster deleted"
+    }
+}
+
+task kindInstallIngress(type: Exec) {
+    description = 'Install NGINX Ingress controller in KinD'
+    group = 'kind'
+    commandLine 'kubectl', 'apply', '-f',
+        'https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml'
+
+    doFirst {
+        println "Installing NGINX Ingress controller..."
+    }
+    doLast {
+        println "✓ Ingress controller installed"
+        println "  Wait for ready: kubectl -n ingress-nginx get pods -w"
+    }
+}
+
+task kindWaitIngress(type: Exec) {
+    description = 'Wait for Ingress controller to be ready'
+    group = 'kind'
+    commandLine 'kubectl', 'wait', '--namespace', 'ingress-nginx',
+        '--for=condition=ready', 'pod',
+        '--selector=app.kubernetes.io/component=controller',
+        '--timeout=120s'
+
+    doLast {
+        println "✓ Ingress controller is ready"
+    }
+}
+
+task kindSetupCluster {
+    description = 'Create cluster and install Ingress controller'
+    group = 'kind'
+    dependsOn kindCreateCluster, kindInstallIngress, kindWaitIngress
+}
+
+// Ensure proper task ordering for cluster setup
+kindInstallIngress.mustRunAfter kindCreateCluster
+kindWaitIngress.mustRunAfter kindInstallIngress
+
+task kindLoadImage(type: Exec) {
+    description = 'Load Docker image into KinD cluster'
+    group = 'kind'
+    dependsOn dockerBuild
+    commandLine 'kind', 'load', 'docker-image', 'tv-bingo:latest', '--name', kindClusterName
+
+    doFirst {
+        println "Loading tv-bingo:latest into KinD cluster '${kindClusterName}'..."
+    }
+    doLast {
+        println "✓ Image loaded into KinD"
+    }
+}
+
+task kindDeploy(type: Exec) {
+    description = 'Deploy TV Bingo to KinD cluster'
+    group = 'kind'
+    commandLine 'kubectl', 'apply', '-k', kindOverlayPath
+
+    doFirst {
+        println "Deploying to KinD using ${kindOverlayPath}..."
+    }
+    doLast {
+        println "\n✓ Deployment applied!"
+        println "  Watch pods: kubectl -n ${kindNamespace} get pods -w"
+        println "  Port forward: ./gradlew kindPortForward"
+    }
+}
+
+task kindUndeploy(type: Exec) {
+    description = 'Remove TV Bingo deployment from KinD cluster'
+    group = 'kind'
+    commandLine 'kubectl', 'delete', '-k', kindOverlayPath, '--ignore-not-found'
+
+    doLast {
+        println "✓ Deployment removed from KinD"
+    }
+}
+
+task kindStatus(type: Exec) {
+    description = 'Show TV Bingo pod status in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'get', 'pods,svc,pvc'
+}
+
+task kindLogs(type: Exec) {
+    description = 'Show TV Bingo application logs'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'logs', '-l', 'app=tv-bingo', '--tail=100', '-f'
+}
+
+task kindLogsPostgres(type: Exec) {
+    description = 'Show PostgreSQL logs in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'logs', '-l', 'app=postgres', '--tail=100', '-f'
+}
+
+task kindPortForward(type: Exec) {
+    description = 'Port forward TV Bingo service to localhost:8080'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'port-forward', 'svc/tv-bingo', '8080:80'
+
+    doFirst {
+        println "Port forwarding to http://localhost:8080"
+        println "Press Ctrl+C to stop"
+    }
+}
+
+task kindRestart(type: Exec) {
+    description = 'Restart TV Bingo deployment in KinD'
+    group = 'kind'
+    commandLine 'kubectl', '-n', kindNamespace, 'rollout', 'restart', 'deployment/tv-bingo'
+
+    doLast {
+        println "✓ Deployment restarted"
+        println "  Watch rollout: kubectl -n ${kindNamespace} rollout status deployment/tv-bingo"
+    }
+}
+
+task kindFullDeploy {
+    description = 'Build, load, and deploy TV Bingo to KinD (full workflow)'
+    group = 'kind'
+    dependsOn kindLoadImage, kindDeploy
+
+    doLast {
+        println """
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  ✓ TV Bingo deployed to KinD!                                                  ║
+║                                                                                 ║
+║  Access the app:                                                                ║
+║    http://localhost           - Via Ingress (if cluster has Ingress)           ║
+║    ./gradlew kindPortForward  - Via port-forward at http://localhost:8080      ║
+║                                                                                 ║
+║  Other commands:                                                                ║
+║    ./gradlew kindStatus       - Check pod status                               ║
+║    ./gradlew kindLogs         - View application logs                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+"""
+    }
+}
+
+// Ensure kindDeploy runs after kindLoadImage when both are in the task graph
+kindDeploy.mustRunAfter kindLoadImage
+
+task kindRedeploy {
+    description = 'Rebuild and redeploy TV Bingo to KinD (for code changes)'
+    group = 'kind'
+    dependsOn kindLoadImage, kindRestart
+
+    doLast {
+        println "✓ Redeployed with latest changes"
+    }
+}
+
+// Ensure kindRestart runs after kindLoadImage
+tasks.named('kindRestart').configure {
+    mustRunAfter kindLoadImage
 }
 
 // Print available tasks
@@ -216,6 +470,20 @@ task showTasks {
 ║   ./gradlew frontendBuild    Build frontend for production                     ║
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ DOCKER                                                                         ║
+║   ./gradlew buildUnifiedJar  Build JAR with frontend embedded                  ║
+║   ./gradlew dockerBuild      Build Docker image                                ║
+║   ./gradlew dockerRun        Run Docker container                              ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ KIND (Kubernetes in Docker)                                                    ║
+║   ./gradlew kindSetupCluster Create cluster with Ingress support               ║
+║   ./gradlew kindFullDeploy   Build, load image, and deploy to KinD             ║
+║   ./gradlew kindRedeploy     Rebuild and redeploy (for code changes)           ║
+║   ./gradlew kindStatus       Show pod/service status                           ║
+║   ./gradlew kindLogs         Tail application logs                             ║
+║   ./gradlew kindUndeploy     Remove deployment from KinD                       ║
+║   ./gradlew kindDeleteCluster Delete the KinD cluster                          ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
     }

@@ -10,7 +10,9 @@ tv-bingo/
 ├── vue-tvbingo/        # Vue.js frontend (TypeScript + Vite)
 ├── specs/              # Product requirements and specifications
 ├── build.gradle        # Root Gradle build (orchestrates both projects)
-└── settings.gradle     # Gradle settings with subprojects
+├── settings.gradle     # Gradle settings with subprojects
+├── Dockerfile          # Multi-stage Docker build
+└── .dockerignore       # Docker build exclusions
 ```
 
 ## Prerequisites
@@ -19,6 +21,7 @@ tv-bingo/
 - **Node.js 18+** and npm (for frontend)
 - **PostgreSQL 15+** (for production database)
 - **Gradle 8.x** (wrapper included)
+- **Docker** (optional, for containerized deployment)
 
 ## Quick Start
 
@@ -81,6 +84,38 @@ npm install
 npm run dev
 ```
 
+## Docker Deployment
+
+The application can be deployed as a single container with the Vue frontend served as static resources from Spring Boot.
+
+### Build and Run with Docker
+
+```bash
+# Build the Docker image
+docker build -t tv-bingo .
+
+# Run the container
+docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=your_password tv-bingo
+```
+
+Or use Gradle:
+```bash
+./gradlew dockerBuild
+TVBINGO_DB_PASSWORD=xxx ./gradlew dockerRun
+```
+
+### Build Unified JAR (without Docker)
+
+```bash
+# Build a single JAR with frontend embedded
+./gradlew buildUnifiedJar
+
+# Run the JAR
+java -jar spring-tvbingo/build/libs/spring-tvbingo-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+The container/JAR serves both the API and frontend from `http://localhost:8080`.
+
 ## CI/CD
 
 The root Gradle build provides unified tasks for CI/CD:
@@ -93,6 +128,8 @@ The root Gradle build provides unified tasks for CI/CD:
 | `./gradlew build` | Build both projects |
 | `./gradlew test` | Run all tests |
 | `./gradlew clean` | Clean all build artifacts |
+| `./gradlew buildUnifiedJar` | Build JAR with frontend embedded |
+| `./gradlew dockerBuild` | Build Docker image |
 
 ## Tech Stack
 
