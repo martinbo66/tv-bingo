@@ -1,7 +1,9 @@
 import { ApiClient } from './apiClient';
 import type { Show, CreateShowInput } from '../types/Show';
 
-const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
+// Use relative URLs by default (works when frontend/backend are same origin)
+// For local dev with separate servers, set VITE_API_BASE_URL=http://localhost:8080
+const apiClient = new ApiClient(import.meta.env.VITE_API_BASE_URL || '');
 
 export const showService = {
   async getShows(): Promise<Show[]> {

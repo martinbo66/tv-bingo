@@ -22,7 +22,15 @@
       "Bash(./gradlew kindFullDeploy:*)",
       "Bash(kubectl:*)",
       "Bash(./gradlew kindRedeploy:*)",
-      "Bash(./gradlew kindPortForward:*)"
+      "Bash(./gradlew kindPortForward:*)",
+      "Bash(curl:*)",
+      "Bash(docker port:*)",
+      "Bash(pkill:*)",
+      "Bash(kind delete cluster:*)",
+      "Bash(./gradlew kindSetupCluster:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot"
     ]
   }
 }

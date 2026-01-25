@@ -254,9 +254,71 @@ task dockerRun(type: Exec) {
 // KinD (Kubernetes in Docker) Tasks
 // ============================================================================
 
-def kindClusterName = 'chunk1'
+def kindClusterName = 'tv-bingo'
 def kindNamespace = 'tv-bingo'
 def kindOverlayPath = 'k8s/overlays/kind'
+def kindConfigPath = 'k8s/overlays/kind/kind-config.yaml'
+
+task kindCreateCluster(type: Exec) {
+    description = 'Create KinD cluster with Ingress support'
+    group = 'kind'
+    commandLine 'kind', 'create', 'cluster', '--name', kindClusterName, '--config', kindConfigPath
+
+    doFirst {
+        println "Creating KinD cluster '${kindClusterName}' with Ingress support..."
+    }
+    doLast {
+        println "✓ Cluster created"
+    }
+}
+
+task kindDeleteCluster(type: Exec) {
+    description = 'Delete the KinD cluster'
+    group = 'kind'
+    commandLine 'kind', 'delete', 'cluster', '--name', kindClusterName
+
+    doLast {
+        println "✓ Cluster deleted"
+    }
+}
+
+task kindInstallIngress(type: Exec) {
+    description = 'Install NGINX Ingress controller in KinD'
+    group = 'kind'
+    commandLine 'kubectl', 'apply', '-f',
+        'https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml'
+
+    doFirst {
+        println "Installing NGINX Ingress controller..."
+    }
+    doLast {
+        println "✓ Ingress controller installed"
+        println "  Wait for ready: kubectl -n ingress-nginx get pods -w"
+    }
+}
+
+task kindWaitIngress(type: Exec) {
+    description = 'Wait for Ingress controller to be ready'
+    group = 'kind'
+    commandLine 'kubectl', 'wait', '--namespace', 'ingress-nginx',
+        '--for=condition=ready', 'pod',
+        '--selector=app.kubernetes.io/component=controller',
+        '--timeout=120s'
+
+    doLast {
+        println "✓ Ingress controller is ready"
+    }
+}
+
+task kindSetupCluster {
+    description = 'Create cluster and install Ingress controller'
+    group = 'kind'
+    dependsOn kindCreateCluster, kindInstallIngress, kindWaitIngress
+}
+
+// Ensure proper task ordering for cluster setup
+kindInstallIngress.mustRunAfter kindCreateCluster
+kindWaitIngress.mustRunAfter kindInstallIngress
 
 task kindLoadImage(type: Exec) {
     description = 'Load Docker image into KinD cluster'
@@ -347,9 +409,12 @@ task kindFullDeploy {
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║  ✓ TV Bingo deployed to KinD!                                                  ║
 ║                                                                                 ║
-║  Next steps:                                                                    ║
+║  Access the app:                                                                ║
+║    http://localhost           - Via Ingress (if cluster has Ingress)           ║
+║    ./gradlew kindPortForward  - Via port-forward at http://localhost:8080      ║
+║                                                                                 ║
+║  Other commands:                                                                ║
 ║    ./gradlew kindStatus       - Check pod status                               ║
-║    ./gradlew kindPortForward  - Access at http://localhost:8080                ║
 ║    ./gradlew kindLogs         - View application logs                          ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -406,12 +471,13 @@ task showTasks {
 ║   ./gradlew dockerRun        Run Docker container                              ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ KIND (Kubernetes in Docker)                                                    ║
+║   ./gradlew kindSetupCluster Create cluster with Ingress support               ║
 ║   ./gradlew kindFullDeploy   Build, load image, and deploy to KinD             ║
 ║   ./gradlew kindRedeploy     Rebuild and redeploy (for code changes)           ║
 ║   ./gradlew kindStatus       Show pod/service status                           ║
-║   ./gradlew kindPortForward  Forward localhost:8080 to the app                 ║
 ║   ./gradlew kindLogs         Tail application logs                             ║
 ║   ./gradlew kindUndeploy     Remove deployment from KinD                       ║
+║   ./gradlew kindDeleteCluster Delete the KinD cluster                          ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
     }

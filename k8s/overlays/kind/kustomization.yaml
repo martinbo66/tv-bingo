@@ -12,6 +12,7 @@ resources:
   - postgres.yaml
   - configmap.yaml
   - secret.yaml
+  - ingress.yaml
 
 # Patches for KinD-specific configuration
 patches:
