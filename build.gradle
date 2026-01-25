@@ -191,6 +191,65 @@ task ciFrontend {
     dependsOn frontendClean, frontendBuild, frontendTypeCheck
 }
 
+// ============================================================================
+// Docker / Unified JAR Tasks
+// ============================================================================
+
+task copyFrontendToBackend(type: Copy) {
+    description = 'Copy frontend build to Spring Boot static resources'
+    group = 'docker'
+    dependsOn frontendBuild
+    
+    from "${frontendDir}/dist"
+    into "${projectDir}/spring-tvbingo/src/main/resources/static"
+}
+
+task cleanStaticResources(type: Delete) {
+    description = 'Clean frontend files from Spring Boot static resources'
+    group = 'docker'
+    delete "${projectDir}/spring-tvbingo/src/main/resources/static"
+}
+
+task buildUnifiedJar {
+    description = 'Build a single JAR with frontend embedded'
+    group = 'docker'
+    dependsOn copyFrontendToBackend, ':spring-tvbingo:bootJar'
+    
+    doLast {
+        println "\n✓ Unified JAR built at: spring-tvbingo/build/libs/"
+        println "  Run with: java -jar spring-tvbingo/build/libs/spring-tvbingo-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod"
+    }
+}
+
+// Ensure bootJar runs after frontend is copied
+project(':spring-tvbingo').tasks.whenTaskAdded { task ->
+    if (task.name == 'bootJar') {
+        task.mustRunAfter copyFrontendToBackend
+    }
+}
+
+task dockerBuild(type: Exec) {
+    description = 'Build Docker image for TV Bingo'
+    group = 'docker'
+    commandLine 'docker', 'build', '-t', 'tv-bingo', '.'
+    
+    doFirst {
+        println "Building Docker image 'tv-bingo'..."
+    }
+    doLast {
+        println "\n✓ Docker image built successfully!"
+        println "  Run with: docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo"
+    }
+}
+
+task dockerRun(type: Exec) {
+    description = 'Run TV Bingo Docker container (requires TVBINGO_DB_PASSWORD env var)'
+    group = 'docker'
+    
+    def dbPassword = System.getenv('TVBINGO_DB_PASSWORD') ?: 'changeme'
+    commandLine 'docker', 'run', '-p', '8080:8080', '-e', "TVBINGO_DB_PASSWORD=${dbPassword}", 'tv-bingo'
+}
+
 // Print available tasks
 task showTasks {
     description = 'Show commonly used tasks'
@@ -216,6 +275,11 @@ task showTasks {
 ║   ./gradlew frontendBuild    Build frontend for production                     ║
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ DOCKER / DEPLOYMENT                                                            ║
+║   ./gradlew buildUnifiedJar  Build JAR with frontend embedded                  ║
+║   ./gradlew dockerBuild      Build Docker image                                ║
+║   ./gradlew dockerRun        Run Docker container                              ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
     }

@@ -10,7 +10,10 @@
       "Bash(./gradlew build:*)",
       "Bash(./gradlew test:*)",
       "Bash(find:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(tmux new-session:*)",
+      "Bash(tmux kill-session:*)"
     ]
   }
 }

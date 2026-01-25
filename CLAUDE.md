@@ -15,8 +15,19 @@ tv-bingo/
 ├── specs/              # PRD and specifications
 │   └── tv-bingo-prd.md # Complete product requirements
 ├── build.gradle        # Root Gradle orchestration
-└── settings.gradle     # Multi-project configuration
+├── settings.gradle     # Multi-project configuration
+├── Dockerfile          # Multi-stage Docker build
+└── .dockerignore       # Docker build exclusions
 ```
+
+## Deployment Architecture
+
+For production, the app is deployed as a **single container**:
+- The Vue frontend is built and copied into Spring Boot's `/static/` resources
+- Spring Boot serves both the API (`/api/**`) and the frontend (all other routes)
+- `SpaWebConfig.java` handles Vue Router's history mode by forwarding non-API routes to `index.html`
+
+This eliminates the need for a separate web server or reverse proxy in simple deployments.
 
 ## Technology Stack
 
@@ -75,6 +86,17 @@ All commands run from the repository root:
 cd vue-tvbingo && npm run dev
 ```
 
+### Docker / Deployment
+```bash
+./gradlew buildUnifiedJar   # Build JAR with frontend embedded
+./gradlew dockerBuild       # Build Docker image
+./gradlew dockerRun         # Run Docker container
+
+# Or use Docker directly:
+docker build -t tv-bingo .
+docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo
+```
+
 ## Database Configuration
 
 The backend requires PostgreSQL with these environment variables:
@@ -100,7 +122,7 @@ Key endpoints:
 ### Backend Package Structure
 ```
 org.bomartin.tvbingo/
-├── config/          # Spring configuration (CORS, etc.)
+├── config/          # Spring configuration (CORS, SPA routing, etc.)
 ├── controller/      # REST endpoints
 ├── dto/             # Data Transfer Objects
 ├── exception/       # Global exception handling
@@ -109,6 +131,10 @@ org.bomartin.tvbingo/
 ├── service/         # Business logic
 └── validation/      # Custom validators
 ```
+
+Key configuration classes:
+- `WebConfig.java` - CORS configuration for development
+- `SpaWebConfig.java` - Serves Vue SPA and handles client-side routing
 
 ### Frontend Structure
 ```

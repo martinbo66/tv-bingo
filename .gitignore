@@ -28,6 +28,9 @@ build/
 *.log
 spring-tvbingo/bin/
 
+# Generated static resources (frontend embedded in backend)
+spring-tvbingo/src/main/resources/static/
+
 # ============================================================================
 # Frontend (Vue / Node)
 # ============================================================================
