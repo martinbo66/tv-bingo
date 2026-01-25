@@ -89,3 +89,8 @@ temp/
 .response_analysis
 progress.json
 status.json
+
+# ============================================================================
+# Claude Code local settings
+# ============================================================================
+.claude/settings.local.json
