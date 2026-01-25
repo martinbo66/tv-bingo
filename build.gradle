@@ -213,7 +213,7 @@ task cleanStaticResources(type: Delete) {
 task buildUnifiedJar {
     description = 'Build a single JAR with frontend embedded'
     group = 'docker'
-    dependsOn copyFrontendToBackend, ':spring-tvbingo:bootJar'
+    dependsOn ':spring-tvbingo:bootJar'
     
     doLast {
         println "\n✓ Unified JAR built at: spring-tvbingo/build/libs/"
@@ -221,10 +221,12 @@ task buildUnifiedJar {
     }
 }
 
-// Ensure bootJar runs after frontend is copied
-project(':spring-tvbingo').tasks.whenTaskAdded { task ->
-    if (task.name == 'bootJar') {
-        task.mustRunAfter copyFrontendToBackend
+// Make processResources depend on copyFrontendToBackend to guarantee execution order
+// This ensures frontend resources are copied BEFORE Spring Boot processes resources
+// Since bootJar depends on processResources, this guarantees correct ordering
+project(':spring-tvbingo').afterEvaluate {
+    it.tasks.named('processResources').configure {
+        dependsOn rootProject.tasks.copyFrontendToBackend
     }
 }
 
