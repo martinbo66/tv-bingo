@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rsync:*)",
+      "Bash(chmod:*)",
+      "Bash(./gradlew showTasks:*)",
+      "Bash(./gradlew frontendInstall:*)",
+      "Bash(./gradlew frontendTypeCheck:*)",
+      "Bash(./gradlew backendBuild:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

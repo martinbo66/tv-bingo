@@ -1,0 +1,224 @@
+/**
+ * TV Bingo - Root Build Configuration
+ *
+ * This Gradle build orchestrates both the Spring Boot backend (spring-tvbingo)
+ * and the Vue.js frontend (vue-tvbingo) for unified CI/CD.
+ *
+ * Usage:
+ *   ./gradlew build        - Build both frontend and backend
+ *   ./gradlew test         - Run all tests (backend + frontend)
+ *   ./gradlew clean        - Clean all build artifacts
+ *   ./gradlew bootRun      - Run the Spring Boot backend
+ *   ./gradlew frontendDev  - Start Vue dev server (for local development)
+ */
+
+// Detect npm or use npx as fallback
+def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+def frontendDir = file("${projectDir}/vue-tvbingo")
+
+// ============================================================================
+// Frontend (Vue.js) Tasks
+// ============================================================================
+
+task frontendInstall(type: Exec) {
+    description = 'Install frontend npm dependencies'
+    group = 'frontend'
+    workingDir frontendDir
+    commandLine npmCommand, 'install'
+
+    inputs.file("${frontendDir}/package.json")
+    inputs.file("${frontendDir}/package-lock.json")
+    outputs.dir("${frontendDir}/node_modules")
+}
+
+task frontendBuild(type: Exec) {
+    description = 'Build the Vue.js frontend for production'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'build'
+
+    inputs.dir("${frontendDir}/src")
+    inputs.file("${frontendDir}/package.json")
+    inputs.file("${frontendDir}/vite.config.ts")
+    inputs.file("${frontendDir}/tsconfig.json")
+    outputs.dir("${frontendDir}/dist")
+}
+
+task frontendTypeCheck(type: Exec) {
+    description = 'Run TypeScript type checking on frontend'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'exec', '--', 'vue-tsc', '--noEmit'
+
+    inputs.dir("${frontendDir}/src")
+    inputs.file("${frontendDir}/tsconfig.json")
+}
+
+task frontendTest(type: Exec) {
+    description = 'Run frontend tests (Vitest)'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+
+    // Only run if test script exists in package.json
+    doFirst {
+        def packageJson = new groovy.json.JsonSlurper().parse(file("${frontendDir}/package.json"))
+        if (!packageJson.scripts?.test) {
+            println "No test script found in frontend package.json, skipping frontend tests"
+            throw new StopExecutionException()
+        }
+    }
+
+    commandLine npmCommand, 'run', 'test', '--', '--run'
+    ignoreExitValue = true
+}
+
+task frontendLint(type: Exec) {
+    description = 'Run ESLint on frontend code'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+
+    // Only run if lint script exists
+    doFirst {
+        def packageJson = new groovy.json.JsonSlurper().parse(file("${frontendDir}/package.json"))
+        if (!packageJson.scripts?.lint) {
+            println "No lint script found in frontend package.json, skipping linting"
+            throw new StopExecutionException()
+        }
+    }
+
+    commandLine npmCommand, 'run', 'lint'
+    ignoreExitValue = true
+}
+
+task frontendDev(type: Exec) {
+    description = 'Start Vue.js development server'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'dev'
+}
+
+task frontendClean(type: Delete) {
+    description = 'Clean frontend build artifacts'
+    group = 'frontend'
+    delete "${frontendDir}/dist"
+    delete "${frontendDir}/node_modules/.vite"
+    delete "${frontendDir}/tsconfig.app.tsbuildinfo"
+    delete "${frontendDir}/tsconfig.node.tsbuildinfo"
+}
+
+// ============================================================================
+// Backend Task Aliases (delegate to subproject)
+// ============================================================================
+
+task backendBuild {
+    description = 'Build the Spring Boot backend'
+    group = 'backend'
+    dependsOn ':spring-tvbingo:build'
+}
+
+task backendTest {
+    description = 'Run backend tests'
+    group = 'backend'
+    dependsOn ':spring-tvbingo:test'
+}
+
+task backendClean {
+    description = 'Clean backend build artifacts'
+    group = 'backend'
+    dependsOn ':spring-tvbingo:clean'
+}
+
+// ============================================================================
+// Unified CI/CD Tasks
+// ============================================================================
+
+task build {
+    description = 'Build both frontend and backend'
+    group = 'build'
+    dependsOn backendBuild, frontendBuild
+}
+
+task test {
+    description = 'Run all tests (frontend and backend)'
+    group = 'verification'
+    dependsOn backendTest, frontendTypeCheck
+    // frontendTest will be added once Vitest is configured
+}
+
+task check {
+    description = 'Run all verification tasks'
+    group = 'verification'
+    dependsOn test, frontendTypeCheck
+}
+
+task clean {
+    description = 'Clean all build artifacts'
+    group = 'build'
+    dependsOn backendClean, frontendClean
+}
+
+// Alias for running backend
+task bootRun {
+    description = 'Run the Spring Boot backend application'
+    group = 'application'
+    dependsOn ':spring-tvbingo:bootRun'
+}
+
+// ============================================================================
+// CI/CD Specific Tasks
+// ============================================================================
+
+task ci {
+    description = 'Full CI pipeline: clean, build, and test everything'
+    group = 'ci'
+    dependsOn clean, build, test
+}
+
+task ciBackend {
+    description = 'CI pipeline for backend only'
+    group = 'ci'
+    dependsOn ':spring-tvbingo:clean', ':spring-tvbingo:build', ':spring-tvbingo:test'
+}
+
+task ciFrontend {
+    description = 'CI pipeline for frontend only'
+    group = 'ci'
+    dependsOn frontendClean, frontendBuild, frontendTypeCheck
+}
+
+// Print available tasks
+task showTasks {
+    description = 'Show commonly used tasks'
+    group = 'help'
+    doLast {
+        println """
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                           TV Bingo - Gradle Tasks                              ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ UNIFIED COMMANDS                                                               ║
+║   ./gradlew build      Build both frontend and backend                         ║
+║   ./gradlew test       Run all tests                                           ║
+║   ./gradlew clean      Clean all build artifacts                               ║
+║   ./gradlew ci         Full CI pipeline (clean + build + test)                 ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ BACKEND (Spring Boot)                                                          ║
+║   ./gradlew bootRun       Run the Spring Boot application                      ║
+║   ./gradlew backendBuild  Build backend only                                   ║
+║   ./gradlew backendTest   Run backend tests only                               ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ FRONTEND (Vue.js)                                                              ║
+║   ./gradlew frontendDev      Start Vite dev server                             ║
+║   ./gradlew frontendBuild    Build frontend for production                     ║
+║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
+║   ./gradlew frontendInstall  Install npm dependencies                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+"""
+    }
+}
+
+defaultTasks 'showTasks'

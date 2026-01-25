@@ -1,0 +1,23 @@
+flowchart TD
+    HomePage["Home Page (Shows List)"]
+    CreatePage["Create Show Page"]
+    EditPage["Edit Show Page"]
+    BingoCardPage["Bingo Card Page"]
+    
+    HomePage -- "Click '+ Add Show'" --> CreatePage
+    HomePage -- "Click on Show Card" --> BingoCardPage
+    HomePage -- "Click Edit Button" --> EditPage
+    
+    CreatePage -- "Submit new show" --> HomePage
+    CreatePage -- "Cancel" --> HomePage
+    
+    EditPage -- "Save changes" --> HomePage
+    EditPage -- "Cancel" --> HomePage
+    
+    BingoCardPage -- "Click Show Title" --> EditPage
+    BingoCardPage -- "Click '← Back to Shows'" --> HomePage
+    
+    style HomePage fill:#9c27b0,color:#fff
+    style CreatePage fill:#4CAF50,color:#fff
+    style EditPage fill:#2196F3,color:#fff
+    style BingoCardPage fill:#FFC107,color:#000

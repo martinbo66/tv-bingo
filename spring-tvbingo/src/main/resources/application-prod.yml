@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    # Supavisor session mode pooler (IPv4 compatible)
+    # Use this for environments without IPv6 support
+    url: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres?currentSchema=tvbingo_schema
+    username: postgres.yfrovubifxyzgtuxiikx
+    password: ${TVBINGO_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    # Alternative: Direct connection (requires IPv6)
+    # url: jdbc:postgresql://db.yfrovubifxyzgtuxiikx.supabase.co:5432/postgres?currentSchema=tvbingo_schema
+    # username: postgres

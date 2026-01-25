@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-create-schema
+      author: liquibase
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS tvbingo_schema
+
+  - changeSet:
+      id: 02-create-shows-table
+      author: liquibase
+      changes:
+        - createTable:
+            schemaName: tvbingo_schema
+            tableName: shows
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: show_title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: game_title
+                  type: varchar(255)
+              - column:
+                  name: center_square
+                  type: varchar(255)
+              - column:
+                  name: phrases
+                  type: text[]
+        - createIndex:
+            schemaName: tvbingo_schema
+            tableName: shows
+            indexName: idx_shows_show_title
+            columns:
+              - column:
+                  name: show_title

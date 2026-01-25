@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema
+    username: ${TVBINGO_DB_USERNAME:tvbingo_user}
+    password: ${TVBINGO_DB_PASSWORD:tvbingo_password}
+    driver-class-name: org.postgresql.Driver

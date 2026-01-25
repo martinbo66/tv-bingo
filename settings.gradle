@@ -1,0 +1,6 @@
+rootProject.name = 'tv-bingo'
+
+// Include the Spring Boot backend as a subproject
+include 'spring-tvbingo'
+
+// Note: vue-tvbingo is not a Gradle project but is managed via npm tasks in root build.gradle

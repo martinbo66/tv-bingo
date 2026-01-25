@@ -1,0 +1,4 @@
+# Database credentials
+export TVBINGO_DB_USERNAME=tvbingo_user
+export TVBINGO_DB_PASSWORD=your_secure_password_here 
+export TVBINGO_URL=jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema

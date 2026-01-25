@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-add-show-title-unique-constraint
+      author: liquibase
+      changes:
+        - addUniqueConstraint:
+            schemaName: tvbingo_schema
+            tableName: shows
+            columnNames: show_title
+            constraintName: uk_shows_show_title 

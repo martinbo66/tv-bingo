@@ -1,0 +1,89 @@
+classDiagram
+    class App {
+        +RouterView
+    }
+    
+    class Router {
+        +routes
+        +beforeEach()
+    }
+    
+    class ShowsList {
+        -shows: Show[]
+        -loading: boolean
+        -error: string
+        +fetchShows()
+        +navigateToShow()
+        +handleEdit()
+        +handleDelete()
+    }
+    
+    class ShowDetail {
+        -show: Show
+        -loading: boolean
+        -error: string
+        -newPhrase: string
+        +addPhrase()
+        +removePhrase()
+        +saveShow()
+    }
+    
+    class CreateShowPage {
+        -error: string
+        +onShowCreated()
+    }
+    
+    class CreateShow {
+        -showTitle: string
+        -gameTitle: string
+        -centerSquare: string
+        -phrases: string[]
+        +addPhrase()
+        +removePhrase()
+        +createShow()
+        +emit: showCreated
+    }
+    
+    class BingoCard {
+        -show: Show
+        -bingoGrid: string[]
+        -loading: boolean
+        -error: string
+        -selectedCells: Set~number~
+        -winningLines: number[][]
+        +generateBingoGrid()
+        +checkWinningCombinations()
+        +toggleCell()
+        +regenerateBingoCard()
+    }
+    
+    class ShowService {
+        +getShows()
+        +getShowById()
+        +addShow()
+        +updateShow()
+        +deleteShow()
+        +searchShowsByTitle()
+    }
+    
+    class Show {
+        +id: number
+        +showTitle: string
+        +gameTitle?: string
+        +centerSquare?: string
+        +phrases: string[]
+    }
+    
+    App --> Router
+    Router --> ShowsList
+    Router --> ShowDetail
+    Router --> CreateShowPage
+    Router --> BingoCard
+    
+    ShowsList --> ShowService
+    ShowDetail --> ShowService
+    CreateShowPage --> CreateShow
+    CreateShow --> ShowService
+    BingoCard --> ShowService
+    
+    ShowService ..> Show

@@ -1,0 +1,40 @@
+spring:
+  liquibase:
+    enabled: false
+  
+  test:
+    database:
+      replace: none
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema
+    username: tvbingo_user
+    password: tvbingo_password
+    driver-class-name: org.postgresql.Driver
+
+management:
+  health:
+    db:
+      enabled: false
+
+zonky:
+  test:
+    database:
+      provider: embedded
+      postgres:
+        client:
+          properties:
+            currentSchema: tvbingo_schema
+
+logging:
+  level:
+    org.springframework.test.context: WARN
+    org.springframework.test.context.cache: INFO
+    org.springframework.test.context.transaction: WARN
+    org.springframework.beans: WARN
+    org.springframework.core: WARN
+    org.springframework.orm: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    org.springframework.jdbc.core: DEBUG
+    liquibase: DEBUG 

@@ -1,0 +1,278 @@
+# Overview
+TV Bingo is an interactive web application that enhances the TV watching experience by turning common phrases and moments from TV shows into an engaging bingo game. Users can play along with their favorite shows by marking off squares on a digital bingo card when they hear specific phrases or see particular events during an episode.
+
+# Existing Infrastructure
+The backend is implemented as a Spring Boot application with:
+- PostgreSQL database with Liquibase migrations
+- REST API for managing TV shows and bingo games
+- OpenAPI documentation
+- Show management endpoints (CRUD operations)
+- Data model for shows including phrases and center squares
+
+# Remaining Features to Implement
+
+## 1. Game State Management
+- Save and resume game progress
+- Track marked squares for each game session
+- Handle win conditions (rows, columns, diagonals)
+- Support for multiple concurrent games
+
+## 2. User Management
+- Optional user registration
+- Guest play support
+- Game history for registered users
+- User preferences and settings
+
+## 3. Game Logic
+- Bingo card generation algorithm
+- Win detection
+- Score tracking
+- Game statistics
+
+## 4. Additional API Endpoints
+- Game state management endpoints
+- User management endpoints
+- Game statistics endpoints
+- Session management
+
+# Technical Requirements
+
+## Database
+- Extend existing PostgreSQL schema for:
+  - Game sessions
+  - User data
+  - Game progress
+  - Statistics
+
+## API Extensions
+- Build upon existing REST API
+- Maintain OpenAPI documentation
+- Follow established patterns
+- Ensure proper validation and error handling
+
+## Security
+- Implement authentication
+- Session management
+- CORS configuration
+- Input validation
+
+## Testing
+- Unit tests for new endpoints
+- Integration tests for game logic
+- Performance testing for concurrent games
+- Security testing
+
+# Future Enhancements
+- Social features (sharing, leaderboards)
+- Custom card creation
+- Show suggestions
+- Mobile optimization
+
+# Core Features
+
+## 1. Bingo Card Management
+- Dynamic bingo card generation with show-specific phrases
+- 5x5 grid layout with a free space in the center
+- Ability to save and resume games in progress
+- Visual indication of marked squares
+- Win detection for completed rows, columns, or diagonals
+
+## 2. Show Management
+- Curated list of popular TV shows
+- Each show has its own set of common phrases/moments
+- Ability to select different shows to play with
+- Show-specific styling and theming
+
+## 3. User Experience
+- Simple, intuitive interface for marking squares
+- Real-time feedback when achieving bingo
+- Mobile-responsive design for playing on any device
+- Easy navigation between shows and cards
+
+## 4. User Management
+- Optional user accounts for saving progress
+- Ability to play as a guest
+- Track game history and wins
+- Social sharing of completed bingo cards
+
+# User Experience
+
+## Target Users
+- TV show enthusiasts
+- Casual viewers looking to enhance their watching experience
+- Social viewers who watch shows with friends
+- Age range: 13+
+
+## Key User Flows
+1. Show Selection
+   - Browse available shows
+   - Select a show to play
+   - Get a new bingo card
+
+2. Gameplay
+   - View bingo card during show
+   - Tap/click squares to mark them
+   - Receive notification on bingo
+   - Save progress mid-game
+
+3. Account Management
+   - Optional registration/login
+   - View game history
+   - Share results
+
+## UI/UX Considerations
+- High contrast for visibility in low-light viewing conditions
+- Easy touch targets for mobile users
+- Minimal distractions from show viewing
+- Quick access to common actions
+
+# Technical Architecture
+
+## Frontend
+- React.js for the user interface
+- Responsive design using Tailwind CSS
+- Local storage for guest play
+- PWA capabilities for mobile installation
+
+## Backend
+- Node.js/Express server
+- PostgreSQL database for storing:
+  - User accounts
+  - Show data
+  - Game states
+  - Phrase collections
+- RESTful API endpoints
+
+## Data Models
+
+### Users
+- ID
+- Username
+- Email (optional)
+- Password (hashed)
+- Created date
+- Last login
+
+### Shows
+- ID
+- Title
+- Description
+- Image URL
+- Active status
+
+### Phrases
+- ID
+- Show ID
+- Text
+- Category
+- Frequency rating
+
+### Games
+- ID
+- User ID (optional)
+- Show ID
+- Card layout
+- Marked squares
+- Start time
+- Complete status
+- Win status
+
+## Security
+- HTTPS encryption
+- Password hashing
+- Rate limiting
+- CSRF protection
+- Input validation
+
+# Development Roadmap
+
+## Phase 1: MVP
+- Basic bingo card generation
+- Single show support
+- Guest play functionality
+- Square marking
+- Win detection
+- Mobile-responsive design
+
+## Phase 2: Enhancement
+- User accounts
+- Multiple show support
+- Save game progress
+- Basic styling themes
+
+## Phase 3: Social & Polish
+- Social sharing
+- Additional shows
+- Advanced themes
+- Performance optimization
+- PWA implementation
+
+# Logical Dependency Chain
+
+1. Core Infrastructure
+   - Project setup
+   - Database schema
+   - Basic API structure
+
+2. Basic Gameplay
+   - Card generation
+   - Square marking
+   - Win detection
+
+3. Show Management
+   - Show data structure
+   - Phrase management
+   - Card-show association
+
+4. User Features
+   - Guest play
+   - User accounts
+   - Game saving
+
+5. Enhancement
+   - Social features
+   - Theme implementation
+   - PWA features
+
+# Risks and Mitigations
+
+## Technical Risks
+- Risk: Database scaling with many concurrent games
+  Mitigation: Implement caching and optimization
+
+- Risk: Mobile performance issues
+  Mitigation: Optimize rendering and implement lazy loading
+
+- Risk: Data loss during guest play
+  Mitigation: Robust local storage handling
+
+## User Experience Risks
+- Risk: Complex UI distracting from show
+  Mitigation: Minimal, intuitive interface design
+
+- Risk: Difficulty marking squares quickly
+  Mitigation: Large touch targets and keyboard shortcuts
+
+## Content Risks
+- Risk: Insufficient phrase variety
+  Mitigation: Community contributions and regular updates
+
+# Appendix
+
+## Performance Requirements
+- Page load time < 2 seconds
+- Card generation < 1 second
+- Real-time square marking
+- Smooth animations
+
+## Browser Support
+- Modern browsers (last 2 versions)
+- iOS Safari 14+
+- Android Chrome 90+
+- Desktop Chrome, Firefox, Safari, Edge
+
+## Accessibility
+- WCAG 2.1 compliance
+- Keyboard navigation
+- Screen reader support
+- High contrast mode 

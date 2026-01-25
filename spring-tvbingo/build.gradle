@@ -1,0 +1,67 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.3'
+	id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'org.bomartin'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.liquibase:liquibase-core'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.zonky.test:embedded-postgres:2.0.7'
+	testImplementation 'io.zonky.test:embedded-database-spring-test:2.5.1'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+	useJUnitPlatform()
+	
+	// Show test results in the console
+	testLogging {
+		events "passed", "skipped", "failed"
+		showExceptions true
+		showCauses true
+		showStackTraces true
+		
+		// Show test results as they happen
+		showStandardStreams = true
+		
+		// Add summary after tests complete
+		afterSuite { desc, result ->
+			if (!desc.parent) { // will match the outermost suite
+				def output = "Tests: ${result.testCount} total, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped"
+				def padding = 80 - output.length()
+				padding = padding < 0 ? 0 : padding
+				println "\n" + "-" * 80
+				print " " * (padding / 2) + output
+				println "\n" + "-" * 80
+			}
+		}
+	}
+}

@@ -1,0 +1,14 @@
+erDiagram
+    SHOWS {
+        number id PK
+        string showTitle
+        string gameTitle
+        string centerSquare
+        array phrases
+    }
+    
+    INDEXES {
+        string by-title "Index on showTitle"
+    }
+    
+    SHOWS ||--o{ INDEXES : has

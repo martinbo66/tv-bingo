@@ -1,0 +1,147 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code when working with the TV Bingo monorepo.
+
+## Project Overview
+
+TV Bingo is a web application for creating custom bingo cards for TV shows. Users define phrases and recurring moments for their favorite shows, then generate randomized 5x5 bingo cards to play while watching.
+
+## Monorepo Structure
+
+```
+tv-bingo/
+├── spring-tvbingo/     # Spring Boot backend (Java 21)
+├── vue-tvbingo/        # Vue.js frontend (TypeScript + Vite)
+├── specs/              # PRD and specifications
+│   └── tv-bingo-prd.md # Complete product requirements
+├── build.gradle        # Root Gradle orchestration
+└── settings.gradle     # Multi-project configuration
+```
+
+## Technology Stack
+
+### Backend (spring-tvbingo)
+- Java 21
+- Spring Boot 3.5.x
+- Spring Data JDBC
+- PostgreSQL with Liquibase migrations
+- SpringDoc OpenAPI for API documentation
+- Embedded Postgres for tests
+
+### Frontend (vue-tvbingo)
+- Vue 3 (Composition API with `<script setup>`)
+- TypeScript 5.x
+- Vite 5.x
+- Vue Router
+
+## Common Development Commands
+
+All commands run from the repository root:
+
+```bash
+# Show available tasks
+./gradlew showTasks
+
+# Build everything
+./gradlew build
+
+# Run all tests
+./gradlew test
+
+# Full CI pipeline
+./gradlew ci
+
+# Run backend
+./gradlew bootRun
+
+# Start frontend dev server
+./gradlew frontendDev
+```
+
+### Backend-specific
+```bash
+./gradlew backendBuild      # Build backend only
+./gradlew backendTest       # Run backend tests only
+./gradlew :spring-tvbingo:test --info  # Verbose test output
+```
+
+### Frontend-specific
+```bash
+./gradlew frontendInstall   # Install npm dependencies
+./gradlew frontendBuild     # Build for production
+./gradlew frontendTypeCheck # TypeScript type checking
+
+# Or use npm directly:
+cd vue-tvbingo && npm run dev
+```
+
+## Database Configuration
+
+The backend requires PostgreSQL with these environment variables:
+- `TVBINGO_DB_URL` - Connection URL (e.g., `jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema`)
+- `TVBINGO_DB_USERNAME` - Database username
+- `TVBINGO_DB_PASSWORD` - Database password
+
+Tests use embedded Postgres automatically.
+
+## API Documentation
+
+When the backend is running: http://localhost:8080/swagger-ui.html
+
+Key endpoints:
+- `GET /api/shows` - List all shows
+- `POST /api/shows` - Create a show
+- `GET /api/shows/{id}` - Get show details
+- `PUT /api/shows/{id}` - Update a show
+- `DELETE /api/shows/{id}` - Delete a show
+
+## Architecture
+
+### Backend Package Structure
+```
+org.bomartin.tvbingo/
+├── config/          # Spring configuration (CORS, etc.)
+├── controller/      # REST endpoints
+├── dto/             # Data Transfer Objects
+├── exception/       # Global exception handling
+├── model/           # Domain entities
+├── repository/      # Data access layer
+├── service/         # Business logic
+└── validation/      # Custom validators
+```
+
+### Frontend Structure
+```
+vue-tvbingo/src/
+├── components/      # Reusable Vue components
+├── pages/           # Page-level components
+├── services/        # API client services
+├── types/           # TypeScript type definitions
+└── router/          # Vue Router configuration
+```
+
+## Development Standards
+
+### Code Style
+- **Java**: Standard conventions with Lombok
+- **TypeScript**: ESLint + Prettier defaults
+- **Vue**: Composition API with `<script setup lang="ts">`
+
+### Naming Conventions
+- Java classes: PascalCase
+- Vue components: PascalCase files
+- TypeScript interfaces: PascalCase
+- Database tables: snake_case, plural
+- API endpoints: kebab-case, plural nouns
+
+### Testing
+- Backend: JUnit 5, Embedded Postgres for integration tests
+- Frontend: Vitest (planned), TypeScript type checking
+
+## Product Requirements
+
+See `specs/tv-bingo-prd.md` for:
+- Complete feature specifications
+- User stories with acceptance criteria
+- API contracts
+- Data models

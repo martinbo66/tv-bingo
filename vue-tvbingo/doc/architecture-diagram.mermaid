@@ -1,0 +1,43 @@
+graph TD
+    subgraph Frontend["Frontend (Vue.js)"]
+        App["App.vue"]
+        Router["Router"]
+        
+        subgraph Components["Components"]
+            ShowsList["ShowsList.vue"]
+            ShowDetail["ShowDetail.vue"]
+            CreateShow["CreateShow.vue"]
+        end
+        
+        subgraph Pages["Pages"]
+            BingoCard["BingoCard.vue"]
+            CreateShowPage["CreateShowPage.vue"]
+        end
+    end
+    
+    subgraph Services["Services"]
+        ShowService["showService.ts"]
+    end
+    
+    subgraph Database["IndexedDB"]
+        IDB["TV-Bingo Database"]
+    end
+    
+    subgraph DataModel["Data Model"]
+        Show["Show Interface"]
+    end
+    
+    App --> Router
+    Router --> ShowsList
+    Router --> ShowDetail
+    Router --> BingoCard
+    Router --> CreateShowPage
+    
+    ShowsList --> ShowService
+    ShowDetail --> ShowService
+    BingoCard --> ShowService
+    CreateShowPage --> CreateShow
+    CreateShow --> ShowService
+    
+    ShowService --> IDB
+    ShowService -.-> Show

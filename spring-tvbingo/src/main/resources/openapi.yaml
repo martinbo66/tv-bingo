@@ -1,0 +1,241 @@
+openapi: 3.0.3
+info:
+  title: TV Bingo API
+  description: REST API for managing TV show bingo games
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: shows
+    description: TV Show Bingo game management
+
+paths:
+  /api/shows:
+    get:
+      tags:
+        - shows
+      summary: Get all shows
+      description: Retrieves a list of all TV show bingo games
+      operationId: getAllShows
+      responses:
+        '200':
+          description: List of shows retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Show'
+    post:
+      tags:
+        - shows
+      summary: Create a new show
+      description: Creates a new TV show bingo game
+      operationId: createShow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowRequest'
+      responses:
+        '201':
+          description: Show created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Show'
+        '400':
+          description: Invalid request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+              examples:
+                blank_title:
+                  summary: Missing show title
+                  value:
+                    showTitle: "Show title is required"
+                multiple_errors:
+                  summary: Multiple validation errors
+                  value:
+                    showTitle: "Show title is required"
+        '409':
+          description: Show title already exists (unique constraint violation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniqueConstraintError'
+              examples:
+                duplicate_title:
+                  summary: Duplicate show title
+                  value:
+                    showTitle: "Show title must be unique"
+
+  /api/shows/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID of the show
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - shows
+      summary: Get a show by ID
+      description: Retrieves a specific TV show bingo game by its ID
+      operationId: getShow
+      responses:
+        '200':
+          description: Show retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Show'
+        '404':
+          description: Show not found
+    put:
+      tags:
+        - shows
+      summary: Update a show
+      description: Updates an existing TV show bingo game
+      operationId: updateShow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowRequest'
+      responses:
+        '200':
+          description: Show updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Show'
+        '400':
+          description: Invalid request (validation error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+              examples:
+                blank_title:
+                  summary: Missing show title
+                  value:
+                    showTitle: "Show title is required"
+        '404':
+          description: Show not found
+        '409':
+          description: Show title already exists (unique constraint violation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UniqueConstraintError'
+              examples:
+                duplicate_title:
+                  summary: Duplicate show title
+                  value:
+                    showTitle: "Show title must be unique"
+    delete:
+      tags:
+        - shows
+      summary: Delete a show
+      description: Deletes a TV show bingo game
+      operationId: deleteShow
+      responses:
+        '204':
+          description: Show deleted successfully
+        '404':
+          description: Show not found
+
+components:
+  schemas:
+    Show:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          description: Unique identifier for the show
+        showTitle:
+          type: string
+          description: Title of the TV show
+        gameTitle:
+          type: string
+          description: Title of the bingo game
+        centerSquare:
+          type: string
+          description: Text for the center square of the bingo board
+        phrases:
+          type: array
+          items:
+            type: string
+          description: List of phrases for the bingo squares
+      required:
+        - showTitle
+
+    ShowRequest:
+      type: object
+      properties:
+        showTitle:
+          type: string
+          minLength: 1
+          description: |
+            Title of the TV show. Must be unique across all shows.
+            
+            **Validation Rules:**
+            - Cannot be blank or contain only whitespace
+            - Must be unique (enforced by @UniqueShowTitle custom validator)
+            
+            **Error Messages:**
+            - If blank: "Show title is required"
+            - If not unique: "Show title must be unique"
+          example: "The Office"
+        gameTitle:
+          type: string
+          description: Optional title for the bingo game variant
+          example: "Office Bingo - Season 1"
+        centerSquare:
+          type: string
+          description: Text for the center square of the bingo board (typically a free space)
+          example: "Jim pranks Dwight"
+        phrases:
+          type: array
+          items:
+            type: string
+          description: List of phrases for the bingo squares (defaults to empty array if not provided)
+          example: ["That's what she said", "Dwight eats a beet", "Michael burns his foot"]
+      required:
+        - showTitle
+
+    ValidationError:
+      type: object
+      additionalProperties:
+        type: string
+      description: Map of field names to validation error messages
+      example:
+        showTitle: "Show title must be unique"
+    
+    FieldValidationError:
+      type: object
+      additionalProperties:
+        type: string
+      description: Field-level validation errors for request validation failures
+      example:
+        showTitle: "Show title is required"
+        
+    UniqueConstraintError:
+      type: object
+      properties:
+        showTitle:
+          type: string
+          description: Error message for unique constraint violation
+          example: "Show title must be unique"
+      description: Specific error response for unique constraint violations (409 Conflict) 

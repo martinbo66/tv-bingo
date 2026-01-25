@@ -1,49 +1,90 @@
 # Agent Build Instructions
 
+## Project Overview
+
+TV Bingo is a monorepo with:
+- **spring-tvbingo/** - Spring Boot backend (Java 21)
+- **vue-tvbingo/** - Vue.js frontend (TypeScript + Vite)
+
+All commands run from the repository root using the Gradle wrapper.
+
 ## Project Setup
+
 ```bash
-# Install dependencies (example for Node.js project)
-npm install
+# Install all dependencies (backend + frontend)
+./gradlew frontendInstall
 
-# Or for Python project
-pip install -r requirements.txt
-
-# Or for Rust project  
-cargo build
+# Backend dependencies are handled automatically by Gradle
 ```
 
 ## Running Tests
+
 ```bash
-# Node.js
-npm test
+# Run all tests (backend + frontend type checking)
+./gradlew test
 
-# Python
-pytest
+# Backend tests only (15 tests with embedded Postgres)
+./gradlew backendTest
 
-# Rust
-cargo test
+# Frontend TypeScript type checking
+./gradlew frontendTypeCheck
+
+# Verbose backend test output
+./gradlew :spring-tvbingo:test --info
 ```
 
 ## Build Commands
+
 ```bash
-# Production build
-npm run build
-# or
-cargo build --release
+# Build everything (backend JAR + frontend dist)
+./gradlew build
+
+# Backend only
+./gradlew backendBuild
+
+# Frontend only
+./gradlew frontendBuild
+
+# Clean all build artifacts
+./gradlew clean
+
+# Full CI pipeline (clean + build + test)
+./gradlew ci
 ```
 
 ## Development Server
+
 ```bash
-# Start development server
-npm run dev
-# or
-cargo run
+# Start Spring Boot backend (http://localhost:8080)
+./gradlew bootRun
+
+# Start Vue.js dev server (http://localhost:5173)
+./gradlew frontendDev
+
+# Or use npm directly for frontend
+cd vue-tvbingo && npm run dev
+```
+
+## Environment Variables
+
+Backend requires PostgreSQL:
+```bash
+export TVBINGO_DB_URL=jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema
+export TVBINGO_DB_USERNAME=tvbingo_user
+export TVBINGO_DB_PASSWORD=your_password
+```
+
+Frontend (optional):
+```bash
+export VITE_API_BASE_URL=http://localhost:8080
 ```
 
 ## Key Learnings
-- Update this section when you learn new build optimizations
-- Document any gotchas or special setup requirements
-- Keep track of the fastest test/build cycle
+
+- Backend tests use embedded Postgres - no external database needed for testing
+- Frontend currently has TypeScript checking but no unit tests (Vitest planned)
+- The `idb` (IndexedDB) dependency was removed - frontend uses REST API
+- Run `./gradlew showTasks` to see all available tasks with descriptions
 
 ## Feature Development Quality Standards
 
@@ -59,10 +100,11 @@ cargo run
   - End-to-end tests for critical user workflows
 - **Coverage Validation**: Run coverage reports before marking features complete:
   ```bash
-  # Examples by language/framework
-  npm run test:coverage
-  pytest --cov=src tests/ --cov-report=term-missing
-  cargo tarpaulin --out Html
+  # Backend (JaCoCo - add to build.gradle if not present)
+  ./gradlew :spring-tvbingo:test :spring-tvbingo:jacocoTestReport
+
+  # Frontend (when Vitest is configured)
+  cd vue-tvbingo && npm run test:coverage
   ```
 - **Test Quality**: Tests must validate behavior, not just achieve coverage metrics
 - **Test Documentation**: Complex test scenarios must include comments explaining the test strategy
@@ -104,7 +146,8 @@ Before moving to the next feature, ALL changes must be:
 **ALL implementation documentation MUST remain synchronized with the codebase**:
 
 1. **Code Documentation**:
-   - Language-appropriate documentation (JSDoc, docstrings, etc.)
+   - Java: Javadoc for public APIs
+   - TypeScript: JSDoc for exported functions
    - Update inline comments when implementation changes
    - Remove outdated comments immediately
 
@@ -130,11 +173,11 @@ Before moving to the next feature, ALL changes must be:
 
 Before marking ANY feature as complete, verify:
 
-- [ ] All tests pass with appropriate framework command
+- [ ] All tests pass: `./gradlew test`
 - [ ] Code coverage meets 85% minimum threshold
 - [ ] Coverage report reviewed for meaningful test quality
-- [ ] Code formatted according to project standards
-- [ ] Type checking passes (if applicable)
+- [ ] Backend compiles: `./gradlew backendBuild`
+- [ ] Frontend type checks: `./gradlew frontendTypeCheck`
 - [ ] All changes committed with conventional commit messages
 - [ ] All commits pushed to remote repository
 - [ ] @fix_plan.md task marked as complete
@@ -143,7 +186,7 @@ Before marking ANY feature as complete, verify:
 - [ ] AGENT.md updated (if new patterns introduced)
 - [ ] Breaking changes documented
 - [ ] Features tested within Ralph loop (if applicable)
-- [ ] CI/CD pipeline passes
+- [ ] CI/CD pipeline passes: `./gradlew ci`
 
 ### Rationale
 

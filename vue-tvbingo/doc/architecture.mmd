@@ -1,0 +1,19 @@
+graph TD
+    A[App Component] --> B[Vue Router]
+    A --> C[UI Components]
+    A --> D[Pages]
+    A --> E[Services]
+    E --> F[IndexedDB]
+    
+    subgraph UI Layer
+        C
+        D
+    end
+    
+    subgraph Data Layer
+        E
+        F
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px 

@@ -1,0 +1,21 @@
+flowchart TD
+    A[Load Show Data] --> B{Has at least 24 phrases?}
+    B -->|No| C[Display Error]
+    B -->|Yes| D[Copy Phrases Array]
+    D --> E[Shuffle Phrases]
+    E --> F[Take first 24 phrases]
+    F --> G[Insert center square at position 12]
+    G --> H[Auto-select center square]
+    H --> I[Render 5x5 Bingo Grid]
+    I --> J[User clicks on cells]
+    J --> K[Toggle cell selection]
+    K --> L{Check for winning combinations}
+    L -->|Win Found| M[Display BINGO! message]
+    L -->|No Win| J
+    
+    style A fill:#4CAF50,color:#fff
+    style B fill:#FFC107,color:#000
+    style E fill:#2196F3,color:#fff
+    style G fill:#FF5722,color:#fff
+    style L fill:#9C27B0,color:#fff
+    style M fill:#F44336,color:#fff
