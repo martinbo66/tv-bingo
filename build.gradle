@@ -177,6 +177,10 @@ task ci {
     description = 'Full CI pipeline: clean, build, and test everything'
     group = 'ci'
     dependsOn clean, build, test
+    
+    // Ensure proper execution order: clean -> build -> test
+    build.mustRunAfter clean
+    test.mustRunAfter build
 }
 
 task ciBackend {
