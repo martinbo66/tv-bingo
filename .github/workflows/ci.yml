@@ -42,6 +42,25 @@ jobs:
       - name: Run CI pipeline
         run: ./gradlew ci
 
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            **/build/test-results/**/*.xml
+          check_name: Test Results
+          comment_mode: off
+
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            spring-tvbingo/build/reports/tests/
+            vue-tvbingo/coverage/
+          retention-days: 30
+
       - name: Build unified JAR
         run: ./gradlew buildUnifiedJar
 
