@@ -49,6 +49,7 @@ jobs:
         with:
           files: |
             **/build/test-results/**/*.xml
+            vue-tvbingo/test-results/**/*.xml
           check_name: Test Results
           comment_mode: off
 
@@ -59,6 +60,7 @@ jobs:
           name: test-reports
           path: |
             spring-tvbingo/build/reports/tests/
+            vue-tvbingo/test-results/
             vue-tvbingo/coverage/
           retention-days: 30
 
