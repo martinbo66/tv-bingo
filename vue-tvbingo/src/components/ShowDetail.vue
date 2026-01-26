@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import type { Show } from '../types/Show'
 import { showService } from '../services/showService'
 import { ApiError } from '../services/apiClient'
@@ -11,14 +11,20 @@ const props = defineProps<{
 
 const router = useRouter()
 const show = ref<Show | null>(null)
+const originalShow = ref<string>('')  // JSON string for comparison
 const loading = ref(true)
 const error = ref<string | null>(null)
+
+// Inline editing state
+const editingIndex = ref<number | null>(null)
+const editingValue = ref('')
 
 onMounted(async () => {
   try {
     const loadedShow = await showService.getShowById(parseInt(props.id))
     if (loadedShow) {
       show.value = { ...loadedShow }
+      originalShow.value = JSON.stringify(loadedShow)
     } else {
       error.value = 'Show not found'
       router.push('/')
@@ -29,22 +35,91 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  // Add beforeunload handler for browser navigation
+  window.addEventListener('beforeunload', handleBeforeUnload)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+})
+
+// Check if there are unsaved changes
+const hasUnsavedChanges = computed(() => {
+  if (!show.value) return false
+  return JSON.stringify(show.value) !== originalShow.value
+})
+
+// Browser beforeunload handler
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  if (hasUnsavedChanges.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+
+// Vue Router navigation guard
+onBeforeRouteLeave(() => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm('You have unsaved changes. Are you sure you want to leave?')
+    if (!answer) return false
+  }
+})
+
+// Cancel with confirmation
+const handleCancel = () => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm('You have unsaved changes. Are you sure you want to discard them?')
+    if (!answer) return
+  }
+  router.push('/')
+}
+
 const newPhrase = ref('')
 
 const phraseCount = computed(() => show.value?.phrases?.length || 0)
 
 const addPhrase = () => {
   if (!show.value || !newPhrase.value.trim()) return
-  
-  show.value.phrases.push(newPhrase.value)
+
+  show.value.phrases.push(newPhrase.value.trim())
   newPhrase.value = ''
 }
 
 const removePhrase = (index: number) => {
   if (!show.value) return
-  
+
+  // If we're editing this phrase, cancel edit first
+  if (editingIndex.value === index) {
+    cancelEdit()
+  } else if (editingIndex.value !== null && editingIndex.value > index) {
+    // Adjust editing index if removing a phrase before it
+    editingIndex.value--
+  }
+
   show.value.phrases.splice(index, 1)
+}
+
+// Inline editing functions
+const startEdit = (index: number) => {
+  if (!show.value) return
+  editingIndex.value = index
+  editingValue.value = show.value.phrases[index]
+}
+
+const saveEdit = () => {
+  if (!show.value || editingIndex.value === null) return
+
+  const trimmedValue = editingValue.value.trim()
+  if (trimmedValue) {
+    show.value.phrases[editingIndex.value] = trimmedValue
+  }
+  cancelEdit()
+}
+
+const cancelEdit = () => {
+  editingIndex.value = null
+  editingValue.value = ''
 }
 
 const formatValidationErrors = (errorData: any): string => {
@@ -129,18 +204,37 @@ const saveShow = async () => {
           <label>Phrases ({{ phraseCount }}):</label>
           <div class="phrases-list">
             <div v-for="(phrase, index) in show.phrases" :key="index" class="phrase-item">
-              <span>{{ phrase }}</span>
-              <button type="button" @click="removePhrase(index)" class="remove-btn">×</button>
+              <!-- Edit mode -->
+              <template v-if="editingIndex === index">
+                <input
+                  v-model="editingValue"
+                  class="edit-input"
+                  @keydown.enter="saveEdit"
+                  @keydown.escape="cancelEdit"
+                  @blur="saveEdit"
+                  ref="editInput"
+                  autofocus
+                />
+              </template>
+              <!-- Display mode -->
+              <template v-else>
+                <span class="phrase-text" @click="startEdit(index)" title="Click to edit">{{ phrase }}</span>
+                <button type="button" @click="removePhrase(index)" class="remove-btn">×</button>
+              </template>
             </div>
           </div>
           <div class="add-phrase">
-            <input v-model="newPhrase" placeholder="New phrase" />
+            <input
+              v-model="newPhrase"
+              placeholder="New phrase"
+              @keydown.enter.prevent="addPhrase"
+            />
             <button type="button" @click="addPhrase">Add</button>
           </div>
         </div>
 
         <div class="buttons">
-          <button type="button" @click="router.push('/')" class="cancel-btn">Cancel</button>
+          <button type="button" @click="handleCancel" class="cancel-btn">Cancel</button>
           <button type="submit" class="save-btn">Save</button>
         </div>
       </form>
@@ -264,9 +358,29 @@ input:focus {
   background-color: #333;
 }
 
-.phrase-item span {
+.phrase-text {
   flex: 1;
   color: #fff;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin: -0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.phrase-text:hover {
+  background-color: rgba(100, 108, 255, 0.15);
+}
+
+.edit-input {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  background-color: #1a1a1a;
+  border: 2px solid #646cff;
+  border-radius: 4px;
+  color: #fff;
+  font-size: inherit;
+  outline: none;
 }
 
 .remove-btn {
