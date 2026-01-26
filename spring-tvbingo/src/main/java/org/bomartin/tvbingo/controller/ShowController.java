@@ -102,11 +102,10 @@ public class ShowController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteShow(@PathVariable Long id) {
-        try {
-            showService.deleteShow(id);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Show not found with id: " + id);
-        }
+        // Verify show exists before attempting deletion
+        showService.getShow(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Show not found with id: " + id));
+        showService.deleteShow(id);
     }
 }
