@@ -102,7 +102,7 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 |--------|--------|
 | Bulk phrase operations | Pending |
 | Bulk add via textarea | Pending |
-| Form validation feedback | Pending |
+| Form validation feedback | Complete |
 | Proper label elements | Pending |
 
 ### 8. Bulk Phrase Operations
@@ -116,6 +116,20 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 ### 10. Form Validation Feedback
 
 **Goal:** Show required field indicators, character limits, and validation errors inline.
+
+**Implementation:**
+- [x] Required field indicator (*) for Show Title
+- [x] Character count and limits for all input fields
+  - Show Title: 100 characters max
+  - Game Title: 100 characters max
+  - Center Square: 50 characters max
+  - New Phrase: 100 characters max
+- [x] Real-time character counter with over-limit warning (red text)
+- [x] Field-level validation with inline error messages
+- [x] Visual error states (red border on invalid inputs)
+- [x] Validation on blur and input events
+- [x] Client-side validation before form submission
+- [x] Integration with backend validation errors
 
 ### 11. Proper Label Elements
 
@@ -136,6 +150,13 @@ Tracking progress on show editing UX improvements focused on the phrase list.
   - Alphabetical sorting: Phrases displayed in sorted order (case-insensitive)
   - Scroll to new phrase: Newly added phrases scroll into view with 2s highlight animation
   - Better display: Removed scroll container, phrases now use natural page scrolling
+- **2026-01-26:** Implemented form validation feedback (lower priority item #10):
+  - Required field indicators with red asterisk
+  - Character counters for all input fields with defined limits
+  - Real-time validation with inline error messages
+  - Visual error states (red borders and warning icons)
+  - Client-side validation before submission
+  - Integration with backend validation responses
 
 ## Files Modified
 

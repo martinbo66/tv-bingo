@@ -23,6 +23,22 @@ const editingValue = ref('')
 const highlightedPhrase = ref<string | null>(null)
 const phrasesListRef = ref<HTMLElement | null>(null)
 
+// Validation state
+interface FieldError {
+  showTitle?: string
+  gameTitle?: string
+  centerSquare?: string
+  newPhrase?: string
+}
+const fieldErrors = ref<FieldError>({})
+const touched = ref<Record<string, boolean>>({})
+
+// Character limits
+const MAX_TITLE_LENGTH = 100
+const MAX_GAME_TITLE_LENGTH = 100
+const MAX_CENTER_SQUARE_LENGTH = 50
+const MAX_PHRASE_LENGTH = 100
+
 onMounted(async () => {
   try {
     const loadedShow = await showService.getShowById(parseInt(props.id))
@@ -92,12 +108,93 @@ const sortedPhrases = computed(() => {
     .sort((a, b) => a.phrase.localeCompare(b.phrase, undefined, { sensitivity: 'base' }))
 })
 
+// Computed character counts
+const showTitleLength = computed(() => show.value?.showTitle?.length || 0)
+const gameTitleLength = computed(() => show.value?.gameTitle?.length || 0)
+const centerSquareLength = computed(() => show.value?.centerSquare?.length || 0)
+const newPhraseLength = computed(() => newPhrase.value?.length || 0)
+
+// Mark field as touched
+const markTouched = (field: string) => {
+  touched.value[field] = true
+}
+
+// Validate individual field
+const validateField = (field: keyof FieldError): string | undefined => {
+  if (!show.value) return undefined
+
+  switch (field) {
+    case 'showTitle':
+      if (!show.value.showTitle?.trim()) {
+        return 'Show title is required'
+      }
+      if (show.value.showTitle.length > MAX_TITLE_LENGTH) {
+        return `Show title must be ${MAX_TITLE_LENGTH} characters or less`
+      }
+      break
+    case 'gameTitle':
+      if (show.value.gameTitle && show.value.gameTitle.length > MAX_GAME_TITLE_LENGTH) {
+        return `Game title must be ${MAX_GAME_TITLE_LENGTH} characters or less`
+      }
+      break
+    case 'centerSquare':
+      if (show.value.centerSquare && show.value.centerSquare.length > MAX_CENTER_SQUARE_LENGTH) {
+        return `Center square must be ${MAX_CENTER_SQUARE_LENGTH} characters or less`
+      }
+      break
+    case 'newPhrase':
+      if (newPhrase.value && newPhrase.value.length > MAX_PHRASE_LENGTH) {
+        return `Phrase must be ${MAX_PHRASE_LENGTH} characters or less`
+      }
+      break
+  }
+  return undefined
+}
+
+// Validate all fields
+const validateForm = (): boolean => {
+  fieldErrors.value = {}
+
+  // Validate each field
+  const showTitleError = validateField('showTitle')
+  const gameTitleError = validateField('gameTitle')
+  const centerSquareError = validateField('centerSquare')
+
+  if (showTitleError) fieldErrors.value.showTitle = showTitleError
+  if (gameTitleError) fieldErrors.value.gameTitle = gameTitleError
+  if (centerSquareError) fieldErrors.value.centerSquare = centerSquareError
+
+  return Object.keys(fieldErrors.value).length === 0
+}
+
+// Update field errors on input
+const onFieldInput = (field: keyof FieldError) => {
+  if (touched.value[field]) {
+    const error = validateField(field)
+    if (error) {
+      fieldErrors.value[field] = error
+    } else {
+      delete fieldErrors.value[field]
+    }
+  }
+}
+
 const addPhrase = async () => {
   if (!show.value || !newPhrase.value.trim()) return
+
+  // Validate the new phrase
+  markTouched('newPhrase')
+  const error = validateField('newPhrase')
+  if (error) {
+    fieldErrors.value.newPhrase = error
+    return
+  }
 
   const trimmedPhrase = newPhrase.value.trim()
   show.value.phrases.push(trimmedPhrase)
   newPhrase.value = ''
+  delete fieldErrors.value.newPhrase
+  touched.value.newPhrase = false
 
   // Highlight the newly added phrase
   highlightedPhrase.value = trimmedPhrase
@@ -179,7 +276,20 @@ const formatValidationErrors = (errorData: any): string => {
 
 const saveShow = async () => {
   if (!show.value) return
-  
+
+  // Mark all fields as touched
+  touched.value = {
+    showTitle: true,
+    gameTitle: true,
+    centerSquare: true
+  }
+
+  // Validate form
+  if (!validateForm()) {
+    error.value = 'Please fix the validation errors before saving'
+    return
+  }
+
   error.value = null
   try {
     // Create a plain JavaScript object copy without reactive proxies
@@ -190,10 +300,18 @@ const saveShow = async () => {
   } catch (e) {
     if (e instanceof ApiError) {
       if (e.status === 400) {
-        // Validation errors - show field-specific messages
+        // Validation errors - try to extract field-specific errors
+        if (e.data && typeof e.data === 'object') {
+          Object.keys(e.data).forEach(field => {
+            if (field in fieldErrors.value) {
+              (fieldErrors.value as any)[field] = e.data[field]
+            }
+          })
+        }
         error.value = formatValidationErrors(e.data)
       } else if (e.status === 409) {
         // Conflict - duplicate show title
+        fieldErrors.value.showTitle = 'Show title must be unique'
         error.value = e.data?.showTitle || 'Show title must be unique'
       } else if (e.status === 404) {
         error.value = 'Show not found. It may have been deleted.'
@@ -229,18 +347,61 @@ const saveShow = async () => {
       
       <form v-if="show" @submit.prevent="saveShow" class="edit-form">
         <div class="form-group">
-          <label>Show Title:</label>
-          <input v-model="show.showTitle" required />
+          <div class="label-row">
+            <label>
+              Show Title:
+              <span class="required-indicator">*</span>
+            </label>
+            <span class="char-counter" :class="{ 'over-limit': showTitleLength > MAX_TITLE_LENGTH }">
+              {{ showTitleLength }} / {{ MAX_TITLE_LENGTH }}
+            </span>
+          </div>
+          <input
+            v-model="show.showTitle"
+            required
+            :class="{ 'has-error': touched.showTitle && fieldErrors.showTitle }"
+            @blur="markTouched('showTitle'); onFieldInput('showTitle')"
+            @input="onFieldInput('showTitle')"
+          />
+          <div v-if="touched.showTitle && fieldErrors.showTitle" class="field-error">
+            {{ fieldErrors.showTitle }}
+          </div>
         </div>
-        
+
         <div class="form-group">
-          <label>Game Title:</label>
-          <input v-model="show.gameTitle" />
+          <div class="label-row">
+            <label>Game Title:</label>
+            <span class="char-counter" :class="{ 'over-limit': gameTitleLength > MAX_GAME_TITLE_LENGTH }">
+              {{ gameTitleLength }} / {{ MAX_GAME_TITLE_LENGTH }}
+            </span>
+          </div>
+          <input
+            v-model="show.gameTitle"
+            :class="{ 'has-error': touched.gameTitle && fieldErrors.gameTitle }"
+            @blur="markTouched('gameTitle'); onFieldInput('gameTitle')"
+            @input="onFieldInput('gameTitle')"
+          />
+          <div v-if="touched.gameTitle && fieldErrors.gameTitle" class="field-error">
+            {{ fieldErrors.gameTitle }}
+          </div>
         </div>
-        
+
         <div class="form-group">
-          <label>Center Square:</label>
-          <input v-model="show.centerSquare" />
+          <div class="label-row">
+            <label>Center Square:</label>
+            <span class="char-counter" :class="{ 'over-limit': centerSquareLength > MAX_CENTER_SQUARE_LENGTH }">
+              {{ centerSquareLength }} / {{ MAX_CENTER_SQUARE_LENGTH }}
+            </span>
+          </div>
+          <input
+            v-model="show.centerSquare"
+            :class="{ 'has-error': touched.centerSquare && fieldErrors.centerSquare }"
+            @blur="markTouched('centerSquare'); onFieldInput('centerSquare')"
+            @input="onFieldInput('centerSquare')"
+          />
+          <div v-if="touched.centerSquare && fieldErrors.centerSquare" class="field-error">
+            {{ fieldErrors.centerSquare }}
+          </div>
         </div>
 
         <div class="form-group">
@@ -272,13 +433,27 @@ const saveShow = async () => {
               </template>
             </div>
           </div>
-          <div class="add-phrase">
-            <input
-              v-model="newPhrase"
-              placeholder="New phrase"
-              @keydown.enter.prevent="addPhrase"
-            />
-            <button type="button" @click="addPhrase">Add</button>
+          <div class="add-phrase-container">
+            <div class="label-row">
+              <label>Add New Phrase:</label>
+              <span class="char-counter" :class="{ 'over-limit': newPhraseLength > MAX_PHRASE_LENGTH }">
+                {{ newPhraseLength }} / {{ MAX_PHRASE_LENGTH }}
+              </span>
+            </div>
+            <div class="add-phrase">
+              <input
+                v-model="newPhrase"
+                placeholder="New phrase"
+                :class="{ 'has-error': touched.newPhrase && fieldErrors.newPhrase }"
+                @keydown.enter.prevent="addPhrase"
+                @blur="markTouched('newPhrase'); onFieldInput('newPhrase')"
+                @input="onFieldInput('newPhrase')"
+              />
+              <button type="button" @click="addPhrase">Add</button>
+            </div>
+            <div v-if="touched.newPhrase && fieldErrors.newPhrase" class="field-error">
+              {{ fieldErrors.newPhrase }}
+            </div>
           </div>
         </div>
 
@@ -357,14 +532,52 @@ const saveShow = async () => {
   margin-bottom: 1.5rem;
 }
 
-label {
-  display: block;
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 0.5rem;
+}
+
+label {
   color: #888;
   font-weight: 500;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.required-indicator {
+  color: #ff4444;
+  margin-left: 0.25rem;
+  font-weight: bold;
+}
+
+.char-counter {
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.char-counter.over-limit {
+  color: #ff4444;
+  font-weight: 600;
+}
+
+.field-error {
+  color: #ff4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.field-error::before {
+  content: '⚠';
+  font-size: 1rem;
 }
 
 input {
@@ -383,6 +596,15 @@ input:focus {
   outline: none;
   border-color: #646cff;
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+input.has-error {
+  border-color: #ff4444;
+}
+
+input.has-error:focus {
+  border-color: #ff4444;
+  box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
 }
 
 .phrases-list {
@@ -468,6 +690,12 @@ input:focus {
 
 .remove-btn:hover {
   background-color: rgba(255, 68, 68, 0.1);
+}
+
+.add-phrase-container {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
 }
 
 .add-phrase {
