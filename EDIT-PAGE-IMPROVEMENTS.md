@@ -51,22 +51,36 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 
 | Change | Status |
 |--------|--------|
-| Delete confirmation | Pending |
-| Drag-and-drop reordering | Pending |
-| Scroll to newly added phrase | Pending |
-| Better phrase list display | Pending |
+| Delete confirmation | Complete |
+| Phrase reordering | Complete |
+| Scroll to newly added phrase | Complete |
+| Better phrase list display | Complete |
 
 ### 4. Delete Confirmation
 
 **Goal:** Clicking × should confirm before removing, or provide an undo toast notification.
 
-### 5. Drag-and-Drop Reordering
+**Implementation:**
+- [x] Show confirmation dialog with phrase text before deletion
+- [x] Only delete if user confirms
 
-**Goal:** Allow users to reorder phrases by dragging them.
+### 5. Phrase ordering
+
+**Goal:** Sort the list of phrases alphabetically
+
+**Implementation:**
+- [x] Create computed property to sort phrases alphabetically
+- [x] Display phrases in sorted order while maintaining original indices for editing/deleting
+- [x] Case-insensitive sorting
 
 ### 6. Scroll to Newly Added Phrase
 
 **Goal:** After adding a phrase, scroll the list to show the new phrase and briefly highlight it.
+
+**Implementation:**
+- [x] Add scroll behavior to bring newly added phrase into view
+- [x] Add highlight animation (2-second pulse with theme colors)
+- [x] Find phrase in sorted list and scroll to it
 
 ### 7. Better Phrase List Display
 
@@ -74,6 +88,11 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 - Show all phrases without scroll (let page scroll naturally)
 - Multi-column layout for better scanning
 - Alphabetical sorting option
+
+**Implementation:**
+- [x] Removed fixed height constraint (200px max-height)
+- [x] Let page scroll naturally for long lists
+- [x] Combined with alphabetical sorting for better scanning
 
 ---
 
@@ -108,10 +127,15 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 
 - **2026-01-26:** Created tracking document, starting implementation
 - **2026-01-26:** Implemented all three high priority changes in ShowDetail.vue
-- **2026-01-26:** All features tested and verified working:
+- **2026-01-26:** All high priority features tested and verified working:
   - Inline editing: Click phrase → edit in place → Enter saves, Escape cancels
   - Unsaved changes: Cancel button shows confirmation dialog when changes exist
   - Enter to add: Pressing Enter in new phrase input adds the phrase
+- **2026-01-26:** Implemented all four medium priority changes:
+  - Delete confirmation: Shows dialog with phrase text before deletion
+  - Alphabetical sorting: Phrases displayed in sorted order (case-insensitive)
+  - Scroll to new phrase: Newly added phrases scroll into view with 2s highlight animation
+  - Better display: Removed scroll container, phrases now use natural page scrolling
 
 ## Files Modified
 

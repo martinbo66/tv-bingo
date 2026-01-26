@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import type { Show } from '../types/Show'
 import { showService } from '../services/showService'
@@ -18,6 +18,10 @@ const error = ref<string | null>(null)
 // Inline editing state
 const editingIndex = ref<number | null>(null)
 const editingValue = ref('')
+
+// Highlight newly added phrase
+const highlightedPhrase = ref<string | null>(null)
+const phrasesListRef = ref<HTMLElement | null>(null)
 
 onMounted(async () => {
   try {
@@ -79,15 +83,53 @@ const newPhrase = ref('')
 
 const phraseCount = computed(() => show.value?.phrases?.length || 0)
 
-const addPhrase = () => {
+// Sorted phrases for display
+const sortedPhrases = computed(() => {
+  if (!show.value?.phrases) return []
+
+  return [...show.value.phrases]
+    .map((phrase, originalIndex) => ({ phrase, originalIndex }))
+    .sort((a, b) => a.phrase.localeCompare(b.phrase, undefined, { sensitivity: 'base' }))
+})
+
+const addPhrase = async () => {
   if (!show.value || !newPhrase.value.trim()) return
 
-  show.value.phrases.push(newPhrase.value.trim())
+  const trimmedPhrase = newPhrase.value.trim()
+  show.value.phrases.push(trimmedPhrase)
   newPhrase.value = ''
+
+  // Highlight the newly added phrase
+  highlightedPhrase.value = trimmedPhrase
+
+  // Scroll to the phrase in the sorted list
+  await nextTick()
+  scrollToPhrase(trimmedPhrase)
+
+  // Remove highlight after animation
+  setTimeout(() => {
+    highlightedPhrase.value = null
+  }, 2000)
+}
+
+const scrollToPhrase = (phrase: string) => {
+  if (!phrasesListRef.value) return
+
+  const phraseElements = phrasesListRef.value.querySelectorAll('.phrase-item')
+  const sortedIndex = sortedPhrases.value.findIndex(p => p.phrase === phrase)
+
+  if (sortedIndex >= 0 && phraseElements[sortedIndex]) {
+    phraseElements[sortedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
 }
 
 const removePhrase = (index: number) => {
   if (!show.value) return
+
+  const phrase = show.value.phrases[index]
+  const confirmed = window.confirm(`Remove phrase "${phrase}"?`)
+
+  if (!confirmed) return
 
   // If we're editing this phrase, cancel edit first
   if (editingIndex.value === index) {
@@ -203,10 +245,16 @@ const saveShow = async () => {
 
         <div class="form-group">
           <label>Phrases ({{ phraseCount }}):</label>
-          <div class="phrases-list">
-            <div v-for="(phrase, index) in show.phrases" :key="index" class="phrase-item">
+          <div class="phrases-list" ref="phrasesListRef">
+            <div
+              v-for="({ phrase, originalIndex }, sortedIndex) in sortedPhrases"
+              :key="originalIndex"
+              class="phrase-item"
+              :class="{ 'phrase-highlighted': phrase === highlightedPhrase }"
+            >
+              <span class="phrase-number">{{ sortedIndex + 1 }}.</span>
               <!-- Edit mode -->
-              <template v-if="editingIndex === index">
+              <template v-if="editingIndex === originalIndex">
                 <input
                   v-model="editingValue"
                   class="edit-input"
@@ -219,8 +267,8 @@ const saveShow = async () => {
               </template>
               <!-- Display mode -->
               <template v-else>
-                <span class="phrase-text" @click="startEdit(index)" title="Click to edit">{{ phrase }}</span>
-                <button type="button" @click="removePhrase(index)" class="remove-btn">×</button>
+                <span class="phrase-text" @click="startEdit(originalIndex)" title="Click to edit">{{ phrase }}</span>
+                <button type="button" @click="removePhrase(originalIndex)" class="remove-btn">×</button>
               </template>
             </div>
           </div>
@@ -339,14 +387,13 @@ input:focus {
 
 .phrases-list {
   margin: 1rem 0;
-  max-height: 200px;
-  overflow-y: auto;
 }
 
 .phrase-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem;
   background-color: #2c2c2c;
   margin-bottom: 0.5rem;
@@ -355,8 +402,32 @@ input:focus {
   transition: background-color 0.3s ease;
 }
 
+.phrase-number {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 2rem;
+  text-align: right;
+  user-select: none;
+}
+
 .phrase-item:hover {
   background-color: #333;
+}
+
+.phrase-highlighted {
+  animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    background-color: #2c2c2c;
+    border-color: #444;
+  }
+  50% {
+    background-color: rgba(100, 108, 255, 0.2);
+    border-color: #646cff;
+  }
 }
 
 .phrase-text {
