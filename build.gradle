@@ -146,8 +146,7 @@ task build {
 task test {
     description = 'Run all tests (frontend and backend)'
     group = 'verification'
-    dependsOn backendTest, frontendTypeCheck
-    // frontendTest will be added once Vitest is configured
+    dependsOn backendTest, frontendTest, frontendTypeCheck
 }
 
 task check {
