@@ -348,7 +348,7 @@ const saveShow = async () => {
       <form v-if="show" @submit.prevent="saveShow" class="edit-form">
         <div class="form-group">
           <div class="label-row">
-            <label>
+            <label for="show-title-input">
               Show Title:
               <span class="required-indicator">*</span>
             </label>
@@ -357,49 +357,59 @@ const saveShow = async () => {
             </span>
           </div>
           <input
+            id="show-title-input"
             v-model="show.showTitle"
             required
             :class="{ 'has-error': touched.showTitle && fieldErrors.showTitle }"
             @blur="markTouched('showTitle'); onFieldInput('showTitle')"
             @input="onFieldInput('showTitle')"
+            aria-required="true"
+            aria-invalid="touched.showTitle && !!fieldErrors.showTitle"
+            aria-describedby="show-title-error"
           />
-          <div v-if="touched.showTitle && fieldErrors.showTitle" class="field-error">
+          <div v-if="touched.showTitle && fieldErrors.showTitle" id="show-title-error" class="field-error" role="alert">
             {{ fieldErrors.showTitle }}
           </div>
         </div>
 
         <div class="form-group">
           <div class="label-row">
-            <label>Game Title:</label>
+            <label for="game-title-input">Game Title:</label>
             <span class="char-counter" :class="{ 'over-limit': gameTitleLength > MAX_GAME_TITLE_LENGTH }">
               {{ gameTitleLength }} / {{ MAX_GAME_TITLE_LENGTH }}
             </span>
           </div>
           <input
+            id="game-title-input"
             v-model="show.gameTitle"
             :class="{ 'has-error': touched.gameTitle && fieldErrors.gameTitle }"
             @blur="markTouched('gameTitle'); onFieldInput('gameTitle')"
             @input="onFieldInput('gameTitle')"
+            aria-invalid="touched.gameTitle && !!fieldErrors.gameTitle"
+            aria-describedby="game-title-error"
           />
-          <div v-if="touched.gameTitle && fieldErrors.gameTitle" class="field-error">
+          <div v-if="touched.gameTitle && fieldErrors.gameTitle" id="game-title-error" class="field-error" role="alert">
             {{ fieldErrors.gameTitle }}
           </div>
         </div>
 
         <div class="form-group">
           <div class="label-row">
-            <label>Center Square:</label>
+            <label for="center-square-input">Center Square:</label>
             <span class="char-counter" :class="{ 'over-limit': centerSquareLength > MAX_CENTER_SQUARE_LENGTH }">
               {{ centerSquareLength }} / {{ MAX_CENTER_SQUARE_LENGTH }}
             </span>
           </div>
           <input
+            id="center-square-input"
             v-model="show.centerSquare"
             :class="{ 'has-error': touched.centerSquare && fieldErrors.centerSquare }"
             @blur="markTouched('centerSquare'); onFieldInput('centerSquare')"
             @input="onFieldInput('centerSquare')"
+            aria-invalid="touched.centerSquare && !!fieldErrors.centerSquare"
+            aria-describedby="center-square-error"
           />
-          <div v-if="touched.centerSquare && fieldErrors.centerSquare" class="field-error">
+          <div v-if="touched.centerSquare && fieldErrors.centerSquare" id="center-square-error" class="field-error" role="alert">
             {{ fieldErrors.centerSquare }}
           </div>
         </div>
@@ -424,42 +434,51 @@ const saveShow = async () => {
                   @blur="saveEdit"
                   ref="editInput"
                   autofocus
+                  :aria-label="`Edit phrase: ${show.phrases[originalIndex]}`"
                 />
               </template>
               <!-- Display mode -->
               <template v-else>
                 <span class="phrase-text" @click="startEdit(originalIndex)" title="Click to edit">{{ phrase }}</span>
-                <button type="button" @click="removePhrase(originalIndex)" class="remove-btn">×</button>
+                <button
+                  type="button"
+                  @click="removePhrase(originalIndex)"
+                  class="remove-btn"
+                  :aria-label="`Remove phrase: ${phrase}`"
+                >×</button>
               </template>
             </div>
           </div>
           <div class="add-phrase-container">
             <div class="label-row">
-              <label>Add New Phrase:</label>
+              <label for="new-phrase-input">Add New Phrase:</label>
               <span class="char-counter" :class="{ 'over-limit': newPhraseLength > MAX_PHRASE_LENGTH }">
                 {{ newPhraseLength }} / {{ MAX_PHRASE_LENGTH }}
               </span>
             </div>
             <div class="add-phrase">
               <input
+                id="new-phrase-input"
                 v-model="newPhrase"
                 placeholder="New phrase"
                 :class="{ 'has-error': touched.newPhrase && fieldErrors.newPhrase }"
                 @keydown.enter.prevent="addPhrase"
                 @blur="markTouched('newPhrase'); onFieldInput('newPhrase')"
                 @input="onFieldInput('newPhrase')"
+                aria-invalid="touched.newPhrase && !!fieldErrors.newPhrase"
+                aria-describedby="new-phrase-error"
               />
-              <button type="button" @click="addPhrase">Add</button>
+              <button type="button" @click="addPhrase" aria-label="Add new phrase">Add</button>
             </div>
-            <div v-if="touched.newPhrase && fieldErrors.newPhrase" class="field-error">
+            <div v-if="touched.newPhrase && fieldErrors.newPhrase" id="new-phrase-error" class="field-error" role="alert">
               {{ fieldErrors.newPhrase }}
             </div>
           </div>
         </div>
 
         <div class="buttons">
-          <button type="button" @click="handleCancel" class="cancel-btn">Cancel</button>
-          <button type="submit" class="save-btn">Save</button>
+          <button type="button" @click="handleCancel" class="cancel-btn" aria-label="Cancel editing and return to show list">Cancel</button>
+          <button type="submit" class="save-btn" aria-label="Save show changes">Save</button>
         </div>
       </form>
     </div>

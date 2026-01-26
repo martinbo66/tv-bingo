@@ -103,7 +103,7 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 | Bulk phrase operations | Pending |
 | Bulk add via textarea | Pending |
 | Form validation feedback | Complete |
-| Proper label elements | Pending |
+| Proper label elements | Complete |
 
 ### 8. Bulk Phrase Operations
 
@@ -135,6 +135,18 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 
 **Goal:** Associate `<label>` elements with inputs for better accessibility.
 
+**Implementation:**
+- [x] Added `for` attributes to all label elements
+- [x] Added unique `id` attributes to all input fields
+- [x] Labels now clickable to focus associated inputs
+- [x] Added ARIA attributes for better screen reader support:
+  - `aria-required` for required fields
+  - `aria-invalid` for fields with validation errors
+  - `aria-describedby` to link inputs with error messages
+  - `aria-label` for buttons without visible text context
+- [x] Added `role="alert"` to error messages for live announcements
+- [x] Improved semantic HTML for better accessibility
+
 ---
 
 ## Progress Log
@@ -157,6 +169,12 @@ Tracking progress on show editing UX improvements focused on the phrase list.
   - Visual error states (red borders and warning icons)
   - Client-side validation before submission
   - Integration with backend validation responses
+- **2026-01-26:** Implemented proper label elements for accessibility (lower priority item #11):
+  - Associated all labels with inputs using for/id attributes
+  - Added comprehensive ARIA attributes for screen readers
+  - Labels are now clickable to focus inputs
+  - Error messages announced to screen readers via role="alert"
+  - Descriptive aria-labels for buttons
 
 ## Files Modified
 
