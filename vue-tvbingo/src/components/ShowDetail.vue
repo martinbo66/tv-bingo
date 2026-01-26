@@ -143,6 +143,7 @@ const saveShow = async () => {
     // Create a plain JavaScript object copy without reactive proxies
     const plainShow = JSON.parse(JSON.stringify(show.value))
     await showService.updateShow(plainShow)
+    originalShow.value = JSON.stringify(show.value)  // Mark as clean after save
     router.push('/')
   } catch (e) {
     if (e instanceof ApiError) {
