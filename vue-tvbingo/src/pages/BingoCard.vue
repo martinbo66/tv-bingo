@@ -13,6 +13,7 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const selectedCells = ref<Set<number>>(new Set())
 const winningLines: Ref<number[][]> = ref([])
+const showBingoAlert = ref(false)
 
 const generateBingoGrid = (phrases: string[], centerSquare?: string) => {
   // Create a copy of phrases array to shuffle
@@ -56,9 +57,19 @@ const checkWinningCombinations = () => {
     [4, 8, 12, 16, 20]
   ]
 
+  const previousWinCount = winningLines.value.length
   winningLines.value = possibleWins.filter((line: Array<number>) =>
     line.every(cell => selectedCells.value.has(cell))
   )
+
+  // Show alert when a new bingo is achieved
+  if (winningLines.value.length > previousWinCount) {
+    showBingoAlert.value = true
+  }
+}
+
+const dismissBingoAlert = () => {
+  showBingoAlert.value = false
 }
 
 const toggleCell = (index: number) => {
@@ -79,9 +90,18 @@ const navigateToShowDetail = () => {
 const regenerateBingoCard = () => {
   if (show.value) {
     selectedCells.value.clear()
+    showBingoAlert.value = false
     bingoGrid.value = generateBingoGrid(show.value.phrases, show.value.centerSquare)
     checkWinningCombinations()
   }
+}
+
+const resetMarks = () => {
+  selectedCells.value.clear()
+  // Re-select the center square (free space)
+  selectedCells.value.add(12)
+  showBingoAlert.value = false
+  checkWinningCombinations()
 }
 
 const loadShow = async () => {
@@ -147,9 +167,14 @@ onMounted(() => {
             <span class="back-icon">←</span> Back to Shows
           </router-link>
           <h2 @click="navigateToShowDetail" class="show-title">{{ show.showTitle }}</h2>
-          <button @click="regenerateBingoCard" class="regenerate-button">
-            <span class="regen-icon">🔄</span> Regenerate Bingo Card
-          </button>
+          <div class="button-row">
+            <button @click="regenerateBingoCard" class="regenerate-button">
+              <span class="regen-icon">🔄</span> Regenerate
+            </button>
+            <button @click="resetMarks" class="reset-button">
+              <span class="reset-icon">🧹</span> Reset Marks
+            </button>
+          </div>
         </div>
         <div style="height: 2.2rem;"></div>
         <div class="bingo-grid card-shadow">
@@ -162,8 +187,10 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="hasBingo" class="bingo-alert">
+        <div v-if="showBingoAlert" class="bingo-alert" @click="dismissBingoAlert">
+          <button class="bingo-close" @click.stop="dismissBingoAlert" aria-label="Close">&times;</button>
           <div class="bingo-text">BINGO!</div>
+          <div class="bingo-dismiss-hint">Click anywhere to dismiss</div>
         </div>
       </div>
     </div>
@@ -232,13 +259,20 @@ onMounted(() => {
   text-decoration: underline;
 }
 
+.button-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .regenerate-button {
   background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
-  padding: 0.75em 2em;
-  font-size: 1.1rem;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
@@ -255,7 +289,33 @@ onMounted(() => {
 }
 
 .regen-icon {
-  font-size: 1.2em;
+  font-size: 1.1em;
+}
+
+.reset-button {
+  background: linear-gradient(90deg, #f57c00 0%, #ffb74d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 124, 0, 0.15);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.reset-button:hover {
+  background: linear-gradient(90deg, #e65100 0%, #ffa726 100%);
+  box-shadow: 0 4px 16px rgba(245, 124, 0, 0.25);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.reset-icon {
+  font-size: 1.1em;
 }
 
 .back-link {
@@ -435,6 +495,31 @@ onMounted(() => {
   letter-spacing: 0.08em;
 }
 
+.bingo-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.bingo-close:hover {
+  opacity: 1;
+}
+
+.bingo-dismiss-hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 400;
+}
+
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -491,16 +576,18 @@ onMounted(() => {
     max-width: 99vw;
     min-height: 220px;
     max-height: 99vw;
-    gap: 8px;
-    padding: 8px;
+    gap: 6px;
+    padding: 6px;
   }
   .bingo-cell {
     min-width: 32px;
     min-height: 32px;
-    max-width: 60px;
-    max-height: 60px;
-    font-size: 0.92rem;
-    padding: 0.2em;
+    max-width: 70px;
+    max-height: 70px;
+    font-size: 0.75rem;
+    padding: 0.15em;
+    border-radius: 12px;
+    border-width: 2px;
   }
   .bingo-logo {
     width: 80px;
@@ -509,13 +596,61 @@ onMounted(() => {
   .show-title {
     font-size: 1.3rem;
   }
-  .regenerate-button {
-    font-size: 0.95rem;
-    padding: 0.5em 1.2em;
+  .button-row {
+    gap: 0.5rem;
+  }
+  .regenerate-button,
+  .reset-button {
+    font-size: 0.9rem;
+    padding: 0.5em 1em;
   }
   .back-link {
     font-size: 0.95rem;
     padding: 0.3em 0.8em 0.3em 1.2em;
+  }
+}
+
+/* Small phones (iPhone SE, etc.) */
+@media (max-width: 400px) {
+  .bingo-card-page {
+    padding: 0.5rem;
+  }
+  .bingo-grid {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 16px;
+  }
+  .bingo-cell {
+    font-size: 0.65rem;
+    padding: 0.1em;
+    border-radius: 8px;
+    border-width: 1.5px;
+    line-height: 1.2;
+  }
+  .show-title {
+    font-size: 1.1rem;
+  }
+  .button-row {
+    gap: 0.4rem;
+  }
+  .regenerate-button,
+  .reset-button {
+    font-size: 0.8rem;
+    padding: 0.4em 0.8em;
+  }
+  .regen-icon,
+  .reset-icon {
+    font-size: 1em;
+  }
+  .back-link {
+    font-size: 0.85rem;
+    padding: 0.25em 0.6em 0.25em 1em;
+  }
+  .bingo-alert {
+    padding: 1.5rem 2rem;
+  }
+  .bingo-text {
+    font-size: 2.5rem;
   }
 }
 </style>

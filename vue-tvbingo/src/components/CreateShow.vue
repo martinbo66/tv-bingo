@@ -170,9 +170,13 @@ button {
 }
 
 .add-phrase {
-  background-color: #42b883;
+  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
   color: white;
   margin-top: 0.5rem;
+}
+
+.add-phrase:hover:not(:disabled) {
+  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
 }
 
 .submit-button {
