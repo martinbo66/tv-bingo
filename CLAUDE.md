@@ -220,32 +220,6 @@ git commit --amend -m "Clean commit message here"
 git push --force-with-lease
 ```
 
-### Creating Pull Requests
-
-**CRITICAL:** Always use a temporary file to avoid ANSI escape sequences and control characters in PR descriptions.
-
-**DO:**
-```bash
-# Create a clean text file with the PR body
-cat > pr-body.txt << 'EOF'
-## Summary
-Your PR description here...
-EOF
-
-# Create PR using the file
-gh pr create --title "PR title" --body-file pr-body.txt
-
-# Clean up
-rm pr-body.txt
-```
-
-**DON'T:**
-- ❌ Use command substitution with heredoc: `--body "$(cat <<'EOF' ...)"`
-- ❌ Use `--body` with multiline strings directly
-- ❌ Pipe content into gh pr create
-
-**Why:** Command substitution captures shell output including ANSI color codes and escape sequences, resulting in unreadable PR descriptions with control characters.
-
 ## Product Requirements
 
 See `specs/tv-bingo-prd.md` for:
