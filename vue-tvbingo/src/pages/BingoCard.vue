@@ -13,6 +13,17 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const selectedCells = ref<Set<number>>(new Set())
 const winningLines: Ref<number[][]> = ref([])
+const showBingoAlert = ref(false)
+const showRegenerateConfirm = ref(false)
+
+// Check if any cells are marked beyond the center square
+const hasMarkedCells = computed(() => {
+  // More than 1 selected (center is always selected) means user has marked cells
+  return selectedCells.value.size > 1
+})
+
+// Count of marked cells for display
+const markedCount = computed(() => selectedCells.value.size)
 
 const generateBingoGrid = (phrases: string[], centerSquare?: string) => {
   // Create a copy of phrases array to shuffle
@@ -56,9 +67,24 @@ const checkWinningCombinations = () => {
     [4, 8, 12, 16, 20]
   ]
 
+  const previousWinCount = winningLines.value.length
   winningLines.value = possibleWins.filter((line: Array<number>) =>
     line.every(cell => selectedCells.value.has(cell))
   )
+
+  // Show alert when a new bingo is achieved
+  if (winningLines.value.length > previousWinCount) {
+    showBingoAlert.value = true
+  }
+  
+  // Clear alert when no winning lines remain
+  if (winningLines.value.length === 0) {
+    showBingoAlert.value = false
+  }
+}
+
+const dismissBingoAlert = () => {
+  showBingoAlert.value = false
 }
 
 const toggleCell = (index: number) => {
@@ -77,11 +103,38 @@ const navigateToShowDetail = () => {
 }
 
 const regenerateBingoCard = () => {
+  // If user has marked cells, show confirmation dialog first
+  if (hasMarkedCells.value) {
+    showRegenerateConfirm.value = true
+    return
+  }
+  doRegenerate()
+}
+
+const doRegenerate = () => {
   if (show.value) {
     selectedCells.value.clear()
+    showBingoAlert.value = false
+    showRegenerateConfirm.value = false
     bingoGrid.value = generateBingoGrid(show.value.phrases, show.value.centerSquare)
     checkWinningCombinations()
   }
+}
+
+const cancelRegenerate = () => {
+  showRegenerateConfirm.value = false
+}
+
+const resetMarks = () => {
+  selectedCells.value.clear()
+  // Re-select the center square (free space)
+  selectedCells.value.add(12)
+  showBingoAlert.value = false
+  checkWinningCombinations()
+}
+
+const printBingoCard = () => {
+  window.print()
 }
 
 const loadShow = async () => {
@@ -120,8 +173,6 @@ const isWinningCell = computed(() => (index: number) =>
   winningLines.value.some(line => line.includes(index))
 )
 
-const hasBingo = computed(() => winningLines.value.length > 0)
-
 onMounted(() => {
   loadShow()
 })
@@ -147,23 +198,56 @@ onMounted(() => {
             <span class="back-icon">←</span> Back to Shows
           </router-link>
           <h2 @click="navigateToShowDetail" class="show-title">{{ show.showTitle }}</h2>
-          <button @click="regenerateBingoCard" class="regenerate-button">
-            <span class="regen-icon">🔄</span> Regenerate Bingo Card
-          </button>
+          <div class="button-row">
+            <button @click="regenerateBingoCard" class="regenerate-button">
+              <span class="regen-icon">🔄</span> Regenerate
+            </button>
+            <button @click="resetMarks" class="reset-button">
+              <span class="reset-icon">🧹</span> Reset Marks
+            </button>
+            <button @click="printBingoCard" class="print-button">
+              <span class="print-icon">🖨️</span> Print
+            </button>
+          </div>
+          <div class="marked-counter" aria-live="polite" aria-atomic="true">{{ markedCount }}/25 marked</div>
         </div>
-        <div style="height: 2.2rem;"></div>
+        <div style="height: 1rem;"></div>
         <div class="bingo-grid card-shadow">
-          <div v-for="(phrase, index) in bingoGrid" :key="index" class="bingo-cell" :class="{
-            'selected': selectedCells.has(index),
-            'center-square': index === 12,
-            'winning': isWinningCell(index)
-            }" @click="toggleCell(index)">
+          <div v-for="(phrase, index) in bingoGrid" :key="index"
+            class="bingo-cell"
+            :class="{
+              'selected': selectedCells.has(index),
+              'center-square': index === 12,
+              'winning': isWinningCell(index),
+              'long-text': phrase.length > 20
+            }"
+            role="button"
+            :aria-pressed="selectedCells.has(index)"
+            :aria-label="`${phrase}${selectedCells.has(index) ? ', marked' : ', not marked'}${index === 12 ? ', center square' : ''}`"
+            :title="phrase"
+            tabindex="0"
+            @click="toggleCell(index)"
+            @keydown.enter.prevent="toggleCell(index)"
+            @keydown.space.prevent="toggleCell(index)">
             {{ phrase }}
           </div>
         </div>
 
-        <div v-if="hasBingo" class="bingo-alert">
+        <div v-if="showBingoAlert" class="bingo-alert" role="alert" aria-live="assertive" @click="dismissBingoAlert">
+          <button class="bingo-close" @click.stop="dismissBingoAlert" aria-label="Close">&times;</button>
           <div class="bingo-text">BINGO!</div>
+          <div class="bingo-dismiss-hint">Click anywhere to dismiss</div>
+        </div>
+
+        <div v-if="showRegenerateConfirm" class="confirm-overlay" @click="cancelRegenerate">
+          <div class="confirm-dialog" @click.stop>
+            <div class="confirm-title">Regenerate Card?</div>
+            <div class="confirm-message">This will shuffle all phrases and clear your marked squares.</div>
+            <div class="confirm-buttons">
+              <button @click="cancelRegenerate" class="confirm-cancel">Cancel</button>
+              <button @click="doRegenerate" class="confirm-proceed">Regenerate</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -232,13 +316,20 @@ onMounted(() => {
   text-decoration: underline;
 }
 
+.button-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .regenerate-button {
   background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
-  padding: 0.75em 2em;
-  font-size: 1.1rem;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
@@ -255,7 +346,66 @@ onMounted(() => {
 }
 
 .regen-icon {
-  font-size: 1.2em;
+  font-size: 1.1em;
+}
+
+.reset-button {
+  background: linear-gradient(90deg, #f57c00 0%, #ffb74d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(245, 124, 0, 0.15);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.reset-button:hover {
+  background: linear-gradient(90deg, #e65100 0%, #ffa726 100%);
+  box-shadow: 0 4px 16px rgba(245, 124, 0, 0.25);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.reset-icon {
+  font-size: 1.1em;
+}
+
+.print-button {
+  background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.print-button:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.25);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.print-icon {
+  font-size: 1.1em;
+}
+
+.marked-counter {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  color: #a084ca;
+  font-weight: 500;
 }
 
 .back-link {
@@ -320,23 +470,31 @@ onMounted(() => {
   border-radius: 18px;
   box-shadow: 0 2px 8px #a084ca22;
   border: 2.5px solid #c0ffc0;
-  padding: 0.5em;
+  padding: 0.4em;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-family: 'Inter', 'Roboto', 'Open Sans', sans-serif;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   color: #222;
   cursor: pointer;
   user-select: none;
   transition: all 0.18s cubic-bezier(.4, 2, .6, 1), box-shadow 0.2s;
   position: relative;
+  overflow: hidden;
   overflow-wrap: break-word;
   word-break: break-word;
+  hyphens: auto;
   opacity: 0.98;
+}
+
+.bingo-cell.long-text {
+  font-size: 0.85rem;
+  letter-spacing: 0;
 }
 
 .bingo-cell:hover {
@@ -344,6 +502,17 @@ onMounted(() => {
   transform: scale(1.06);
   box-shadow: 0 4px 16px #a084ca44;
   z-index: 2;
+}
+
+.bingo-cell:focus {
+  outline: 3px solid #a084ca;
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+.bingo-cell:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease-out;
 }
 
 .bingo-cell.selected {
@@ -435,6 +604,107 @@ onMounted(() => {
   letter-spacing: 0.08em;
 }
 
+.bingo-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.bingo-close:hover {
+  opacity: 1;
+}
+
+.bingo-dismiss-hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 400;
+}
+
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-dialog {
+  background: linear-gradient(135deg, #2d183a 0%, #1a1024 100%);
+  border: 1px solid #a084ca44;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-message {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-cancel {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #666;
+  background: transparent;
+  color: #ccc;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #888;
+}
+
+.confirm-proceed {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+  color: #fff;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-proceed:hover {
+  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
+  transform: translateY(-1px);
+}
+
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -491,16 +761,18 @@ onMounted(() => {
     max-width: 99vw;
     min-height: 220px;
     max-height: 99vw;
-    gap: 8px;
-    padding: 8px;
+    gap: 6px;
+    padding: 6px;
   }
   .bingo-cell {
     min-width: 32px;
     min-height: 32px;
-    max-width: 60px;
-    max-height: 60px;
-    font-size: 0.92rem;
-    padding: 0.2em;
+    max-width: 70px;
+    max-height: 70px;
+    font-size: 0.75rem;
+    padding: 0.15em;
+    border-radius: 12px;
+    border-width: 2px;
   }
   .bingo-logo {
     width: 80px;
@@ -509,13 +781,117 @@ onMounted(() => {
   .show-title {
     font-size: 1.3rem;
   }
-  .regenerate-button {
-    font-size: 0.95rem;
-    padding: 0.5em 1.2em;
+  .button-row {
+    gap: 0.5rem;
+  }
+  .regenerate-button,
+  .reset-button,
+  .print-button {
+    font-size: 0.9rem;
+    padding: 0.5em 1em;
   }
   .back-link {
     font-size: 0.95rem;
     padding: 0.3em 0.8em 0.3em 1.2em;
+  }
+}
+
+/* Small phones (iPhone SE, etc.) */
+@media (max-width: 400px) {
+  .bingo-card-page {
+    padding: 0.5rem;
+  }
+  .bingo-grid {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 16px;
+  }
+  .bingo-cell {
+    font-size: 0.65rem;
+    padding: 0.1em;
+    border-radius: 8px;
+    border-width: 1.5px;
+    line-height: 1.2;
+  }
+  .show-title {
+    font-size: 1.1rem;
+  }
+  .button-row {
+    gap: 0.4rem;
+  }
+  .regenerate-button,
+  .reset-button,
+  .print-button {
+    font-size: 0.8rem;
+    padding: 0.4em 0.8em;
+  }
+  .regen-icon,
+  .reset-icon,
+  .print-icon {
+    font-size: 1em;
+  }
+  .back-link {
+    font-size: 0.85rem;
+    padding: 0.25em 0.6em 0.25em 1em;
+  }
+  .bingo-alert {
+    padding: 1.5rem 2rem;
+  }
+  .bingo-text {
+    font-size: 2.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .bingo-bg {
+    background: white !important;
+  }
+
+  .button-row,
+  .back-link,
+  .marked-counter,
+  .bingo-alert,
+  .confirm-overlay {
+    display: none !important;
+  }
+
+  .bingo-card-page {
+    background: white;
+  }
+
+  .show-title {
+    color: black;
+    text-shadow: none;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .bingo-grid {
+    box-shadow: none;
+    border: 2px solid #000;
+    page-break-inside: avoid;
+  }
+
+  .bingo-cell {
+    background: white !important;
+    color: black !important;
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .bingo-cell.selected {
+    background: #f0f0f0 !important;
+  }
+
+  .bingo-cell.center-square {
+    background: #e8e8e8 !important;
+    color: black !important;
+    border: 2px solid #000 !important;
+  }
+
+  .bingo-cell:hover {
+    transform: none !important;
   }
 }
 </style>

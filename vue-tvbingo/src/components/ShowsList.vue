@@ -138,12 +138,13 @@ onMounted(() => {
     font-weight: bold;
     padding: 10px 20px;
     border-radius: 25px;
-    background-color: #4CAF50;
+    background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
     transition: all 0.3s ease;
 }
 
 .add-show-link:hover {
+    background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
