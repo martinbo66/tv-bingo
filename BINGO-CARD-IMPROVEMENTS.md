@@ -103,35 +103,41 @@ Tracking progress on bingo card UX improvements.
 
 | Change | Status |
 |--------|--------|
-| Accessibility improvements | Pending |
-| Click animation feedback | Pending |
-| Print functionality | Pending |
+| Accessibility improvements | Complete |
+| Click animation feedback | Complete |
+| Print functionality | Complete |
 
 ### 7. Accessibility Improvements
 
 **Goal:** Make the bingo card usable with screen readers.
 
 **Implementation:**
-- [ ] Add aria-label to each cell with phrase and state
-- [ ] Add aria-pressed for toggle state
-- [ ] Announce bingo win to screen readers
-- [ ] Keyboard navigation support
+- [x] Add aria-label to each cell with phrase and state
+- [x] Add aria-pressed for toggle state
+- [x] Announce bingo win to screen readers (role="alert", aria-live="assertive")
+- [x] Keyboard navigation support (Tab, Enter, Space)
+- [x] Visible focus indicators (purple outline)
+- [x] role="button" for cells
+- [x] aria-live for marked counter
 
 ### 8. Click Animation Feedback
 
 **Goal:** Provide satisfying visual feedback when marking cells.
 
 **Implementation:**
-- [ ] Brief scale or ripple animation on click
-- [ ] Subtle color transition
+- [x] Brief scale animation on click (:active state scales to 0.95)
+- [x] Fast transition (0.1s ease-out) for tactile feedback
 
 ### 9. Print Functionality
 
 **Goal:** Allow users to print bingo cards for offline play.
 
 **Implementation:**
-- [ ] Add print button
-- [ ] Print-friendly CSS (hide buttons, white background)
+- [x] Add print button with blue gradient styling
+- [x] Print-friendly CSS (@media print rules)
+- [x] Hide buttons, counters, and navigation in print mode
+- [x] White background with black borders for clean printing
+- [x] Preserve title and bingo grid layout
 
 ---
 
@@ -146,6 +152,10 @@ Tracking progress on bingo card UX improvements.
   - Confirm regenerate: Shows dialog when marks exist before regenerating
   - Marked cell counter: Displays "X/25 marked" with real-time updates
   - Text overflow: Smaller font for long phrases, hover tooltips, better wrapping
+- **2026-01-27:** Completed all three lower priority changes:
+  - Accessibility: Added ARIA labels, keyboard navigation, focus indicators, screen reader support
+  - Click animation: Added :active state scaling (0.95) with 0.1s transition
+  - Print functionality: Added print button with blue gradient, @media print styles for clean printing
 
 ## Files Modified
 

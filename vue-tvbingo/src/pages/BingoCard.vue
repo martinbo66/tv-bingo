@@ -128,6 +128,10 @@ const resetMarks = () => {
   checkWinningCombinations()
 }
 
+const printBingoCard = () => {
+  window.print()
+}
+
 const loadShow = async () => {
   const showId = parseInt(route.params.id as string)
   if (isNaN(showId)) {
@@ -198,8 +202,11 @@ onMounted(() => {
             <button @click="resetMarks" class="reset-button">
               <span class="reset-icon">🧹</span> Reset Marks
             </button>
+            <button @click="printBingoCard" class="print-button">
+              <span class="print-icon">🖨️</span> Print
+            </button>
           </div>
-          <div class="marked-counter">{{ markedCount }}/25 marked</div>
+          <div class="marked-counter" aria-live="polite" aria-atomic="true">{{ markedCount }}/25 marked</div>
         </div>
         <div style="height: 1rem;"></div>
         <div class="bingo-grid card-shadow">
@@ -211,13 +218,19 @@ onMounted(() => {
               'winning': isWinningCell(index),
               'long-text': phrase.length > 20
             }"
+            role="button"
+            :aria-pressed="selectedCells.has(index)"
+            :aria-label="`${phrase}${selectedCells.has(index) ? ', marked' : ', not marked'}${index === 12 ? ', center square' : ''}`"
             :title="phrase"
-            @click="toggleCell(index)">
+            tabindex="0"
+            @click="toggleCell(index)"
+            @keydown.enter.prevent="toggleCell(index)"
+            @keydown.space.prevent="toggleCell(index)">
             {{ phrase }}
           </div>
         </div>
 
-        <div v-if="showBingoAlert" class="bingo-alert" @click="dismissBingoAlert">
+        <div v-if="showBingoAlert" class="bingo-alert" role="alert" aria-live="assertive" @click="dismissBingoAlert">
           <button class="bingo-close" @click.stop="dismissBingoAlert" aria-label="Close">&times;</button>
           <div class="bingo-text">BINGO!</div>
           <div class="bingo-dismiss-hint">Click anywhere to dismiss</div>
@@ -359,6 +372,32 @@ onMounted(() => {
   font-size: 1.1em;
 }
 
+.print-button {
+  background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.print-button:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.25);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.print-icon {
+  font-size: 1.1em;
+}
+
 .marked-counter {
   margin-top: 0.75rem;
   font-size: 0.95rem;
@@ -460,6 +499,17 @@ onMounted(() => {
   transform: scale(1.06);
   box-shadow: 0 4px 16px #a084ca44;
   z-index: 2;
+}
+
+.bingo-cell:focus {
+  outline: 3px solid #a084ca;
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+.bingo-cell:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease-out;
 }
 
 .bingo-cell.selected {
@@ -732,7 +782,8 @@ onMounted(() => {
     gap: 0.5rem;
   }
   .regenerate-button,
-  .reset-button {
+  .reset-button,
+  .print-button {
     font-size: 0.9rem;
     padding: 0.5em 1em;
   }
@@ -766,12 +817,14 @@ onMounted(() => {
     gap: 0.4rem;
   }
   .regenerate-button,
-  .reset-button {
+  .reset-button,
+  .print-button {
     font-size: 0.8rem;
     padding: 0.4em 0.8em;
   }
   .regen-icon,
-  .reset-icon {
+  .reset-icon,
+  .print-icon {
     font-size: 1em;
   }
   .back-link {
@@ -783,6 +836,59 @@ onMounted(() => {
   }
   .bingo-text {
     font-size: 2.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .bingo-bg {
+    background: white !important;
+  }
+
+  .button-row,
+  .back-link,
+  .marked-counter,
+  .bingo-alert,
+  .confirm-overlay {
+    display: none !important;
+  }
+
+  .bingo-card-page {
+    background: white;
+  }
+
+  .show-title {
+    color: black;
+    text-shadow: none;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .bingo-grid {
+    box-shadow: none;
+    border: 2px solid #000;
+    page-break-inside: avoid;
+  }
+
+  .bingo-cell {
+    background: white !important;
+    color: black !important;
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .bingo-cell.selected {
+    background: #f0f0f0 !important;
+  }
+
+  .bingo-cell.center-square {
+    background: #e8e8e8 !important;
+    color: black !important;
+    border: 2px solid #000 !important;
+  }
+
+  .bingo-cell:hover {
+    transform: none !important;
   }
 }
 </style>
