@@ -67,35 +67,35 @@ Tracking progress on bingo card UX improvements.
 
 | Change | Status |
 |--------|--------|
-| Confirm regenerate when marks exist | Pending |
-| Marked cell counter | Pending |
-| Better text overflow handling | Pending |
+| Confirm regenerate when marks exist | Complete |
+| Marked cell counter | Complete |
+| Better text overflow handling | Complete |
 
 ### 4. Confirm Regenerate When Marks Exist
 
 **Goal:** Prevent accidental loss of game progress.
 
 **Implementation:**
-- [ ] Show confirmation dialog if any cells are marked (beyond center)
-- [ ] "Are you sure? This will shuffle all phrases and clear your progress."
-- [ ] Skip confirmation if no cells marked
+- [x] Show confirmation dialog if any cells are marked (beyond center)
+- [x] "This will shuffle all phrases and clear your marked squares."
+- [x] Skip confirmation if no cells marked
 
 ### 5. Marked Cell Counter
 
 **Goal:** Show progress toward bingo.
 
 **Implementation:**
-- [ ] Display "X/25 marked" or "X marked" somewhere on the page
-- [ ] Update in real-time as cells are toggled
+- [x] Display "X/25 marked" below the buttons
+- [x] Update in real-time as cells are toggled
 
 ### 6. Better Text Overflow Handling
 
 **Goal:** Handle long phrases gracefully without breaking layout.
 
 **Implementation:**
-- [ ] Truncate very long text with ellipsis
-- [ ] Show full text on hover (tooltip)
-- [ ] Consider smaller font for longer phrases
+- [x] Added overflow:hidden and hyphens for cleaner text wrapping
+- [x] Show full text on hover (native title tooltip)
+- [x] Smaller font (0.85rem) for phrases > 20 characters
 
 ---
 
@@ -142,6 +142,10 @@ Tracking progress on bingo card UX improvements.
   - Mobile responsiveness: Improved CSS for 375px-400px screens with smaller fonts/gaps
   - Dismiss BINGO alert: Added close button (X) and click-anywhere-to-dismiss
   - Reset Marks button: Added orange button to clear marks without regenerating card
+- **2026-01-27:** Completed all three medium priority changes:
+  - Confirm regenerate: Shows dialog when marks exist before regenerating
+  - Marked cell counter: Displays "X/25 marked" with real-time updates
+  - Text overflow: Smaller font for long phrases, hover tooltips, better wrapping
 
 ## Files Modified
 

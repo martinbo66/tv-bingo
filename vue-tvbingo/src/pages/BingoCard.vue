@@ -14,6 +14,16 @@ const error = ref<string | null>(null)
 const selectedCells = ref<Set<number>>(new Set())
 const winningLines: Ref<number[][]> = ref([])
 const showBingoAlert = ref(false)
+const showRegenerateConfirm = ref(false)
+
+// Check if any cells are marked beyond the center square
+const hasMarkedCells = computed(() => {
+  // More than 1 selected (center is always selected) means user has marked cells
+  return selectedCells.value.size > 1
+})
+
+// Count of marked cells for display
+const markedCount = computed(() => selectedCells.value.size)
 
 const generateBingoGrid = (phrases: string[], centerSquare?: string) => {
   // Create a copy of phrases array to shuffle
@@ -88,12 +98,26 @@ const navigateToShowDetail = () => {
 }
 
 const regenerateBingoCard = () => {
+  // If user has marked cells, show confirmation dialog first
+  if (hasMarkedCells.value) {
+    showRegenerateConfirm.value = true
+    return
+  }
+  doRegenerate()
+}
+
+const doRegenerate = () => {
   if (show.value) {
     selectedCells.value.clear()
     showBingoAlert.value = false
+    showRegenerateConfirm.value = false
     bingoGrid.value = generateBingoGrid(show.value.phrases, show.value.centerSquare)
     checkWinningCombinations()
   }
+}
+
+const cancelRegenerate = () => {
+  showRegenerateConfirm.value = false
 }
 
 const resetMarks = () => {
@@ -175,14 +199,20 @@ onMounted(() => {
               <span class="reset-icon">🧹</span> Reset Marks
             </button>
           </div>
+          <div class="marked-counter">{{ markedCount }}/25 marked</div>
         </div>
-        <div style="height: 2.2rem;"></div>
+        <div style="height: 1rem;"></div>
         <div class="bingo-grid card-shadow">
-          <div v-for="(phrase, index) in bingoGrid" :key="index" class="bingo-cell" :class="{
-            'selected': selectedCells.has(index),
-            'center-square': index === 12,
-            'winning': isWinningCell(index)
-            }" @click="toggleCell(index)">
+          <div v-for="(phrase, index) in bingoGrid" :key="index"
+            class="bingo-cell"
+            :class="{
+              'selected': selectedCells.has(index),
+              'center-square': index === 12,
+              'winning': isWinningCell(index),
+              'long-text': phrase.length > 20
+            }"
+            :title="phrase"
+            @click="toggleCell(index)">
             {{ phrase }}
           </div>
         </div>
@@ -191,6 +221,17 @@ onMounted(() => {
           <button class="bingo-close" @click.stop="dismissBingoAlert" aria-label="Close">&times;</button>
           <div class="bingo-text">BINGO!</div>
           <div class="bingo-dismiss-hint">Click anywhere to dismiss</div>
+        </div>
+
+        <div v-if="showRegenerateConfirm" class="confirm-overlay" @click="cancelRegenerate">
+          <div class="confirm-dialog" @click.stop>
+            <div class="confirm-title">Regenerate Card?</div>
+            <div class="confirm-message">This will shuffle all phrases and clear your marked squares.</div>
+            <div class="confirm-buttons">
+              <button @click="cancelRegenerate" class="confirm-cancel">Cancel</button>
+              <button @click="doRegenerate" class="confirm-proceed">Regenerate</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -318,6 +359,13 @@ onMounted(() => {
   font-size: 1.1em;
 }
 
+.marked-counter {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  color: #a084ca;
+  font-weight: 500;
+}
+
 .back-link {
   background: rgba(160, 132, 202, 0.18);
   color: #fff;
@@ -380,23 +428,31 @@ onMounted(() => {
   border-radius: 18px;
   box-shadow: 0 2px 8px #a084ca22;
   border: 2.5px solid #c0ffc0;
-  padding: 0.5em;
+  padding: 0.4em;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-family: 'Inter', 'Roboto', 'Open Sans', sans-serif;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
   color: #222;
   cursor: pointer;
   user-select: none;
   transition: all 0.18s cubic-bezier(.4, 2, .6, 1), box-shadow 0.2s;
   position: relative;
+  overflow: hidden;
   overflow-wrap: break-word;
   word-break: break-word;
+  hyphens: auto;
   opacity: 0.98;
+}
+
+.bingo-cell.long-text {
+  font-size: 0.85rem;
+  letter-spacing: 0;
 }
 
 .bingo-cell:hover {
@@ -518,6 +574,82 @@ onMounted(() => {
   font-size: 0.9rem;
   color: #aaa;
   font-weight: 400;
+}
+
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.confirm-dialog {
+  background: linear-gradient(135deg, #2d183a 0%, #1a1024 100%);
+  border: 1px solid #a084ca44;
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-message {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-cancel {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #666;
+  background: transparent;
+  color: #ccc;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #888;
+}
+
+.confirm-proceed {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+  color: #fff;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-proceed:hover {
+  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
+  transform: translateY(-1px);
 }
 
 @keyframes pulse {
