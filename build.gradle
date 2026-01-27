@@ -72,7 +72,6 @@ task frontendTest(type: Exec) {
     }
 
     commandLine npmCommand, 'run', 'test', '--', '--run'
-    ignoreExitValue = true
 }
 
 task frontendLint(type: Exec) {
@@ -91,7 +90,6 @@ task frontendLint(type: Exec) {
     }
 
     commandLine npmCommand, 'run', 'lint'
-    ignoreExitValue = true
 }
 
 task frontendDev(type: Exec) {
