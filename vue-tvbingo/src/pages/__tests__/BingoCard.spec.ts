@@ -278,9 +278,14 @@ describe('BingoCard.vue', () => {
       expect(cells[0].classes()).toContain('selected')
       expect(cells[1].classes()).toContain('selected')
 
-      // Regenerate
+      // Regenerate - this will show confirmation dialog
       const regenButton = wrapper.find('.regenerate-button')
       await regenButton.trigger('click')
+      await nextTick()
+
+      // Confirm the regeneration in the dialog
+      const confirmButton = wrapper.find('.confirm-proceed')
+      await confirmButton.trigger('click')
       await nextTick()
 
       // All cells should be unselected except center

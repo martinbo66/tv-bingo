@@ -76,6 +76,11 @@ const checkWinningCombinations = () => {
   if (winningLines.value.length > previousWinCount) {
     showBingoAlert.value = true
   }
+  
+  // Clear alert when no winning lines remain
+  if (winningLines.value.length === 0) {
+    showBingoAlert.value = false
+  }
 }
 
 const dismissBingoAlert = () => {
