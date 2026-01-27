@@ -14,8 +14,8 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ## Overview
 
-**Total Tests:** 129 (as of Phase 2.3 Backend + Phase 3 Frontend)
-- **Backend:** 63 tests (JUnit 5 + Spring Boot Test)
+**Total Tests:** 139 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend)
+- **Backend:** 73 tests (JUnit 5 + Spring Boot Test)
 - **Frontend:** 66 tests (Vitest + Vue Test Utils)
 
 **Testing Goal:** Achieve comprehensive coverage across all layers:
@@ -309,21 +309,22 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 **Priority:** LOWER
 **Estimated Tests:** ~20-40 tests
+**Status:** Backend Phase 4.1 Complete (10/10 tests) ✅
 
 #### 4.1 Edge Case Tests
 
-**Backend Edge Cases** (~10 tests)
+**Backend Edge Cases** (10 tests) ✅
 - `spring-tvbingo/src/test/java/org/bomartin/tvbingo/EdgeCaseTests.java`
-  - [ ] Very long show titles (>255 chars)
-  - [ ] Very long phrases (>1000 chars)
-  - [ ] Large phrase arrays (100+ items)
-  - [ ] Special characters in titles (emoji, unicode)
-  - [ ] SQL injection attempts in inputs
-  - [ ] XSS attempts in phrase content
-  - [ ] Null vs empty string handling
-  - [ ] Whitespace-only titles
-  - [ ] Concurrent duplicate title checks
-  - [ ] Race condition in phrase updates
+  - ✅ Very long show titles (>255 chars)
+  - ✅ Very long phrases (>1000 chars)
+  - ✅ Large phrase arrays (100+ items)
+  - ✅ Special characters in titles (emoji, unicode)
+  - ✅ SQL injection attempts in inputs
+  - ✅ XSS attempts in phrase content
+  - ✅ Null vs empty string handling
+  - ✅ Whitespace-only titles
+  - ✅ Concurrent duplicate title checks
+  - ✅ Race condition in phrase updates
 
 **Frontend Edge Cases** (~8 tests)
 - Various spec files
@@ -422,6 +423,7 @@ cd vue-tvbingo && npm run test:coverage
 ```
 spring-tvbingo/src/test/java/org/bomartin/tvbingo/
 ├── TvbingoApplicationTests.java         # Context load test
+├── EdgeCaseTests.java                   # ✅ CREATED (Phase 4.1)
 ├── controller/
 │   └── ShowControllerIntegrationTest.java  # ✅ REST API tests
 ├── service/
@@ -524,11 +526,11 @@ e2e/
 - **Status:** COMPLETE (28/28 tests)
 
 ### Phase 4: Advanced & E2E 🔄
-- [ ] Backend edge cases (~10)
+- [x] Backend edge cases (10) ✅
 - [ ] Frontend edge cases (~8)
 - [ ] E2E workflows (~10-15)
 - [ ] Performance tests (~5)
-- **Status:** NOT STARTED (0/33 tests)
+- **Status:** Backend Phase 4.1 COMPLETE (10/33 tests)
 
 ---
 
@@ -563,5 +565,5 @@ This document should be updated:
 - After each phase completion
 - When gaps are discovered
 
-**Last Updated:** 2026-01-27 (Phase 2.3 Backend Complete, Phase 3 Complete)
+**Last Updated:** 2026-01-27 (Phase 2.3 Backend + Phase 3 + Phase 4.1 Backend Complete)
 **Next Review:** After Phase 2 Frontend completion (2.1, 2.2)
