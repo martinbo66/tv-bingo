@@ -264,7 +264,7 @@ class ApiContractTest {
     @Test
     void notFoundResponseStructure() throws Exception {
         // Given: A non-existent show ID
-        Long nonExistentId = 99999L;
+        long nonExistentId = 99999L;
 
         // When: Fetching non-existent show
         MvcResult result = mockMvc.perform(get("/api/shows/" + nonExistentId))
