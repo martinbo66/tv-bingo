@@ -14,8 +14,8 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ## Overview
 
-**Total Tests:** 116 (as of Phase 3)
-- **Backend:** 50 tests (JUnit 5 + Spring Boot Test)
+**Total Tests:** 129 (as of Phase 2.3 Backend + Phase 3 Frontend)
+- **Backend:** 63 tests (JUnit 5 + Spring Boot Test)
 - **Frontend:** 66 tests (Vitest + Vue Test Utils)
 
 **Testing Goal:** Achieve comprehensive coverage across all layers:
@@ -161,6 +161,7 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 **Priority:** HIGH
 **Estimated Tests:** ~60-80 tests
+**Status:** Backend Phase 2.3 Complete (13/13 tests) ✅
 
 #### 2.1 Vue Component Tests
 
@@ -225,26 +226,26 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
   - [ ] Empty results handling
   - [ ] API URL construction (env var)
 
-#### 2.3 Backend Exception Handling Tests
+#### 2.3 Backend Exception Handling Tests ✅
 
-**GlobalExceptionHandler.java** (~8 tests)
+**GlobalExceptionHandler.java** (8 tests) ✅
 - `spring-tvbingo/src/test/java/org/bomartin/tvbingo/exception/GlobalExceptionHandlerTest.java`
-  - [ ] handleValidationExceptions() formats errors to map
-  - [ ] Validation exception returns 400 status
-  - [ ] Multiple validation errors in response
-  - [ ] handleIllegalArgumentException() returns proper error
-  - [ ] IllegalArgumentException returns 400 status
-  - [ ] handleDataIntegrityViolation() handles DB constraints
-  - [ ] DataIntegrityViolation returns 409 status
-  - [ ] Error response format consistency
+  - ✅ handleValidationExceptions() formats errors to map
+  - ✅ Validation exception returns 400 status
+  - ✅ Multiple validation errors in response
+  - ✅ handleIllegalArgumentException() returns proper error
+  - ✅ IllegalArgumentException returns 400 status
+  - ✅ handleDataIntegrityViolation() handles DB constraints
+  - ✅ DataIntegrityViolation returns 409 status
+  - ✅ Error response format consistency
 
-**UniqueShowTitleValidator.java** (~5 tests)
+**UniqueShowTitleValidator.java** (5 tests) ✅
 - `spring-tvbingo/src/test/java/org/bomartin/tvbingo/validation/UniqueShowTitleValidatorTest.java`
-  - [ ] isValid() returns true for unique title
-  - [ ] isValid() returns false for duplicate title
-  - [ ] isValid() returns true for null title (handled by @NotBlank)
-  - [ ] Validator uses repository to check existence
-  - [ ] Validator handles database errors gracefully
+  - ✅ isValid() returns true for unique title
+  - ✅ isValid() returns false for duplicate title
+  - ✅ isValid() returns true for null title (handled by @NotBlank)
+  - ✅ Validator uses repository to check existence
+  - ✅ Validator handles database errors gracefully
 
 ---
 
@@ -427,9 +428,9 @@ spring-tvbingo/src/test/java/org/bomartin/tvbingo/
 │   └── ShowServiceTest.java             # ✅ Unit tests
 ├── repository/
 │   └── ShowRepositoryTest.java          # ✅ Integration tests
-├── exception/                            # ❌ TO CREATE
+├── exception/                            # ✅ CREATED (Phase 2.3)
 │   └── GlobalExceptionHandlerTest.java
-├── validation/                           # ❌ TO CREATE
+├── validation/                           # ✅ CREATED (Phase 2.3)
 │   └── UniqueShowTitleValidatorTest.java
 ├── config/                               # ✅ CREATED (Phase 3)
 │   ├── WebConfigTest.java
@@ -511,9 +512,9 @@ e2e/
 - [ ] CreateShow.vue tests (~10)
 - [ ] ShowDetail.vue tests (~15)
 - [ ] showService.ts tests (~10)
-- [ ] GlobalExceptionHandler tests (~8)
-- [ ] UniqueShowTitleValidator tests (~5)
-- **Status:** NOT STARTED (0/60 tests)
+- [x] GlobalExceptionHandler tests (8) ✅
+- [x] UniqueShowTitleValidator tests (5) ✅
+- **Status:** Backend Phase 2.3 COMPLETE (13/60 tests)
 
 ### Phase 3: Configuration & Integration ✅
 - [x] WebConfig tests (5)
@@ -562,5 +563,5 @@ This document should be updated:
 - After each phase completion
 - When gaps are discovered
 
-**Last Updated:** 2026-01-27 (Phase 3 Complete)
-**Next Review:** After Phase 2 completion
+**Last Updated:** 2026-01-27 (Phase 2.3 Backend Complete, Phase 3 Complete)
+**Next Review:** After Phase 2 Frontend completion (2.1, 2.2)
