@@ -168,8 +168,6 @@ const isWinningCell = computed(() => (index: number) =>
   winningLines.value.some(line => line.includes(index))
 )
 
-const hasBingo = computed(() => winningLines.value.length > 0)
-
 onMounted(() => {
   loadShow()
 })

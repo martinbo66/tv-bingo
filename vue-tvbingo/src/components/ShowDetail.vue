@@ -446,7 +446,7 @@ const saveShow = async () => {
             @blur="markTouched('showTitle'); onFieldInput('showTitle')"
             @input="onFieldInput('showTitle')"
             aria-required="true"
-            aria-invalid="touched.showTitle && !!fieldErrors.showTitle"
+            :aria-invalid="touched.showTitle && !!fieldErrors.showTitle"
             aria-describedby="show-title-error"
           />
           <div v-if="touched.showTitle && fieldErrors.showTitle" id="show-title-error" class="field-error" role="alert">
@@ -467,7 +467,7 @@ const saveShow = async () => {
             :class="{ 'has-error': touched.gameTitle && fieldErrors.gameTitle }"
             @blur="markTouched('gameTitle'); onFieldInput('gameTitle')"
             @input="onFieldInput('gameTitle')"
-            aria-invalid="touched.gameTitle && !!fieldErrors.gameTitle"
+            :aria-invalid="touched.gameTitle && !!fieldErrors.gameTitle"
             aria-describedby="game-title-error"
           />
           <div v-if="touched.gameTitle && fieldErrors.gameTitle" id="game-title-error" class="field-error" role="alert">
@@ -488,7 +488,7 @@ const saveShow = async () => {
             :class="{ 'has-error': touched.centerSquare && fieldErrors.centerSquare }"
             @blur="markTouched('centerSquare'); onFieldInput('centerSquare')"
             @input="onFieldInput('centerSquare')"
-            aria-invalid="touched.centerSquare && !!fieldErrors.centerSquare"
+            :aria-invalid="touched.centerSquare && !!fieldErrors.centerSquare"
             aria-describedby="center-square-error"
           />
           <div v-if="touched.centerSquare && fieldErrors.centerSquare" id="center-square-error" class="field-error" role="alert">
@@ -513,7 +513,7 @@ const saveShow = async () => {
                 @keydown.enter.prevent="addPhrase"
                 @blur="markTouched('newPhrase'); onFieldInput('newPhrase')"
                 @input="onFieldInput('newPhrase')"
-                aria-invalid="touched.newPhrase && !!fieldErrors.newPhrase"
+                :aria-invalid="touched.newPhrase && !!fieldErrors.newPhrase"
                 aria-describedby="new-phrase-error"
               />
               <button type="button" @click="addPhrase" aria-label="Add new phrase">Add</button>
