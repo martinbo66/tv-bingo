@@ -18,6 +18,7 @@ jobs:
       packages: write
       checks: write
       security-events: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
