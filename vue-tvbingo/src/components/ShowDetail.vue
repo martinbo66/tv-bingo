@@ -96,6 +96,9 @@ const handleCancel = () => {
 }
 
 const newPhrase = ref('')
+const bulkPhrases = ref('')
+const showBulkAdd = ref(false)
+const bulkAddErrors = ref<string[]>([])
 
 const phraseCount = computed(() => show.value?.phrases?.length || 0)
 
@@ -113,6 +116,27 @@ const showTitleLength = computed(() => show.value?.showTitle?.length || 0)
 const gameTitleLength = computed(() => show.value?.gameTitle?.length || 0)
 const centerSquareLength = computed(() => show.value?.centerSquare?.length || 0)
 const newPhraseLength = computed(() => newPhrase.value?.length || 0)
+const bulkPhrasesLineCount = computed(() => {
+  if (!bulkPhrases.value.trim()) return 0
+  return bulkPhrases.value.trim().split('\n').filter(line => line.trim()).length
+})
+
+// Compute line numbers for textarea
+const textareaLineNumbers = computed(() => {
+  const lines = bulkPhrases.value.split('\n')
+  return lines.map((_, index) => index + 1)
+})
+
+// Ref for syncing scroll between line numbers and textarea
+const bulkTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const lineNumbersRef = ref<HTMLDivElement | null>(null)
+
+// Sync scroll between textarea and line numbers
+const syncScroll = () => {
+  if (bulkTextareaRef.value && lineNumbersRef.value) {
+    lineNumbersRef.value.scrollTop = bulkTextareaRef.value.scrollTop
+  }
+}
 
 // Mark field as touched
 const markTouched = (field: string) => {
@@ -207,6 +231,64 @@ const addPhrase = async () => {
   setTimeout(() => {
     highlightedPhrase.value = null
   }, 2000)
+}
+
+const addBulkPhrases = async () => {
+  if (!show.value || !bulkPhrases.value.trim()) return
+
+  bulkAddErrors.value = []
+  const lines = bulkPhrases.value.split('\n')
+  const addedPhrases: string[] = []
+  const errors: string[] = []
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim()
+
+    // Skip empty lines
+    if (!trimmed) return
+
+    // Validate length
+    if (trimmed.length > MAX_PHRASE_LENGTH) {
+      errors.push(`Line ${index + 1}: "${trimmed.substring(0, 30)}..." is too long (${trimmed.length}/${MAX_PHRASE_LENGTH} chars)`)
+      return
+    }
+
+    // Add valid phrases
+    addedPhrases.push(trimmed)
+  })
+
+  // Add all valid phrases
+  if (addedPhrases.length > 0) {
+    show.value.phrases.push(...addedPhrases)
+
+    // Highlight the first added phrase and scroll to it
+    if (addedPhrases.length > 0) {
+      highlightedPhrase.value = addedPhrases[0]
+      await nextTick()
+      scrollToPhrase(addedPhrases[0])
+
+      setTimeout(() => {
+        highlightedPhrase.value = null
+      }, 2000)
+    }
+  }
+
+  // Show errors if any
+  if (errors.length > 0) {
+    bulkAddErrors.value = errors
+  } else {
+    // Clear textarea on success
+    bulkPhrases.value = ''
+    showBulkAdd.value = false
+  }
+}
+
+const toggleBulkAdd = () => {
+  showBulkAdd.value = !showBulkAdd.value
+  bulkAddErrors.value = []
+  if (!showBulkAdd.value) {
+    bulkPhrases.value = ''
+  }
 }
 
 const scrollToPhrase = (phrase: string) => {
@@ -414,6 +496,98 @@ const saveShow = async () => {
           </div>
         </div>
 
+        <!-- Add Phrase Section -->
+        <div class="form-group add-phrase-section">
+            <div class="label-row">
+              <label for="new-phrase-input">Add New Phrase:</label>
+              <span class="char-counter" :class="{ 'over-limit': newPhraseLength > MAX_PHRASE_LENGTH }">
+                {{ newPhraseLength }} / {{ MAX_PHRASE_LENGTH }}
+              </span>
+            </div>
+            <div class="add-phrase">
+              <input
+                id="new-phrase-input"
+                v-model="newPhrase"
+                placeholder="New phrase"
+                :class="{ 'has-error': touched.newPhrase && fieldErrors.newPhrase }"
+                @keydown.enter.prevent="addPhrase"
+                @blur="markTouched('newPhrase'); onFieldInput('newPhrase')"
+                @input="onFieldInput('newPhrase')"
+                aria-invalid="touched.newPhrase && !!fieldErrors.newPhrase"
+                aria-describedby="new-phrase-error"
+              />
+              <button type="button" @click="addPhrase" aria-label="Add new phrase">Add</button>
+            </div>
+            <div v-if="touched.newPhrase && fieldErrors.newPhrase" id="new-phrase-error" class="field-error" role="alert">
+              {{ fieldErrors.newPhrase }}
+            </div>
+
+            <!-- Bulk Add Section -->
+            <div class="bulk-add-section">
+              <button
+                type="button"
+                @click="toggleBulkAdd"
+                class="bulk-toggle-btn"
+                aria-label="Toggle bulk add mode"
+              >
+                {{ showBulkAdd ? '− Hide Bulk Add' : '+ Bulk Add' }}
+              </button>
+
+              <div v-if="showBulkAdd" class="bulk-add-container">
+                <div class="label-row">
+                  <label for="bulk-phrases-input">Paste Phrases (one per line):</label>
+                  <span class="char-counter">
+                    {{ bulkPhrasesLineCount }} {{ bulkPhrasesLineCount === 1 ? 'phrase' : 'phrases' }}
+                  </span>
+                </div>
+                <div class="textarea-with-lines">
+                  <div class="line-numbers" ref="lineNumbersRef" aria-hidden="true">
+                    <div v-for="lineNum in textareaLineNumbers" :key="lineNum" class="line-number">
+                      {{ lineNum }}
+                    </div>
+                  </div>
+                  <textarea
+                    id="bulk-phrases-input"
+                    ref="bulkTextareaRef"
+                    v-model="bulkPhrases"
+                    placeholder="Paste multiple phrases here, one per line..."
+                    rows="8"
+                    aria-describedby="bulk-add-help"
+                    @scroll="syncScroll"
+                  ></textarea>
+                </div>
+                <div id="bulk-add-help" class="help-text">
+                  Paste or type multiple phrases, one per line. Empty lines will be skipped. Max {{ MAX_PHRASE_LENGTH }} characters per phrase.
+                </div>
+                <div v-if="bulkAddErrors.length > 0" class="bulk-errors">
+                  <div class="field-error" role="alert" v-for="(error, index) in bulkAddErrors" :key="index">
+                    {{ error }}
+                  </div>
+                </div>
+                <div class="bulk-actions">
+                  <button
+                    type="button"
+                    @click="toggleBulkAdd"
+                    class="cancel-bulk-btn"
+                    aria-label="Cancel bulk add"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    @click="addBulkPhrases"
+                    class="add-bulk-btn"
+                    :disabled="!bulkPhrases.trim()"
+                    aria-label="Add all phrases"
+                  >
+                    Add All ({{ bulkPhrasesLineCount }})
+                  </button>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <!-- Phrases List Section -->
         <div class="form-group">
           <label>Phrases ({{ phraseCount }}):</label>
           <div class="phrases-list" ref="phrasesListRef">
@@ -447,31 +621,6 @@ const saveShow = async () => {
                   :aria-label="`Remove phrase: ${phrase}`"
                 >×</button>
               </template>
-            </div>
-          </div>
-          <div class="add-phrase-container">
-            <div class="label-row">
-              <label for="new-phrase-input">Add New Phrase:</label>
-              <span class="char-counter" :class="{ 'over-limit': newPhraseLength > MAX_PHRASE_LENGTH }">
-                {{ newPhraseLength }} / {{ MAX_PHRASE_LENGTH }}
-              </span>
-            </div>
-            <div class="add-phrase">
-              <input
-                id="new-phrase-input"
-                v-model="newPhrase"
-                placeholder="New phrase"
-                :class="{ 'has-error': touched.newPhrase && fieldErrors.newPhrase }"
-                @keydown.enter.prevent="addPhrase"
-                @blur="markTouched('newPhrase'); onFieldInput('newPhrase')"
-                @input="onFieldInput('newPhrase')"
-                aria-invalid="touched.newPhrase && !!fieldErrors.newPhrase"
-                aria-describedby="new-phrase-error"
-              />
-              <button type="button" @click="addPhrase" aria-label="Add new phrase">Add</button>
-            </div>
-            <div v-if="touched.newPhrase && fieldErrors.newPhrase" id="new-phrase-error" class="field-error" role="alert">
-              {{ fieldErrors.newPhrase }}
             </div>
           </div>
         </div>
@@ -711,10 +860,8 @@ input.has-error:focus {
   background-color: rgba(255, 68, 68, 0.1);
 }
 
-.add-phrase-container {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #333;
+.add-phrase-section {
+  /* No special styling needed - uses standard form-group styles */
 }
 
 .add-phrase {
@@ -741,6 +888,154 @@ input.has-error:focus {
 
 .add-phrase button:hover {
   background-color: #535bf2;
+}
+
+.bulk-add-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.bulk-toggle-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2c2c2c;
+  color: #888;
+  border: 1px solid #444;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.bulk-toggle-btn:hover {
+  background-color: #333;
+  color: #aaa;
+  border-color: #555;
+}
+
+.bulk-add-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #222;
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+
+.textarea-with-lines {
+  display: flex;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background-color: #2c2c2c;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.textarea-with-lines:focus-within {
+  border-color: #646cff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.line-numbers {
+  padding: 0.75rem 0.5rem 0.75rem 0.75rem;
+  background-color: #222;
+  color: #666;
+  font-size: 0.95rem;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.5;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+  border-right: 1px solid #444;
+  min-width: 2.5rem;
+}
+
+.line-number {
+  height: 1.5em;
+  white-space: nowrap;
+}
+
+textarea {
+  flex: 1;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: 'Courier New', Courier, monospace;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.5;
+  outline: none;
+}
+
+textarea::placeholder {
+  font-family: inherit;
+}
+
+.help-text {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+.bulk-errors {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.bulk-errors .field-error {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  justify-content: flex-end;
+}
+
+.cancel-bulk-btn,
+.add-bulk-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-bulk-btn {
+  background-color: #444;
+  color: white;
+}
+
+.cancel-bulk-btn:hover {
+  background-color: #555;
+}
+
+.add-bulk-btn {
+  background-color: #646cff;
+  color: white;
+}
+
+.add-bulk-btn:hover:not(:disabled) {
+  background-color: #535bf2;
+}
+
+.add-bulk-btn:disabled {
+  background-color: #333;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .buttons {

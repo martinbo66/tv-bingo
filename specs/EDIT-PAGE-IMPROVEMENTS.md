@@ -100,8 +100,8 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 
 | Change | Status |
 |--------|--------|
-| Bulk phrase operations | Pending |
-| Bulk add via textarea | Pending |
+| Bulk phrase operations | Not planned |
+| Bulk add via textarea | Complete |
 | Form validation feedback | Complete |
 | Proper label elements | Complete |
 
@@ -112,6 +112,16 @@ Tracking progress on show editing UX improvements focused on the phrase list.
 ### 9. Bulk Add via Textarea
 
 **Goal:** Allow pasting multiple phrases (one per line) to add many at once.
+
+**Implementation:**
+- [x] Toggle button to show/hide bulk add interface
+- [x] Textarea for entering multiple phrases (one per line)
+- [x] Line counter showing how many phrases will be added
+- [x] Validation for each phrase (max length)
+- [x] Skip empty lines automatically
+- [x] Show detailed error messages for invalid phrases
+- [x] Highlight first added phrase and scroll to it
+- [x] Clear textarea and hide interface on successful add
 
 ### 10. Form Validation Feedback
 
@@ -175,6 +185,14 @@ Tracking progress on show editing UX improvements focused on the phrase list.
   - Labels are now clickable to focus inputs
   - Error messages announced to screen readers via role="alert"
   - Descriptive aria-labels for buttons
+- **2026-01-27:** Implemented bulk add via textarea (lower priority item #9):
+  - Toggle button to show/hide bulk add interface
+  - Textarea for pasting multiple phrases (one per line)
+  - Real-time line counter showing number of phrases to add
+  - Automatic validation with detailed error messages for invalid lines
+  - Empty lines are automatically skipped
+  - First added phrase is highlighted and scrolled into view
+  - Clean UX with cancel and add all buttons
 
 ## Files Modified
 
