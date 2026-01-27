@@ -18,6 +18,7 @@ jobs:
       packages: write
       checks: write
       security-events: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -73,6 +74,27 @@ jobs:
             vue-tvbingo/test-results/
             vue-tvbingo/coverage/
           retention-days: 30
+
+      - name: Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: |
+            spring-tvbingo/build/reports/jacoco/
+          retention-days: 30
+
+      - name: Add Coverage PR Comment
+        uses: madrapps/jacoco-report@v1.6.1
+        if: github.event_name == 'pull_request'
+        with:
+          paths: |
+            ${{ github.workspace }}/spring-tvbingo/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
+          title: '📊 Code Coverage Report'
+          update-comment: true
 
       - name: Build unified JAR
         run: ./gradlew buildUnifiedJar

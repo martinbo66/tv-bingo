@@ -125,6 +125,12 @@ task backendTest {
     dependsOn ':spring-tvbingo:test'
 }
 
+task backendCoverage {
+    description = 'Generate backend code coverage report'
+    group = 'backend'
+    dependsOn ':spring-tvbingo:jacocoTestReport'
+}
+
 task backendClean {
     description = 'Clean backend build artifacts'
     group = 'backend'
@@ -145,6 +151,19 @@ task test {
     description = 'Run all tests (frontend and backend)'
     group = 'verification'
     dependsOn backendTest, frontendTest, frontendTypeCheck
+}
+
+task coverage {
+    description = 'Generate code coverage reports for all projects'
+    group = 'verification'
+    dependsOn backendCoverage
+    
+    doLast {
+        println "\n" + "=" * 80
+        println "Coverage reports generated:"
+        println "  Backend: file://${projectDir}/spring-tvbingo/build/reports/jacoco/test/html/index.html"
+        println "=" * 80
+    }
 }
 
 task check {
@@ -171,19 +190,20 @@ task bootRun {
 // ============================================================================
 
 task ci {
-    description = 'Full CI pipeline: clean, build, and test everything'
+    description = 'Full CI pipeline: clean, build, test, and coverage'
     group = 'ci'
-    dependsOn clean, build, test
+    dependsOn clean, build, test, coverage
     
-    // Ensure proper execution order: clean -> build -> test
+    // Ensure proper execution order: clean -> build -> test -> coverage
     build.mustRunAfter clean
     test.mustRunAfter build
+    coverage.mustRunAfter test
 }
 
 task ciBackend {
     description = 'CI pipeline for backend only'
     group = 'ci'
-    dependsOn ':spring-tvbingo:clean', ':spring-tvbingo:build', ':spring-tvbingo:test'
+    dependsOn ':spring-tvbingo:clean', ':spring-tvbingo:build', ':spring-tvbingo:test', ':spring-tvbingo:jacocoTestReport'
 }
 
 task ciFrontend {
@@ -458,9 +478,10 @@ task showTasks {
 ║   ./gradlew ci         Full CI pipeline (clean + build + test)                 ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ BACKEND (Spring Boot)                                                          ║
-║   ./gradlew bootRun       Run the Spring Boot application                      ║
-║   ./gradlew backendBuild  Build backend only                                   ║
-║   ./gradlew backendTest   Run backend tests only                               ║
+║   ./gradlew bootRun          Run the Spring Boot application                   ║
+║   ./gradlew backendBuild     Build backend only                                ║
+║   ./gradlew backendTest      Run backend tests only                            ║
+║   ./gradlew backendCoverage  Generate code coverage report                     ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ FRONTEND (Vue.js)                                                              ║
 ║   ./gradlew frontendDev      Start Vite dev server                             ║
