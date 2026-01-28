@@ -14,9 +14,9 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ## Overview
 
-**Total Tests:** 164 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance + Phase 4.1 Frontend)
-- **Backend:** 78 tests (JUnit 5 + Spring Boot Test)
-- **Frontend:** 86 tests (Vitest + Vue Test Utils)
+**Total Tests:** 213 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance + Phase 4.1 Frontend)
+- **Backend:** 81 tests (JUnit 5 + Spring Boot Test)
+- **Frontend:** 132 tests (Vitest + Vue Test Utils)
 
 **Testing Goal:** Achieve comprehensive coverage across all layers:
 - Unit tests for business logic
@@ -322,9 +322,9 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 **Priority:** LOWER
 **Estimated Tests:** ~20-40 tests
-**Status:** Backend Phase 4.1 Complete (10/10 tests) ✅, Phase 4.3 Complete (5/5 tests) ✅
+**Status:** Phase 4.1 Complete (30/30 tests) ✅, Phase 4.3 Complete (5/5 tests) ✅
 
-#### 4.1 Edge Case Tests
+#### 4.1 Edge Case Tests ✅ COMPLETE
 
 **Backend Edge Cases** (10 tests) ✅
 - `spring-tvbingo/src/test/java/org/bomartin/tvbingo/EdgeCaseTests.java`
@@ -597,10 +597,10 @@ e2e/
 
 ### Phase 4: Advanced & E2E 🔄
 - [x] Backend edge cases (10) ✅
-- [ ] Frontend edge cases (~8)
+- [x] Frontend edge cases (20) ✅
 - [ ] E2E workflows (~10-15)
 - [x] Performance tests (5) ✅
-- **Status:** Backend Phase 4.1 & 4.3 COMPLETE (15/33 tests)
+- **Status:** Phase 4.1 & 4.3 COMPLETE (35/45 tests)
 
 ---
 
@@ -635,5 +635,5 @@ This document should be updated:
 - After each phase completion
 - When gaps are discovered
 
-**Last Updated:** 2026-01-27 (Phase 2.3 Backend + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance Complete)
-**Next Review:** After Phase 2 Frontend completion (2.1, 2.2)
+**Last Updated:** 2026-01-28 (Phase 2.3 + Phase 3 + Phase 4.1 Complete + Phase 4.3 Complete)
+**Next Review:** After Phase 4.2 E2E tests
