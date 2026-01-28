@@ -95,21 +95,22 @@ class EdgeCaseTests {
     }
 
     @Test
-    void createShow_WithVeryLongPhrases_ShouldHandleAppropriately() throws Exception {
-        // Given - phrases with 1500 characters each
+    void createShow_WithVeryLongPhrases_ShouldRejectWithValidation() throws Exception {
+        // Given - phrases with 1500 characters each (way over 50 char limit)
         String veryLongPhrase1 = "Long phrase 1: " + "X".repeat(1500);
         String veryLongPhrase2 = "Long phrase 2: " + "Y".repeat(1500);
-        
+
         ShowRequest request = new ShowRequest();
         request.setShowTitle(generateUniqueTitle("Long Phrases Show"));
         request.setGameTitle("Test Game");
         request.setPhrases(Arrays.asList(veryLongPhrase1, veryLongPhrase2));
 
-        // When & Then - Should handle or reject gracefully
+        // When & Then - Should reject due to phrase length validation
         mockMvc.perform(post("/api/shows")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(statusIsOneOf(201, 400, 409, 500));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists());
     }
 
     @Test

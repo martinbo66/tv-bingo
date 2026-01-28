@@ -16,8 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
@@ -401,5 +401,150 @@ class ShowControllerIntegrationTest {
         // Subsequent GET should return 404
         mockMvc.perform(get("/api/shows/{id}", showId))
                 .andExpect(status().isNotFound());
+    }
+
+    // ========== Phrase Validation Tests ==========
+
+    @Test
+    void createShow_WithPhraseExactly50Characters_ShouldReturn201() throws Exception {
+        // Given - phrase with exactly 50 characters
+        String exactly50 = "12345678901234567890123456789012345678901234567890"; // 50 chars
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("50 Char Test"));
+        request.setPhrases(Arrays.asList(exactly50));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.phrases[0]").value(exactly50));
+    }
+
+    @Test
+    void createShow_WithPhrase51Characters_ShouldReturn400() throws Exception {
+        // Given - phrase with 51 characters (1 over limit)
+        String over50 = "123456789012345678901234567890123456789012345678901"; // 51 chars
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Over Limit Test"));
+        request.setPhrases(Arrays.asList(over50));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists());
+    }
+
+    @Test
+    void createShow_WithMultiplePhrasesOneTooLong_ShouldReturn400() throws Exception {
+        // Given - multiple phrases, second one is too long
+        String validPhrase = "This is valid";
+        String tooLong = "This phrase is way too long for the 50 character limit and should be rejected"; // 79 chars
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Mixed Phrases Test"));
+        request.setPhrases(Arrays.asList(validPhrase, tooLong, "Another valid"));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists());
+    }
+
+    @Test
+    void updateShow_WithPhraseTooLong_ShouldReturn400() throws Exception {
+        // Given - existing show
+        Show existingShow = Show.builder()
+                .showTitle(generateUniqueTitle("Update Test"))
+                .phrases(Arrays.asList("Valid phrase"))
+                .build();
+        Show savedShow = showRepository.save(existingShow);
+
+        // Try to update with too-long phrase
+        String tooLong = "This is an extremely long phrase that exceeds the fifty character maximum limit"; // 81 chars
+        ShowRequest updateRequest = new ShowRequest();
+        updateRequest.setShowTitle(savedShow.getShowTitle());
+        updateRequest.setPhrases(Arrays.asList(tooLong));
+
+        // When & Then
+        mockMvc.perform(put("/api/shows/{id}", savedShow.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists());
+    }
+
+    @Test
+    void createShow_WithEmptyPhrases_ShouldReturn201() throws Exception {
+        // Given - empty phrases list
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Empty Phrases Test"));
+        request.setPhrases(new ArrayList<>());
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.phrases", hasSize(0)));
+    }
+
+    @Test
+    void createShow_WithDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - phrases with duplicates
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Duplicate Phrases Test"));
+        request.setPhrases(Arrays.asList("First phrase", "Second phrase", "First phrase")); // duplicate at index 2
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")));
+    }
+
+    @Test
+    void createShow_WithConsecutiveDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - phrases with consecutive duplicates
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Consecutive Duplicates Test"));
+        request.setPhrases(Arrays.asList("Phrase one", "Phrase two", "Phrase two")); // duplicate at index 2
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")))
+                .andExpect(jsonPath("$.phrases").value(containsString("index 2")));
+    }
+
+    @Test
+    void updateShow_WithDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - existing show
+        Show existingShow = Show.builder()
+                .showTitle(generateUniqueTitle("Update Duplicate Test"))
+                .phrases(Arrays.asList("Original phrase"))
+                .build();
+        Show savedShow = showRepository.save(existingShow);
+
+        // Try to update with duplicate phrases
+        ShowRequest updateRequest = new ShowRequest();
+        updateRequest.setShowTitle(savedShow.getShowTitle());
+        updateRequest.setPhrases(Arrays.asList("New phrase", "Another phrase", "New phrase")); // duplicate
+
+        // When & Then
+        mockMvc.perform(put("/api/shows/{id}", savedShow.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")));
     }
 }
