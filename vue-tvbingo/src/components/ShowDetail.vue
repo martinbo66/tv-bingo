@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Show } from '../types/Show'
 import { showService } from '../services/showService'
@@ -13,9 +13,15 @@ const props = defineProps<{
   id: string
 }>()
 
+// Extend Show type to make optional fields required for form binding
+interface ShowWithRequiredFields extends Omit<Show, 'gameTitle' | 'centerSquare'> {
+  gameTitle: string
+  centerSquare: string
+}
+
 const router = useRouter()
-const show = ref<Show | null>(null)
-const originalShow = ref<Show | null>(null)
+const show = ref<ShowWithRequiredFields | null>(null)
+const originalShow = ref<ShowWithRequiredFields | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -37,8 +43,17 @@ onMounted(async () => {
   try {
     const loadedShow = await showService.getShowById(parseInt(props.id))
     if (loadedShow) {
-      show.value = { ...loadedShow }
-      originalShow.value = { ...loadedShow }
+      // Ensure optional fields are always strings (not undefined)
+      show.value = {
+        ...loadedShow,
+        gameTitle: loadedShow.gameTitle || '',
+        centerSquare: loadedShow.centerSquare || ''
+      }
+      originalShow.value = {
+        ...loadedShow,
+        gameTitle: loadedShow.gameTitle || '',
+        centerSquare: loadedShow.centerSquare || ''
+      }
     } else {
       error.value = 'Show not found'
       router.push('/')
@@ -70,7 +85,7 @@ const handlePhrasesUpdate = (updatedPhrases: string[]) => {
 }
 
 // Custom validator for show title (uniqueness check happens on server)
-const validateShowTitle = (value: string): string | undefined => {
+const validateShowTitle = (_value: string): string | undefined => {
   if (fieldErrors.value.showTitle) {
     // Return server-side validation error if present
     return fieldErrors.value.showTitle
