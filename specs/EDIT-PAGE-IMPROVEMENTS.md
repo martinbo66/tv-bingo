@@ -194,7 +194,29 @@ Tracking progress on show editing UX improvements focused on the phrase list.
   - First added phrase is highlighted and scrolled into view
   - Clean UX with cancel and add all buttons
 
+## Component Reuse Project
+
+- **2026-01-28:** Component reuse project completed - see `COMPONENT-REUSE-PLAN.md`
+  - Extracted reusable components from ShowDetail
+  - Refactored ShowDetail to use shared components (68% code reduction)
+  - Upgraded CreateShow with same modern UX features
+  - Created centralized styling theme
+  - Both create and edit pages now share:
+    - PhraseListManager component
+    - FormFieldWithValidation component
+    - useUnsavedChangesGuard composable
+    - formValidation constants
+    - form-theme.css styling
+  - All improvements from this document now available in both pages
+  - Zero regressions, all tests passing
+
 ## Files Modified
 
-- `vue-tvbingo/src/components/ShowDetail.vue` - Main implementation
+- `vue-tvbingo/src/components/ShowDetail.vue` - Main implementation (later refactored)
+- `vue-tvbingo/src/components/CreateShow.vue` - Upgraded with shared components
+- `vue-tvbingo/src/components/common/PhraseListManager.vue` - Reusable phrase management (NEW)
+- `vue-tvbingo/src/components/common/FormFieldWithValidation.vue` - Reusable form field (NEW)
+- `vue-tvbingo/src/composables/useUnsavedChangesGuard.ts` - Unsaved changes logic (NEW)
+- `vue-tvbingo/src/constants/formValidation.ts` - Validation constants (NEW)
+- `vue-tvbingo/src/styles/form-theme.css` - Shared styling theme (NEW)
 - `spring-tvbingo/src/main/java/org/bomartin/tvbingo/config/WebConfig.java` - CORS fix for dev
