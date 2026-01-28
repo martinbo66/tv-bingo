@@ -20,6 +20,10 @@ public class ShowService {
     }
     
     public Show createShow(Show show) {
+        // Check if a show with the same title already exists
+        if (showRepository.existsByShowTitle(show.getShowTitle())) {
+            throw new IllegalArgumentException("Show title must be unique");
+        }
         return showRepository.save(show);
     }
     

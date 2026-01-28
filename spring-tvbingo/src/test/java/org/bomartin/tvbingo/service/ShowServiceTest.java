@@ -42,6 +42,7 @@ class ShowServiceTest {
 
     @Test
     void createShow_ShouldSaveAndReturnShow() {
+        when(showRepository.existsByShowTitle(testShow.getShowTitle())).thenReturn(false);
         when(showRepository.save(any(Show.class))).thenReturn(testShow);
 
         Show result = showService.createShow(testShow);
@@ -49,7 +50,20 @@ class ShowServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testShow.getId());
         assertThat(result.getShowTitle()).isEqualTo(testShow.getShowTitle());
+        verify(showRepository).existsByShowTitle(testShow.getShowTitle());
         verify(showRepository).save(testShow);
+    }
+
+    @Test
+    void createShow_WithDuplicateTitle_ShouldThrowException() {
+        when(showRepository.existsByShowTitle(testShow.getShowTitle())).thenReturn(true);
+
+        assertThatThrownBy(() -> showService.createShow(testShow))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Show title must be unique");
+
+        verify(showRepository).existsByShowTitle(testShow.getShowTitle());
+        verify(showRepository, never()).save(any());
     }
 
     @Test
@@ -92,6 +106,7 @@ class ShowServiceTest {
 
     @Test
     void updateShow_WithValidId_ShouldUpdateAndReturnShow() {
+        when(showRepository.existsByShowTitleExceptId(testShow.getShowTitle(), testShow.getId())).thenReturn(false);
         when(showRepository.save(any(Show.class))).thenReturn(testShow);
 
         Show result = showService.updateShow(testShow);
@@ -99,6 +114,7 @@ class ShowServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(testShow.getId());
         assertThat(result.getShowTitle()).isEqualTo(testShow.getShowTitle());
+        verify(showRepository).existsByShowTitleExceptId(testShow.getShowTitle(), testShow.getId());
         verify(showRepository).save(testShow);
     }
 
@@ -112,6 +128,18 @@ class ShowServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Show ID must not be null for updates");
 
+        verify(showRepository, never()).save(any());
+    }
+
+    @Test
+    void updateShow_WithDuplicateTitle_ShouldThrowException() {
+        when(showRepository.existsByShowTitleExceptId(testShow.getShowTitle(), testShow.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> showService.updateShow(testShow))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Show title must be unique");
+
+        verify(showRepository).existsByShowTitleExceptId(testShow.getShowTitle(), testShow.getId());
         verify(showRepository, never()).save(any());
     }
 

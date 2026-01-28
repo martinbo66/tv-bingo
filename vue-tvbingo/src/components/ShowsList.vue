@@ -57,6 +57,18 @@ const handleDelete = async (event: Event, showId: number) => {
   }
 }
 
+// Get phrase count category for color-coding
+const getPhraseCountStatus = (phraseCount: number) => {
+  if (phraseCount >= 25) return 'complete'
+  if (phraseCount >= 10) return 'medium'
+  return 'low'
+}
+
+// Check if show is complete (25+ phrases)
+const isShowComplete = (show: Show) => {
+  return show.phrases.length >= 25
+}
+
 onMounted(() => {
   fetchShows()
 })
@@ -84,11 +96,19 @@ onMounted(() => {
               :key="show.id" 
               class="show-card"
               @click="navigateToShow(show.id)"
+              :title="`${show.showTitle}${show.gameTitle ? ' - ' + show.gameTitle : ''}`"
             >
                 <div class="show-content">
                     <h3>{{ show.showTitle }}</h3>
                     <div v-if="show.gameTitle" class="game-title">
                         {{ show.gameTitle }}
+                    </div>
+                    <div 
+                        class="phrase-count" 
+                        :class="`status-${getPhraseCountStatus(show.phrases.length)}`"
+                    >
+                        {{ show.phrases.length }} phrase{{ show.phrases.length !== 1 ? 's' : '' }}
+                        <span v-if="isShowComplete(show)" class="complete-indicator" title="Ready to play!">✓</span>
                     </div>
                 </div>
                 <div class="show-controls">
@@ -151,30 +171,31 @@ onMounted(() => {
 
 .shows-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
     padding: 0 10px;
 }
 
 .show-card {
     background: linear-gradient(135deg, #9c27b0, #673ab7);
     border-radius: 10px;
-    padding: 12px;
+    padding: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    height: 75px;
-    overflow: hidden;
+    min-height: 110px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .show-content {
     flex: 1;
-    overflow: hidden;
     margin-right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .show-controls {
@@ -204,23 +225,68 @@ onMounted(() => {
 }
 
 .show-card h3 {
-    margin: 0 0 6px 0;
+    margin: 0;
     color: #fff;
-    font-size: 1em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 1.05em;
+    font-weight: 600;
+    line-height: 1.3;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    /* Support multi-line with max 3 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
 }
 
 .game-title {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8em;
-    margin: 2px 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85em;
     font-style: italic;
-    white-space: nowrap;
+    line-height: 1.2;
+    /* Support multi-line with max 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.phrase-count {
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: fit-content;
+    margin-top: auto;
+}
+
+.phrase-count.status-low {
+    background-color: rgba(255, 193, 7, 0.3);
+    color: #ffd54f;
+    border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.phrase-count.status-medium {
+    background-color: rgba(255, 152, 0, 0.3);
+    color: #ffb74d;
+    border: 1px solid rgba(255, 152, 0, 0.5);
+}
+
+.phrase-count.status-complete {
+    background-color: rgba(76, 175, 80, 0.3);
+    color: #81c784;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.complete-indicator {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #81c784;
+    text-shadow: 0 0 8px rgba(129, 199, 132, 0.6);
 }
 
 .loading {

@@ -319,11 +319,11 @@ class ShowControllerIntegrationTest {
         ShowRequest updateRequest = new ShowRequest();
         updateRequest.setShowTitle(show1.getShowTitle());
 
-        // When & Then
+        // When & Then - should return 409 Conflict for uniqueness violations
         mockMvc.perform(put("/api/shows/{id}", savedShow2.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.showTitle").value("Show title must be unique"));
     }
 
