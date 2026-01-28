@@ -6,7 +6,7 @@ export const VALIDATION_LIMITS = {
   SHOW_TITLE: 100,
   GAME_TITLE: 100,
   CENTER_SQUARE: 50,
-  PHRASE: 100
+  PHRASE: 50
 } as const
 
 export const ERROR_MESSAGES = {
