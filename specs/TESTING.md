@@ -14,9 +14,9 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ## Overview
 
-**Total Tests:** 144 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance)
+**Total Tests:** 164 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance + Phase 4.1 Frontend)
 - **Backend:** 78 tests (JUnit 5 + Spring Boot Test)
-- **Frontend:** 66 tests (Vitest + Vue Test Utils)
+- **Frontend:** 86 tests (Vitest + Vue Test Utils)
 
 **Testing Goal:** Achieve comprehensive coverage across all layers:
 - Unit tests for business logic
@@ -98,6 +98,19 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 - ✅ Win detection - all 12 combinations (5 rows, 5 columns, 2 diagonals)
 - ✅ Multiple winning lines, incomplete rows
 - ✅ Navigation (back to list, edit on click)
+
+#### BingoCard.edge-cases.spec.ts (Edge Case Tests - 20 tests)
+**Location:** `vue-tvbingo/src/pages/__tests__/`
+
+**Coverage:**
+- ✅ Minimal phrases (exactly 24 phrases) - 2 tests
+- ✅ Large phrase arrays (1000+ phrases) - 2 tests
+- ✅ Network timeout handling - 2 tests
+- ✅ Rapid button clicking (debounce behavior) - 3 tests
+- ✅ Browser back button behavior - 2 tests
+- ✅ LocalStorage/SessionStorage handling - 3 tests
+- ✅ Window resize on bingo grid - 2 tests
+- ✅ Touch events and keyboard accessibility - 4 tests
 
 #### apiClient.spec.ts (API Client Tests - 27 tests)
 **Location:** `vue-tvbingo/src/services/__tests__/`
@@ -326,16 +339,16 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
   - ✅ Concurrent duplicate title checks
   - ✅ Race condition in phrase updates
 
-**Frontend Edge Cases** (~8 tests)
-- Various spec files
-  - [ ] Bingo card with exactly 24 phrases
-  - [ ] Bingo card with 1000+ phrases
-  - [ ] Network timeout handling
-  - [ ] Rapid button clicking (debounce)
-  - [ ] Browser back button behavior
-  - [ ] LocalStorage/SessionStorage handling
-  - [ ] Window resize on bingo grid
-  - [ ] Touch events on mobile
+**Frontend Edge Cases** (20 tests)
+- `src/pages/__tests__/BingoCard.edge-cases.spec.ts`
+  - ✅ Bingo card with exactly 24 phrases (2 tests)
+  - ✅ Bingo card with 1000+ phrases (2 tests)
+  - ✅ Network timeout handling (2 tests)
+  - ✅ Rapid button clicking (debounce) (3 tests)
+  - ✅ Browser back button behavior (2 tests)
+  - ✅ LocalStorage/SessionStorage handling (3 tests)
+  - ✅ Window resize on bingo grid (2 tests)
+  - ✅ Touch events on mobile (4 tests)
 
 #### 4.2 End-to-End Tests
 
@@ -369,6 +382,53 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 - Large datasets (1000+ shows) are created only within specific tests that need them
 - Embedded Postgres provides full isolation - data never persists beyond test execution
 - No manual cleanup required - Spring Test + Embedded DB handles complete teardown
+
+--- 
+## Testing the filtering and searching functionality on the show list
+### Manual Testing Checklist
+
+1. **Search Functionality**
+   - [ ] Type in search box - results filter in real-time
+   - [ ] Search for show title (e.g., "Office")
+   - [ ] Search for game title (e.g., "Blingo")
+   - [ ] Try uppercase search - should still work
+   - [ ] Search for nonexistent show - see no results state
+   - [ ] Click clear button - search clears and input focuses
+   - [ ] Press Ctrl/Cmd + K - search focuses
+   - [ ] Press / key - search focuses
+   - [ ] Type in search, press Esc - search clears
+
+2. **Filter Functionality**
+   - [ ] Click each filter button - see active state
+   - [ ] Filter by <10 - see only shows with <10 phrases
+   - [ ] Filter by 10-24 - see only shows with 10-24 phrases
+   - [ ] Filter by 25+ - see only shows with 25+ phrases
+   - [ ] Click All - see all shows again
+   - [ ] Verify active filter has colored background/border
+
+3. **Combined Filters**
+   - [ ] Apply search and filter together
+   - [ ] Verify results match both criteria
+   - [ ] Clear All button appears
+   - [ ] Click Clear All - both clear
+
+4. **Views Integration**
+   - [ ] Apply filters in grid view
+   - [ ] Switch to list view - filters persist
+   - [ ] Apply different filter in list view
+   - [ ] Switch back to grid - filter persists
+
+5. **Mobile Testing**
+   - [ ] Search bar full width
+   - [ ] Filters stack vertically
+   - [ ] Clear All button full width
+   - [ ] All touch targets at least 48px
+
+6. **Accessibility**
+   - [ ] Tab through all controls
+   - [ ] All focus states visible
+   - [ ] Test with screen reader
+   - [ ] Keyboard shortcuts work
 
 ---
 
