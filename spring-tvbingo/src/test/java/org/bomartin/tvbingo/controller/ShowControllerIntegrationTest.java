@@ -491,4 +491,60 @@ class ShowControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.phrases", hasSize(0)));
     }
+
+    @Test
+    void createShow_WithDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - phrases with duplicates
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Duplicate Phrases Test"));
+        request.setPhrases(Arrays.asList("First phrase", "Second phrase", "First phrase")); // duplicate at index 2
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")));
+    }
+
+    @Test
+    void createShow_WithConsecutiveDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - phrases with consecutive duplicates
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Consecutive Duplicates Test"));
+        request.setPhrases(Arrays.asList("Phrase one", "Phrase two", "Phrase two")); // duplicate at index 2
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")))
+                .andExpect(jsonPath("$.phrases").value(containsString("index 2")));
+    }
+
+    @Test
+    void updateShow_WithDuplicatePhrases_ShouldReturn400() throws Exception {
+        // Given - existing show
+        Show existingShow = Show.builder()
+                .showTitle(generateUniqueTitle("Update Duplicate Test"))
+                .phrases(Arrays.asList("Original phrase"))
+                .build();
+        Show savedShow = showRepository.save(existingShow);
+
+        // Try to update with duplicate phrases
+        ShowRequest updateRequest = new ShowRequest();
+        updateRequest.setShowTitle(savedShow.getShowTitle());
+        updateRequest.setPhrases(Arrays.asList("New phrase", "Another phrase", "New phrase")); // duplicate
+
+        // When & Then
+        mockMvc.perform(put("/api/shows/{id}", savedShow.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").exists())
+                .andExpect(jsonPath("$.phrases").value(containsString("Duplicate phrase")));
+    }
 }

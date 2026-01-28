@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ValidPhrasesValidator.class)
 public @interface ValidPhrases {
-    String message() default "Phrase must not exceed 50 characters";
+    String message() default "Phrases must be unique and not exceed 50 characters";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
     int maxLength() default 50;

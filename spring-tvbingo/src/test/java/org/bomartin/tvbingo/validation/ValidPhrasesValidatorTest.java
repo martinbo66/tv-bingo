@@ -160,4 +160,91 @@ class ValidPhrasesValidatorTest {
         verify(context).buildConstraintViolationWithTemplate(contains("51"));
         verify(builder).addConstraintViolation();
     }
+
+    @Test
+    void isValid_WithDuplicatePhrases_ShouldReturnFalse() {
+        // Given - list with duplicate phrase
+        List<String> phrases = Arrays.asList(
+            "Valid phrase",
+            "Another phrase",
+            "Valid phrase" // duplicate at index 2
+        );
+
+        when(context.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
+
+        // When
+        boolean result = validator.isValid(phrases, context);
+
+        // Then
+        assertFalse(result);
+        verify(context).disableDefaultConstraintViolation();
+        verify(context).buildConstraintViolationWithTemplate(contains("Duplicate phrase"));
+        verify(context).buildConstraintViolationWithTemplate(contains("index 2"));
+        verify(context).buildConstraintViolationWithTemplate(contains("Valid phrase"));
+        verify(builder).addConstraintViolation();
+    }
+
+    @Test
+    void isValid_WithMultipleDuplicates_ShouldReportFirstDuplicate() {
+        // Given - list with multiple duplicates
+        List<String> phrases = Arrays.asList(
+            "First",
+            "Second",
+            "First",  // duplicate at index 2
+            "Third",
+            "Second"  // duplicate at index 4
+        );
+
+        when(context.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
+
+        // When
+        boolean result = validator.isValid(phrases, context);
+
+        // Then
+        assertFalse(result);
+        verify(context).disableDefaultConstraintViolation();
+        verify(context).buildConstraintViolationWithTemplate(contains("index 2"));
+        verify(context).buildConstraintViolationWithTemplate(contains("First"));
+        verify(builder).addConstraintViolation();
+    }
+
+    @Test
+    void isValid_WithConsecutiveDuplicates_ShouldReturnFalse() {
+        // Given - list with consecutive duplicate phrases
+        List<String> phrases = Arrays.asList(
+            "Phrase one",
+            "Phrase two",
+            "Phrase two" // immediate duplicate at index 2
+        );
+
+        when(context.buildConstraintViolationWithTemplate(anyString())).thenReturn(builder);
+
+        // When
+        boolean result = validator.isValid(phrases, context);
+
+        // Then
+        assertFalse(result);
+        verify(context).disableDefaultConstraintViolation();
+        verify(context).buildConstraintViolationWithTemplate(contains("Duplicate phrase"));
+        verify(context).buildConstraintViolationWithTemplate(contains("index 2"));
+        verify(builder).addConstraintViolation();
+    }
+
+    @Test
+    void isValid_WithUniquePhrases_ShouldReturnTrue() {
+        // Given - list with all unique phrases
+        List<String> phrases = Arrays.asList(
+            "First unique phrase",
+            "Second unique phrase",
+            "Third unique phrase",
+            "Fourth unique phrase"
+        );
+
+        // When
+        boolean result = validator.isValid(phrases, context);
+
+        // Then
+        assertTrue(result);
+        verifyNoInteractions(context);
+    }
 }
