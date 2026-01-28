@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code when working with the TV Bingo monorepo.
 
+**IMPORTANT:** Always read and follow the global rules at `~/.claude/claude.md` before taking any actions. These rules apply to ALL projects and must be followed without exception.
+
 ## Project Overview
 
 TV Bingo is a web application for creating custom bingo cards for TV shows. Users define phrases and recurring moments for their favorite shows, then generate randomized 5x5 bingo cards to play while watching.
@@ -212,14 +214,8 @@ vue-tvbingo/src/
 - API endpoints: kebab-case, plural nouns
 
 ### Testing
-- **Backend**: 
-  - JUnit 5 test framework
-  - Embedded Postgres for database integration tests
-  - Separate test configuration in `application-test.yml`
-  - Test coverage includes: controllers, services, repositories, validators, configuration
-- **Frontend**: 
-  - Vitest (planned)
-  - TypeScript type checking
+- Backend: JUnit 5, Embedded Postgres for integration tests
+- Frontend: Vitest (planned), TypeScript type checking
 
 ## Git Commit Guidelines
 
