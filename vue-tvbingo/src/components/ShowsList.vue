@@ -10,6 +10,11 @@ const shows = ref<Show[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
+// Search and filter state
+const searchQuery = ref('')
+const activeFilter = ref<'all' | 'low' | 'medium' | 'complete'>('all')
+const searchInputRef = ref<HTMLInputElement | null>(null)
+
 // View mode state with localStorage persistence
 type ViewMode = 'grid' | 'list'
 const STORAGE_KEY = 'tvBingo.viewPreferences'
@@ -42,12 +47,35 @@ const toggleView = (mode: ViewMode) => {
   saveViewPreference(mode)
 }
 
-// Sort shows alphabetically by title
-const sortedShows = computed(() => {
-  return [...shows.value].sort((a, b) => 
+// Filter and search shows
+const filteredShows = computed(() => {
+  let result = [...shows.value]
+  
+  // Apply search filter
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(show => 
+      show.showTitle.toLowerCase().includes(query) ||
+      (show.gameTitle && show.gameTitle.toLowerCase().includes(query))
+    )
+  }
+  
+  // Apply phrase count filter
+  if (activeFilter.value !== 'all') {
+    result = result.filter(show => {
+      const status = getPhraseCountStatus(show.phrases.length)
+      return status === activeFilter.value
+    })
+  }
+  
+  // Sort alphabetically by title
+  return result.sort((a, b) => 
     a.showTitle.localeCompare(b.showTitle)
   )
 })
+
+// Computed property for compatibility (was sortedShows)
+const sortedShows = computed(() => filteredShows.value)
 
 const fetchShows = async () => {
   loading.value = true
@@ -108,12 +136,48 @@ const isShowComplete = (show: Show) => {
   return show.phrases.length >= 25
 }
 
+// Search and filter functions
+const clearSearch = () => {
+  searchQuery.value = ''
+  if (searchInputRef.value) {
+    searchInputRef.value.focus()
+  }
+}
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  activeFilter.value = 'all'
+}
+
+const setFilter = (filter: 'all' | 'low' | 'medium' | 'complete') => {
+  activeFilter.value = filter
+}
+
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || activeFilter.value !== 'all'
+})
+
 // Keyboard shortcut handler
 const handleKeydown = (event: KeyboardEvent) => {
   // Ctrl/Cmd + Shift + V to toggle view
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'V') {
     event.preventDefault()
     toggleView(viewMode.value === 'grid' ? 'list' : 'grid')
+  }
+  
+  // Ctrl/Cmd + K or / to focus search
+  if (((event.ctrlKey || event.metaKey) && event.key === 'k') || event.key === '/') {
+    // Don't trigger if user is typing in an input
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return
+    }
+    event.preventDefault()
+    searchInputRef.value?.focus()
+  }
+  
+  // Escape to clear search if search is focused
+  if (event.key === 'Escape' && document.activeElement === searchInputRef.value) {
+    clearSearch()
   }
 }
 
@@ -174,6 +238,95 @@ onUnmounted(() => {
             </div>
         </div>
         
+        <!-- Search and Filter Bar -->
+        <div class="search-filter-bar">
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input
+                        ref="searchInputRef"
+                        v-model="searchQuery"
+                        type="text"
+                        class="search-input"
+                        placeholder="Search shows... (Ctrl/Cmd + K or /)"
+                        aria-label="Search shows"
+                    />
+                    <button
+                        v-if="searchQuery"
+                        @click="clearSearch"
+                        class="clear-search-btn"
+                        title="Clear search (Esc)"
+                        aria-label="Clear search"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filter-container">
+                <label class="filter-label">Filter by phrases:</label>
+                <div class="filter-buttons" role="group" aria-label="Filter by phrase count">
+                    <button
+                        class="filter-btn"
+                        :class="{ active: activeFilter === 'all' }"
+                        @click="setFilter('all')"
+                        :aria-pressed="activeFilter === 'all'"
+                    >
+                        All
+                    </button>
+                    <button
+                        class="filter-btn filter-low"
+                        :class="{ active: activeFilter === 'low' }"
+                        @click="setFilter('low')"
+                        :aria-pressed="activeFilter === 'low'"
+                        title="Shows with less than 10 phrases"
+                    >
+                        &lt;10
+                    </button>
+                    <button
+                        class="filter-btn filter-medium"
+                        :class="{ active: activeFilter === 'medium' }"
+                        @click="setFilter('medium')"
+                        :aria-pressed="activeFilter === 'medium'"
+                        title="Shows with 10-24 phrases"
+                    >
+                        10-24
+                    </button>
+                    <button
+                        class="filter-btn filter-complete"
+                        :class="{ active: activeFilter === 'complete' }"
+                        @click="setFilter('complete')"
+                        :aria-pressed="activeFilter === 'complete'"
+                        title="Shows with 25+ phrases (ready to play)"
+                    >
+                        25+ ✓
+                    </button>
+                </div>
+                
+                <button
+                    v-if="hasActiveFilters"
+                    @click="clearFilters"
+                    class="clear-filters-btn"
+                    title="Clear all filters"
+                >
+                    Clear All
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results count and no results state -->
+        <div v-if="!loading && !error" class="results-info">
+            <span class="results-count">
+                Showing {{ filteredShows.length }} of {{ shows.length }} show{{ shows.length !== 1 ? 's' : '' }}
+            </span>
+        </div>
+        
         <div v-if="loading" class="loading">
             Loading shows...
         </div>
@@ -181,6 +334,29 @@ onUnmounted(() => {
         <div v-else-if="error" class="error">
             {{ error }}
             <button @click="fetchShows" class="retry-button">Retry</button>
+        </div>
+        
+        <!-- No Results State -->
+        <div v-else-if="filteredShows.length === 0" class="no-results">
+            <svg class="no-results-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+            <h3>No shows found</h3>
+            <p v-if="hasActiveFilters">
+                Try adjusting your search or filters
+            </p>
+            <p v-else>
+                Get started by adding your first show
+            </p>
+            <button v-if="hasActiveFilters" @click="clearFilters" class="clear-filters-cta">
+                Clear Filters
+            </button>
+            <router-link v-else to="/create" class="add-show-cta">
+                + Add Show
+            </router-link>
         </div>
         
         <!-- Grid View -->
@@ -360,6 +536,225 @@ onUnmounted(() => {
     background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+/* Search and Filter Bar Styles */
+.search-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+    flex: 1;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 44px 12px 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    color: #fff;
+    font-size: 1em;
+    transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(156, 39, 176, 0.6);
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.filter-btn.active {
+    background: rgba(156, 39, 176, 0.4);
+    border-color: rgba(156, 39, 176, 0.6);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+}
+
+.filter-btn.filter-low.active {
+    background: rgba(255, 193, 7, 0.3);
+    border-color: rgba(255, 193, 7, 0.6);
+    color: #ffd54f;
+}
+
+.filter-btn.filter-medium.active {
+    background: rgba(255, 152, 0, 0.3);
+    border-color: rgba(255, 152, 0, 0.6);
+    color: #ffb74d;
+}
+
+.filter-btn.filter-complete.active {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.6);
+    color: #81c784;
+}
+
+.filter-btn:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+.clear-filters-btn {
+    padding: 8px 16px;
+    background: rgba(255, 68, 68, 0.3);
+    border: 2px solid rgba(255, 68, 68, 0.5);
+    color: #ff8a80;
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.clear-filters-btn:hover {
+    background: rgba(255, 68, 68, 0.4);
+    border-color: rgba(255, 68, 68, 0.7);
+    color: #fff;
+}
+
+.results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 10px;
+}
+
+.results-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+/* No Results State */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.no-results-icon {
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 20px;
+}
+
+.no-results h3 {
+    font-size: 1.5em;
+    margin: 0 0 12px 0;
+    color: #fff;
+}
+
+.no-results p {
+    font-size: 1em;
+    margin: 0 0 24px 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.clear-filters-cta,
+.add-show-cta {
+    display: inline-block;
+    text-decoration: none;
+    padding: 12px 28px;
+    background: linear-gradient(90deg, #9c27b0 0%, #7b1fa2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.clear-filters-cta:hover,
+.add-show-cta:hover {
+    background: linear-gradient(90deg, #7b1fa2 0%, #6a1b9a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
 }
 
 /* Grid View Styles */
@@ -654,6 +1049,50 @@ onUnmounted(() => {
 
     .header-controls {
         justify-content: space-between;
+    }
+
+    /* Search and filter mobile */
+    .search-filter-bar {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .search-input-wrapper {
+        max-width: 100%;
+    }
+
+    .search-input {
+        font-size: 0.95em;
+        padding: 10px 40px 10px 40px;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-label {
+        font-size: 0.85em;
+    }
+
+    .filter-buttons {
+        justify-content: space-between;
+    }
+
+    .filter-btn {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        font-size: 0.85em;
+    }
+
+    .clear-filters-btn {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .results-info {
+        padding: 0 16px;
     }
 
     /* Grid view mobile */
