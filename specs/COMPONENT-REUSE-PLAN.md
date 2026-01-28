@@ -383,3 +383,27 @@ These could be added later but are not part of this plan:
 - `vue-tvbingo/src/constants/formValidation.ts`
 
 **Status:** ✅ All Phase 1 tasks complete, ready for Phase 2
+
+### Phase 2: Update ShowDetail.vue ✅ COMPLETE
+
+**Date:** 2026-01-28
+
+**Tasks Completed:**
+- [x] Task 2.1: Refactored ShowDetail.vue to use new components
+  - Replaced inline phrase management with `<PhraseListManager>`
+  - Replaced three form fields with `<FormFieldWithValidation>`
+  - Integrated `useUnsavedChangesGuard` composable
+  - Removed all redundant code (phrase add/edit/delete, validation, etc.)
+  - All existing features preserved
+
+**Results:**
+- ShowDetail.vue reduced from 1,115 lines to 353 lines (68% reduction)
+- Code is now cleaner, more maintainable, and easier to understand
+- All functionality preserved (inline edit, bulk add, validation, unsaved changes warning, etc.)
+- TypeScript compilation successful
+- All tests passing (132 passed)
+
+**Files Modified:**
+- `vue-tvbingo/src/components/ShowDetail.vue` - Major refactoring
+
+**Status:** ✅ Phase 2 complete, ready for Phase 3
