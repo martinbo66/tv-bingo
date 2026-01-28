@@ -1,30 +1,77 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { CreateShowInput } from '../types/Show'
+import { useUnsavedChangesGuard } from '../composables/useUnsavedChangesGuard'
+import FormFieldWithValidation from './common/FormFieldWithValidation.vue'
+import PhraseListManager from './common/PhraseListManager.vue'
+import { VALIDATION_LIMITS } from '../constants/formValidation'
 
 const emit = defineEmits<{
   (e: 'showCreated', show: CreateShowInput): void
 }>()
 
+// Form data
 const showTitle = ref('')
 const gameTitle = ref('')
 const centerSquare = ref('')
-const phrases = ref<string[]>([''])
+const phrases = ref<string[]>([])
 
-const addPhrase = () => {
-  phrases.value.push('')
+// Original data for tracking changes
+const originalData = ref({
+  showTitle: '',
+  gameTitle: '',
+  centerSquare: '',
+  phrases: [] as string[]
+})
+
+// Current data computed
+const currentData = computed(() => ({
+  showTitle: showTitle.value,
+  gameTitle: gameTitle.value,
+  centerSquare: centerSquare.value,
+  phrases: phrases.value
+}))
+
+// Unsaved changes guard
+const { hasUnsavedChanges, setupGuards } = useUnsavedChangesGuard(
+  originalData,
+  currentData
+)
+
+setupGuards()
+
+// Handle phrases update from PhraseListManager
+const handlePhrasesUpdate = (updatedPhrases: string[]) => {
+  phrases.value = updatedPhrases
 }
 
-const removePhrase = (index: number) => {
-  phrases.value.splice(index, 1)
+// Validation state
+const showTitleError = ref<string | undefined>(undefined)
+
+// Custom validator for show title
+const validateShowTitle = (value: string): string | undefined => {
+  if (!value.trim()) {
+    return 'Show title is required'
+  }
+  return undefined
 }
 
+// Create show
 const createShow = () => {
-  if (!showTitle.value || phrases.value.length === 0) return
+  // Validate show title
+  showTitleError.value = validateShowTitle(showTitle.value)
+  if (showTitleError.value) {
+    return
+  }
+
+  // Validate that we have at least one phrase
+  if (phrases.value.length === 0) {
+    return
+  }
 
   const newShow: CreateShowInput = {
     showTitle: showTitle.value,
-    phrases: phrases.value.filter(phrase => phrase.trim() !== '')
+    phrases: phrases.value
   }
 
   if (gameTitle.value) {
@@ -36,157 +83,174 @@ const createShow = () => {
   }
 
   emit('showCreated', newShow)
-  
-  // Reset form
-  showTitle.value = ''
-  gameTitle.value = ''
-  centerSquare.value = ''
-  phrases.value = ['']
+
+  // Note: We don't reset the form here - the parent will navigate away on success
+}
+
+// Cancel and go back
+const handleCancel = () => {
+  if (hasUnsavedChanges.value) {
+    const answer = window.confirm('You have unsaved changes. Are you sure you want to discard them?')
+    if (!answer) return
+  }
+  // Navigate back by emitting an event or using router directly
+  window.history.back()
 }
 </script>
 
 <template>
-  <div class="create-show-form">
-    <h3>Add New TV Show</h3>
-    <form @submit.prevent="createShow">
-      <div class="form-group">
-        <label for="showTitle">Show Title*</label>
-        <input 
-          id="showTitle"
-          v-model="showTitle"
-          type="text"
-          required
-          placeholder="Enter show title"
-        >
+  <div class="create-show-container">
+    <form @submit.prevent="createShow" class="create-form">
+      <!-- Show Title -->
+      <FormFieldWithValidation
+        v-model="showTitle"
+        id="show-title-input"
+        label="Show Title"
+        :required="true"
+        :max-length="VALIDATION_LIMITS.SHOW_TITLE"
+        placeholder="Enter show title"
+        :validator="validateShowTitle"
+      />
+
+      <!-- Game Title -->
+      <FormFieldWithValidation
+        v-model="gameTitle"
+        id="game-title-input"
+        label="Game Title"
+        :max-length="VALIDATION_LIMITS.GAME_TITLE"
+        placeholder="Enter game title (optional)"
+      />
+
+      <!-- Center Square -->
+      <FormFieldWithValidation
+        v-model="centerSquare"
+        id="center-square-input"
+        label="Center Square"
+        :max-length="VALIDATION_LIMITS.CENTER_SQUARE"
+        placeholder="Enter center square text (optional)"
+      />
+
+      <!-- Phrases -->
+      <PhraseListManager
+        :phrases="phrases"
+        @update:phrases="handlePhrasesUpdate"
+        :allow-inline-edit="true"
+        :show-bulk-add="true"
+        :auto-sort="true"
+        :max-phrase-length="VALIDATION_LIMITS.PHRASE"
+      />
+
+      <!-- Validation message for phrases -->
+      <div v-if="phrases.length === 0" class="phrases-help">
+        Add at least one phrase to create the show.
       </div>
 
-      <div class="form-group">
-        <label for="gameTitle">Game Title (Optional)</label>
-        <input 
-          id="gameTitle"
-          v-model="gameTitle"
-          type="text"
-          placeholder="Enter alternate game title"
+      <!-- Action Buttons -->
+      <div class="buttons">
+        <button type="button" @click="handleCancel" class="cancel-btn" aria-label="Cancel and return">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          :disabled="!showTitle.trim() || phrases.length === 0"
+          aria-label="Create show"
         >
-      </div>
-
-      <div class="form-group">
-        <label for="centerSquare">Center Square (Optional)</label>
-        <input 
-          id="centerSquare"
-          v-model="centerSquare"
-          type="text"
-          placeholder="Enter center square personality"
-        >
-      </div>
-
-      <div class="form-group">
-        <label>Phrases*</label>
-        <div 
-          v-for="index in phrases.length" 
-          :key="index-1"
-          class="phrase-input"
-        >
-          <input 
-            v-model="phrases[index-1]"
-            type="text"
-            required
-            placeholder="Enter a phrase"
-          >
-          <button 
-            type="button" 
-            class="remove-phrase"
-            @click="removePhrase(index-1)"
-            :disabled="phrases.length === 1"
-          >
-            Remove
-          </button>
-        </div>
-        <button type="button" class="add-phrase" @click="addPhrase">
-          Add Phrase
+          Create Show
         </button>
       </div>
-
-      <button type="submit" class="submit-button">Create Show</button>
     </form>
   </div>
 </template>
 
 <style scoped>
-.create-show-form {
+.create-show-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.create-form {
   background-color: #1a1a1a;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin: 1rem 0;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #888;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border: 1px solid #333;
-  border-radius: 4px;
-  background-color: #242424;
-  color: white;
-  margin-bottom: 0.5rem;
 }
 
-.phrase-input {
+.phrases-help {
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.buttons {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #333;
 }
 
-.phrase-input input {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  border: 1px solid transparent;
+.cancel-btn,
+.submit-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-.remove-phrase {
-  background-color: #ff4444;
   color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  min-width: 120px;
 }
 
-.remove-phrase:disabled {
-  background-color: #666;
-  cursor: not-allowed;
+.cancel-btn {
+  background-color: #444;
 }
 
-.add-phrase {
-  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
-  color: white;
-  margin-top: 0.5rem;
+.cancel-btn:hover {
+  background-color: #555;
 }
 
-.add-phrase:hover:not(:disabled) {
-  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
-}
-
-.submit-button {
+.submit-btn {
   background-color: #646cff;
-  color: white;
-  width: 100%;
-  margin-top: 1rem;
 }
 
-button:hover:not(:disabled) {
-  border-color: #646cff;
+.submit-btn:hover:not(:disabled) {
+  background-color: #535bf2;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background-color: #333;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .create-form {
+    padding: 1.5rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-form {
+    padding: 1rem;
+  }
 }
 </style>

@@ -407,3 +407,42 @@ These could be added later but are not part of this plan:
 - `vue-tvbingo/src/components/ShowDetail.vue` - Major refactoring
 
 **Status:** ✅ Phase 2 complete, ready for Phase 3
+
+### Phase 3: Upgrade CreateShow.vue ✅ COMPLETE
+
+**Date:** 2026-01-28
+
+**Tasks Completed:**
+- [x] Task 3.1: Modernized CreateShow.vue
+  - Replaced one-field-per-phrase with `<PhraseListManager>`
+  - Used `<FormFieldWithValidation>` for all three text fields
+  - Added `useUnsavedChangesGuard` for unsaved changes warning
+  - Applied consistent styling matching ShowDetail
+  - Added validation before submission
+  - Disabled submit button when form is invalid
+- [x] Task 3.2: Updated CreateShowPage.vue
+  - Improved error handling to match ShowDetail patterns
+  - Added field-specific error display
+  - Enhanced styling consistency
+
+**Results:**
+- CreateShow.vue grew from 193 lines to 256 lines (+33%)
+- BUT gained all modern features:
+  - ✅ Bulk add via textarea
+  - ✅ Inline phrase editing
+  - ✅ Alphabetical sorting
+  - ✅ Character counters and validation
+  - ✅ Scroll to and highlight new phrases
+  - ✅ Keyboard shortcuts (Enter to add)
+  - ✅ Unsaved changes warning
+  - ✅ Delete confirmations
+  - ✅ ARIA attributes for accessibility
+- CreateShowPage.vue updated with consistent styling
+- TypeScript compilation successful
+- All tests passing (132 passed)
+
+**Files Modified:**
+- `vue-tvbingo/src/components/CreateShow.vue` - Complete rewrite with modern UX
+- `vue-tvbingo/src/pages/CreateShowPage.vue` - Improved error handling and styling
+
+**Status:** ✅ Phase 3 complete, ready for Phase 4

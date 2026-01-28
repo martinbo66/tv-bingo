@@ -1,10 +1,10 @@
 <template>
   <div class="create-show-page">
-    <div class="header">
+    <div class="header-section">
       <h2>Create New TV Show</h2>
-      <p>Create a new TV show and add phrases to it.</p>
+      <p class="subtitle">Create a new TV show and add phrases to it.</p>
     </div>
-    <div v-if="error" class="error-message">
+    <div v-if="error" class="error-message" role="alert">
       {{ error }}
     </div>
     <CreateShow @show-created="onShowCreated" />
@@ -26,12 +26,12 @@ const formatValidationErrors = (errorData: any): string => {
   if (!errorData || typeof errorData !== 'object') {
     return 'Validation error occurred'
   }
-  
+
   // Extract field-specific error messages
   const errorMessages = Object.entries(errorData)
     .map(([field, message]) => `${field}: ${message}`)
     .join(', ')
-  
+
   return errorMessages || 'Validation error occurred'
 }
 
@@ -62,30 +62,64 @@ const onShowCreated = async (showInput: CreateShowInput) => {
 
 <style scoped>
 .create-show-page {
-  padding: 2rem;
-}
-
-.header {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  padding: 2rem;
+  min-height: calc(100vh - 200px);
+}
+
+.header-section {
+  text-align: center;
   margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
 }
 
-.back-link {
-  color: #646cff;
-  text-decoration: none;
+.header-section h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
-.back-link:hover {
-  text-decoration: underline;
+.subtitle {
+  margin-top: 0.5rem;
+  color: #888;
+  font-size: 1rem;
 }
 
 .error-message {
-  background-color: #fef2f2;
-  color: #dc2626;
+  width: 100%;
+  max-width: 600px;
   padding: 1rem;
-  border-radius: 0.375rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  background-color: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #ff4444;
+  font-size: 0.9rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .create-show-page {
+    padding: 1rem;
+  }
+
+  .header-section h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-show-page {
+    padding: 0.5rem;
+  }
+
+  .header-section h2 {
+    font-size: 1.5rem;
+  }
 }
 </style>
