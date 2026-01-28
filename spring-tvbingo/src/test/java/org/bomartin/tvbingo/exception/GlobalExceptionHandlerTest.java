@@ -107,7 +107,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void handleIllegalArgumentException_ShouldReturn400Status() {
+    void handleIllegalArgumentException_ShouldReturn409StatusForUniqueConstraint() {
         // Arrange
         IllegalArgumentException exception = 
             new IllegalArgumentException("Show title must be unique");
@@ -116,7 +116,21 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<Map<String, String>> response = 
             globalExceptionHandler.handleIllegalArgumentException(exception);
 
-        // Assert
+        // Assert - uniqueness violations should return 409 Conflict
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void handleIllegalArgumentException_ShouldReturn400StatusForOtherErrors() {
+        // Arrange
+        IllegalArgumentException exception = 
+            new IllegalArgumentException("Some other error");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = 
+            globalExceptionHandler.handleIllegalArgumentException(exception);
+
+        // Assert - other errors should return 400 Bad Request
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 

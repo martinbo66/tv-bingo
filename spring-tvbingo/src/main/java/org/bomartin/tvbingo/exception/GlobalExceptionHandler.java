@@ -39,11 +39,12 @@ public class GlobalExceptionHandler {
         
         if (ex.getMessage().contains("Show title must be unique")) {
             errors.put("showTitle", ex.getMessage());
+            // Return 409 Conflict for uniqueness violations
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
         } else {
             errors.put("error", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
-        
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

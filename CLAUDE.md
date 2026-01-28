@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code when working with the TV Bingo monorepo.
 
+**IMPORTANT:** Always read and follow the global rules at `~/.claude/claude.md` before taking any actions. These rules apply to ALL projects and must be followed without exception.
+
 ## Project Overview
 
 TV Bingo is a web application for creating custom bingo cards for TV shows. Users define phrases and recurring moments for their favorite shows, then generate randomized 5x5 bingo cards to play while watching.
@@ -71,9 +73,12 @@ All commands run from the repository root:
 
 ### Backend-specific
 ```bash
+./gradlew bootRun           # Run the Spring Boot application
 ./gradlew backendBuild      # Build backend only
 ./gradlew backendTest       # Run backend tests only
 ./gradlew :spring-tvbingo:test --info  # Verbose test output
+
+# Note: Backend commands must be run from the repository root, not from spring-tvbingo/
 ```
 
 ### Frontend-specific
@@ -82,8 +87,12 @@ All commands run from the repository root:
 ./gradlew frontendBuild     # Build for production
 ./gradlew frontendTypeCheck # TypeScript type checking
 
-# Or use npm directly:
-cd vue-tvbingo && npm run dev
+# Or use npm directly from vue-tvbingo/:
+cd vue-tvbingo
+npm install
+npm run dev          # Start dev server (http://localhost:5173)
+npm run build        # Build for production
+npm run type-check   # TypeScript type checking
 ```
 
 ### Docker / Deployment
@@ -97,7 +106,9 @@ docker build -t tv-bingo .
 docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo
 ```
 
-## Database Configuration
+## Configuration
+
+### Backend Database Configuration
 
 The backend requires PostgreSQL with these environment variables:
 - `TVBINGO_DB_URL` - Connection URL (e.g., `jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema`)
@@ -105,6 +116,16 @@ The backend requires PostgreSQL with these environment variables:
 - `TVBINGO_DB_PASSWORD` - Database password
 
 Tests use embedded Postgres automatically.
+
+### Frontend Environment Variables
+
+The frontend uses Vite for environment variable management. Create `.env.local` in `vue-tvbingo/` for local development:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+In production builds, the frontend is bundled into Spring Boot's static resources and served from the same origin, so no separate API URL configuration is needed.
 
 ## API Documentation
 
@@ -123,35 +144,67 @@ Key endpoints:
 ```
 org.bomartin.tvbingo/
 ├── config/          # Spring configuration (CORS, SPA routing, etc.)
+│   ├── WebConfig.java       # CORS configuration for development
+│   └── SpaWebConfig.java    # Serves Vue SPA and handles client-side routing
 ├── controller/      # REST endpoints
+│   └── ShowController.java  # REST API at /api/shows
 ├── dto/             # Data Transfer Objects
+│   └── ShowRequest.java
 ├── exception/       # Global exception handling
+│   └── GlobalExceptionHandler.java
 ├── model/           # Domain entities
+│   └── Show.java            # Core domain entity
 ├── repository/      # Data access layer
+│   └── ShowRepository.java  # Spring Data JDBC repository
 ├── service/         # Business logic
-└── validation/      # Custom validators
+│   └── ShowService.java     # Show management business logic
+├── validation/      # Custom validators
+│   ├── UniqueShowTitle.java
+│   └── UniqueShowTitleValidator.java
+└── TvbingoApplication.java  # Main application class
 ```
 
-Key configuration classes:
-- `WebConfig.java` - CORS configuration for development
-- `SpaWebConfig.java` - Serves Vue SPA and handles client-side routing
+Key components:
+- **Show**: Core domain entity with title, phrases, and bingo card data
+- **ShowController**: REST API endpoints for show CRUD operations
+- **ShowService**: Business logic for show management
+- **ShowRepository**: Spring Data JDBC repository interface
+- **Liquibase**: Schema management in `src/main/resources/db/changelog/`
+- **GlobalExceptionHandler**: Consistent error responses across the API
 
 ### Frontend Structure
 ```
 vue-tvbingo/src/
 ├── components/      # Reusable Vue components
+│   ├── CreateShow.vue
+│   ├── ShowDetail.vue
+│   └── ShowsList.vue
 ├── pages/           # Page-level components
+│   ├── BingoCard.vue
+│   └── CreateShowPage.vue
 ├── services/        # API client services
+│   ├── apiClient.ts      # Base HTTP client
+│   └── showService.ts    # Show-specific API methods
 ├── types/           # TypeScript type definitions
-└── router/          # Vue Router configuration
+│   └── Show.ts
+├── router/          # Vue Router configuration
+├── assets/          # Static assets
+├── App.vue          # Root component
+└── main.ts          # Application entry point
 ```
 
 ## Development Standards
 
 ### Code Style
-- **Java**: Standard conventions with Lombok
-- **TypeScript**: ESLint + Prettier defaults
+- **Java**: 
+  - Standard Java conventions
+  - Lombok for boilerplate reduction (@Data, @RequiredArgsConstructor, etc.)
+  - Jakarta Bean Validation annotations for input validation
+  - Custom validators for business rules (e.g., @UniqueShowTitle)
+- **TypeScript**: ESLint + Prettier defaults, strict mode enabled
 - **Vue**: Composition API with `<script setup lang="ts">`
+  - Use scoped CSS in components
+  - Group imports as: Vue → external → local → types
 
 ### Naming Conventions
 - Java classes: PascalCase
