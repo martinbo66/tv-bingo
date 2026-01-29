@@ -86,6 +86,7 @@ All commands run from the repository root:
 ./gradlew frontendInstall   # Install npm dependencies
 ./gradlew frontendBuild     # Build for production
 ./gradlew frontendTypeCheck # TypeScript type checking
+./gradlew frontendLint      # Run ESLint
 
 # Or use npm directly from vue-tvbingo/:
 cd vue-tvbingo
@@ -93,6 +94,10 @@ npm install
 npm run dev          # Start dev server (http://localhost:5173)
 npm run build        # Build for production
 npm run type-check   # TypeScript type checking
+npm run lint         # Run ESLint
+npm run lint:fix     # Auto-fix ESLint issues
+npm run format       # Format code with Prettier
+npm run format:check # Check Prettier formatting
 ```
 
 ### Docker / Deployment
@@ -308,15 +313,23 @@ vue-tvbingo/src/
 ## Development Standards
 
 ### Code Style
-- **Java**: 
+- **Java**:
   - Standard Java conventions
   - Lombok for boilerplate reduction (@Data, @RequiredArgsConstructor, etc.)
   - Jakarta Bean Validation annotations for input validation
   - Custom validators for business rules (e.g., @UniqueShowTitle)
-- **TypeScript**: ESLint + Prettier defaults, strict mode enabled
+  - Checkstyle for linting (configured in Spring Boot project)
+- **TypeScript/Vue**:
+  - ESLint with Vue, TypeScript, and Prettier plugins
+  - Prettier for code formatting (no semicolons, single quotes, 100 char line width)
+  - TypeScript strict mode enabled
+  - Run `npm run lint` to check code style
+  - Run `npm run lint:fix` to auto-fix issues
+  - Run `npm run format` to format code with Prettier
 - **Vue**: Composition API with `<script setup lang="ts">`
   - Use scoped CSS in components
   - Group imports as: Vue → external → local → types
+  - Allow single-word component names (disabled multi-word rule)
 
 ### Naming Conventions
 - Java classes: PascalCase

@@ -64,7 +64,10 @@ const newPhraseLength = computed(() => newPhrase.value?.length || 0)
 // Computed: bulk phrases line count
 const bulkPhrasesLineCount = computed(() => {
   if (!bulkPhrases.value.trim()) return 0
-  return bulkPhrases.value.trim().split('\n').filter(line => line.trim()).length
+  return bulkPhrases.value
+    .trim()
+    .split('\n')
+    .filter(line => line.trim()).length
 })
 
 // Computed: line numbers for textarea
@@ -259,13 +262,17 @@ const onNewPhraseInput = () => {
           v-model="newPhrase"
           placeholder="New phrase"
           :class="{ 'has-error': newPhraseTouched && newPhraseError }"
-          @keydown.enter.prevent="addPhrase"
-          @blur="newPhraseTouched = true; onNewPhraseInput()"
-          @input="onNewPhraseInput"
           :aria-invalid="newPhraseTouched && !!newPhraseError"
           :aria-describedby="newPhraseTouched && newPhraseError ? 'new-phrase-error' : undefined"
+          @keydown.enter.prevent="addPhrase"
+          @blur="
+            /* eslint-disable-next-line prettier/prettier */
+            newPhraseTouched = true;
+            onNewPhraseInput()
+          "
+          @input="onNewPhraseInput"
         />
-        <button type="button" @click="addPhrase" aria-label="Add new phrase">Add</button>
+        <button type="button" aria-label="Add new phrase" @click="addPhrase">Add</button>
       </div>
       <div
         v-if="newPhraseTouched && newPhraseError"
@@ -280,9 +287,9 @@ const onNewPhraseInput = () => {
       <div v-if="showBulkAdd" class="bulk-add-section">
         <button
           type="button"
-          @click="toggleBulkAdd"
           class="bulk-toggle-btn"
           aria-label="Toggle bulk add mode"
+          @click="toggleBulkAdd"
         >
           {{ showBulkAddInterface ? '− Hide Bulk Add' : '+ Bulk Add' }}
         </button>
@@ -295,7 +302,7 @@ const onNewPhraseInput = () => {
             </span>
           </div>
           <div class="textarea-with-lines">
-            <div class="line-numbers" ref="lineNumbersRef" aria-hidden="true">
+            <div ref="lineNumbersRef" class="line-numbers" aria-hidden="true">
               <div v-for="lineNum in textareaLineNumbers" :key="lineNum" class="line-number">
                 {{ lineNum }}
               </div>
@@ -315,25 +322,30 @@ const onNewPhraseInput = () => {
             {{ maxPhraseLength }} characters per phrase.
           </div>
           <div v-if="bulkAddErrors.length > 0" class="bulk-errors">
-            <div class="field-error" role="alert" v-for="(error, index) in bulkAddErrors" :key="index">
+            <div
+              v-for="(error, index) in bulkAddErrors"
+              :key="index"
+              class="field-error"
+              role="alert"
+            >
               {{ error }}
             </div>
           </div>
           <div class="bulk-actions">
             <button
               type="button"
-              @click="toggleBulkAdd"
               class="cancel-bulk-btn"
               aria-label="Cancel bulk add"
+              @click="toggleBulkAdd"
             >
               Cancel
             </button>
             <button
               type="button"
-              @click="addBulkPhrases"
               class="add-bulk-btn"
               :disabled="!bulkPhrases.trim()"
               aria-label="Add all phrases"
+              @click="addBulkPhrases"
             >
               Add All ({{ bulkPhrasesLineCount }})
             </button>
@@ -345,7 +357,7 @@ const onNewPhraseInput = () => {
     <!-- Phrases List Section -->
     <div class="phrases-list-section">
       <label>Phrases ({{ phraseCount }}):</label>
-      <div class="phrases-list" ref="phrasesListRef">
+      <div ref="phrasesListRef" class="phrases-list">
         <div
           v-for="({ phrase, originalIndex }, sortedIndex) in sortedPhrases"
           :key="originalIndex"
@@ -358,36 +370,34 @@ const onNewPhraseInput = () => {
             <input
               v-model="editingValue"
               class="edit-input"
+              autofocus
+              :aria-label="`Edit phrase: ${phrases[originalIndex]}`"
               @keydown.enter="saveEdit"
               @keydown.escape="cancelEdit"
               @blur="saveEdit"
-              autofocus
-              :aria-label="`Edit phrase: ${phrases[originalIndex]}`"
             />
           </template>
           <!-- Display mode -->
           <template v-else>
             <span
               class="phrase-text"
-              :class="{ 'editable': allowInlineEdit }"
-              @click="startEdit(originalIndex)"
+              :class="{ editable: allowInlineEdit }"
               :title="allowInlineEdit ? 'Click to edit' : ''"
+              @click="startEdit(originalIndex)"
             >
               {{ phrase }}
             </span>
             <button
               type="button"
-              @click="removePhrase(originalIndex)"
               class="remove-btn"
               :aria-label="`Remove phrase: ${phrase}`"
+              @click="removePhrase(originalIndex)"
             >
               ×
             </button>
           </template>
         </div>
-        <div v-if="phraseCount === 0" class="empty-state">
-          No phrases yet. Add some above!
-        </div>
+        <div v-if="phraseCount === 0" class="empty-state">No phrases yet. Add some above!</div>
       </div>
     </div>
   </div>
@@ -462,7 +472,9 @@ label {
   border-radius: 6px;
   color: #fff;
   font-size: 1rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-sizing: border-box;
 }
 
@@ -538,7 +550,9 @@ label {
   border-radius: 6px;
   background-color: #2c2c2c;
   overflow: hidden;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .textarea-with-lines:focus-within {

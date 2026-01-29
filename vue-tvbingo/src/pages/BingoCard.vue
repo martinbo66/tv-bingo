@@ -32,7 +32,7 @@ const generateBingoGrid = (phrases: string[], centerSquare?: string) => {
   // Fisher-Yates shuffle algorithm
   for (let i = shuffledPhrases.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-      ;[shuffledPhrases[i], shuffledPhrases[j]] = [shuffledPhrases[j], shuffledPhrases[i]]
+    ;[shuffledPhrases[i], shuffledPhrases[j]] = [shuffledPhrases[j], shuffledPhrases[i]]
   }
 
   // Take first 24 phrases (for a 5x5 grid minus the center)
@@ -76,7 +76,7 @@ const checkWinningCombinations = () => {
   if (winningLines.value.length > previousWinCount) {
     showBingoAlert.value = true
   }
-  
+
   // Clear alert when no winning lines remain
   if (winningLines.value.length === 0) {
     showBingoAlert.value = false
@@ -169,8 +169,8 @@ const loadShow = async () => {
   }
 }
 
-const isWinningCell = computed(() => (index: number) =>
-  winningLines.value.some(line => line.includes(index))
+const isWinningCell = computed(
+  () => (index: number) => winningLines.value.some(line => line.includes(index))
 )
 
 onMounted(() => {
@@ -181,14 +181,12 @@ onMounted(() => {
 <template>
   <div class="bingo-bg">
     <div class="bingo-card-page fade-in">
-      <div v-if="loading" class="loading">
-        Loading bingo card...
-      </div>
+      <div v-if="loading" class="loading">Loading bingo card...</div>
 
       <div v-else-if="error" class="error">
         <p>{{ error }}</p>
         <div v-if="show && error.includes('24 phrases')" class="error-actions">
-          <button @click="navigateToShowDetail" class="edit-button">Edit Show</button>
+          <button class="edit-button" @click="navigateToShowDetail">Edit Show</button>
         </div>
       </div>
 
@@ -197,28 +195,32 @@ onMounted(() => {
           <router-link to="/" class="back-link">
             <span class="back-icon">←</span> Back to Shows
           </router-link>
-          <h2 @click="navigateToShowDetail" class="show-title">{{ show.showTitle }}</h2>
+          <h2 class="show-title" @click="navigateToShowDetail">{{ show.showTitle }}</h2>
           <div class="button-row">
-            <button @click="regenerateBingoCard" class="regenerate-button">
+            <button class="regenerate-button" @click="regenerateBingoCard">
               <span class="regen-icon">🔄</span> Regenerate
             </button>
-            <button @click="resetMarks" class="reset-button">
+            <button class="reset-button" @click="resetMarks">
               <span class="reset-icon">🧹</span> Reset Marks
             </button>
-            <button @click="printBingoCard" class="print-button">
+            <button class="print-button" @click="printBingoCard">
               <span class="print-icon">🖨️</span> Print
             </button>
           </div>
-          <div class="marked-counter" aria-live="polite" aria-atomic="true">{{ markedCount }}/25 marked</div>
+          <div class="marked-counter" aria-live="polite" aria-atomic="true">
+            {{ markedCount }}/25 marked
+          </div>
         </div>
-        <div style="height: 1rem;"></div>
+        <div style="height: 1rem"></div>
         <div class="bingo-grid card-shadow">
-          <div v-for="(phrase, index) in bingoGrid" :key="index"
+          <div
+            v-for="(phrase, index) in bingoGrid"
+            :key="index"
             class="bingo-cell"
             :class="{
-              'selected': selectedCells.has(index),
+              selected: selectedCells.has(index),
               'center-square': index === 12,
-              'winning': isWinningCell(index),
+              winning: isWinningCell(index),
               'long-text': phrase.length > 20
             }"
             role="button"
@@ -228,13 +230,22 @@ onMounted(() => {
             tabindex="0"
             @click="toggleCell(index)"
             @keydown.enter.prevent="toggleCell(index)"
-            @keydown.space.prevent="toggleCell(index)">
+            @keydown.space.prevent="toggleCell(index)"
+          >
             {{ phrase }}
           </div>
         </div>
 
-        <div v-if="showBingoAlert" class="bingo-alert" role="alert" aria-live="assertive" @click="dismissBingoAlert">
-          <button class="bingo-close" @click.stop="dismissBingoAlert" aria-label="Close">&times;</button>
+        <div
+          v-if="showBingoAlert"
+          class="bingo-alert"
+          role="alert"
+          aria-live="assertive"
+          @click="dismissBingoAlert"
+        >
+          <button class="bingo-close" aria-label="Close" @click.stop="dismissBingoAlert">
+            &times;
+          </button>
           <div class="bingo-text">BINGO!</div>
           <div class="bingo-dismiss-hint">Click anywhere to dismiss</div>
         </div>
@@ -242,10 +253,12 @@ onMounted(() => {
         <div v-if="showRegenerateConfirm" class="confirm-overlay" @click="cancelRegenerate">
           <div class="confirm-dialog" @click.stop>
             <div class="confirm-title">Regenerate Card?</div>
-            <div class="confirm-message">This will shuffle all phrases and clear your marked squares.</div>
+            <div class="confirm-message">
+              This will shuffle all phrases and clear your marked squares.
+            </div>
             <div class="confirm-buttons">
-              <button @click="cancelRegenerate" class="confirm-cancel">Cancel</button>
-              <button @click="doRegenerate" class="confirm-proceed">Regenerate</button>
+              <button class="confirm-cancel" @click="cancelRegenerate">Cancel</button>
+              <button class="confirm-proceed" @click="doRegenerate">Regenerate</button>
             </div>
           </div>
         </div>
@@ -332,7 +345,10 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -358,7 +374,10 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(245, 124, 0, 0.15);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -384,7 +403,10 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -417,7 +439,10 @@ onMounted(() => {
   font-weight: 500;
   text-decoration: none;
   box-shadow: 0 2px 8px #a084ca22;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -442,7 +467,9 @@ onMounted(() => {
   background: none;
   padding: 18px;
   border-radius: 24px;
-  box-shadow: 0 6px 32px #a084ca33, 0 1.5px 8px #0002;
+  box-shadow:
+    0 6px 32px #a084ca33,
+    0 1.5px 8px #0002;
   margin-bottom: 2.5rem;
   width: 100%;
   aspect-ratio: 1;
@@ -456,7 +483,9 @@ onMounted(() => {
 }
 
 .card-shadow {
-  box-shadow: 0 6px 32px #a084ca33, 0 1.5px 8px #0002;
+  box-shadow:
+    0 6px 32px #a084ca33,
+    0 1.5px 8px #0002;
 }
 
 .bingo-cell {
@@ -483,7 +512,9 @@ onMounted(() => {
   color: #222;
   cursor: pointer;
   user-select: none;
-  transition: all 0.18s cubic-bezier(.4, 2, .6, 1), box-shadow 0.2s;
+  transition:
+    all 0.18s cubic-bezier(0.4, 2, 0.6, 1),
+    box-shadow 0.2s;
   position: relative;
   overflow: hidden;
   overflow-wrap: break-word;
@@ -541,7 +572,9 @@ onMounted(() => {
   background: linear-gradient(90deg, #ffd700 60%, #fffbe0 100%);
   color: #222;
   border-color: #ffd700;
-  box-shadow: 0 0 24px #ffd70099, 0 2px 8px #a084ca33;
+  box-shadow:
+    0 0 24px #ffd70099,
+    0 2px 8px #a084ca33;
   animation: pulse 1.2s infinite;
   z-index: 4;
 }
@@ -574,7 +607,9 @@ onMounted(() => {
   cursor: pointer;
   font-weight: 600;
   font-size: 1rem;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
   box-shadow: 0 2px 8px #4a6cf733;
 }
 .edit-button:hover {
@@ -598,8 +633,10 @@ onMounted(() => {
 .bingo-text {
   font-size: 4rem;
   font-weight: bold;
-  color: #FFD700;
-  text-shadow: 0 0 10px #ffd70099, 0 2px 12px #fffbe0;
+  color: #ffd700;
+  text-shadow:
+    0 0 10px #ffd70099,
+    0 2px 12px #fffbe0;
   animation: bounce 1.2s infinite;
   letter-spacing: 0.08em;
 }
@@ -706,17 +743,32 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .fade-in {
@@ -728,11 +780,11 @@ onMounted(() => {
   .bingo-card-page {
     max-width: 1000px;
   }
-  
+
   .bingo-card-container {
     max-width: 700px;
   }
-  
+
   .bingo-grid {
     max-width: 600px;
     max-height: 600px;
@@ -744,7 +796,7 @@ onMounted(() => {
   .bingo-card-page {
     max-width: 900px;
   }
-  
+
   .bingo-card-container {
     max-width: 650px;
   }

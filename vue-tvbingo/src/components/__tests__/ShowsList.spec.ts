@@ -105,7 +105,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
       await nextTick()
 
       // Verify grid view shows all 3 shows
-      let shows = wrapper.findAll('.show-card')
+      const shows = wrapper.findAll('.show-card')
       expect(shows.length).toBe(3)
       expect(shows[0].text()).toContain('North Woods Law')
       expect(shows[1].text()).toContain('The Office')
@@ -135,7 +135,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
       await nextTick()
 
       // Verify list view
-      let listRows = wrapper.findAll('.list-row')
+      const listRows = wrapper.findAll('.list-row')
       expect(listRows.length).toBe(3)
 
       // Switch back to grid view
@@ -156,7 +156,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
       await nextTick()
 
       // Check grid view phrase counts
-      let cards = wrapper.findAll('.show-card')
+      const cards = wrapper.findAll('.show-card')
       expect(cards[0].text()).toContain('27 phrases')
       expect(cards[1].text()).toContain('30 phrases')
       expect(cards[2].text()).toContain('25 phrases')
@@ -179,7 +179,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
       await nextTick()
 
       // Check grid view complete indicators
-      let cards = wrapper.findAll('.show-card')
+      const cards = wrapper.findAll('.show-card')
       expect(cards[0].find('.complete-indicator').exists()).toBe(true) // 27 phrases
       expect(cards[1].find('.complete-indicator').exists()).toBe(true) // 30 phrases
       expect(cards[2].find('.complete-indicator').exists()).toBe(true) // 25 phrases
@@ -499,7 +499,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
       await nextTick()
 
       // Get order in grid view
-      let cards = wrapper.findAll('.show-card')
+      const cards = wrapper.findAll('.show-card')
       const gridTitles = cards.map(card => card.find('h3').text())
 
       // Switch to list view
@@ -710,7 +710,7 @@ describe('ShowsList.vue - Search and Filter', () => {
 
       const filterBtns = wrapper.findAll('.filter-btn')
       const lowBtn = filterBtns.find(btn => btn.text().includes('<10'))
-      
+
       await lowBtn!.trigger('click')
       await nextTick()
 
@@ -725,7 +725,7 @@ describe('ShowsList.vue - Search and Filter', () => {
 
       const filterBtns = wrapper.findAll('.filter-btn')
       const mediumBtn = filterBtns.find(btn => btn.text().includes('10-24'))
-      
+
       await mediumBtn!.trigger('click')
       await nextTick()
 
@@ -741,7 +741,7 @@ describe('ShowsList.vue - Search and Filter', () => {
 
       const filterBtns = wrapper.findAll('.filter-btn')
       const completeBtn = filterBtns.find(btn => btn.text().includes('25+'))
-      
+
       await completeBtn!.trigger('click')
       await nextTick()
 
@@ -777,9 +777,9 @@ describe('ShowsList.vue - Search and Filter', () => {
 
       const filterBtns = wrapper.findAll('.filter-btn')
       const lowBtn = filterBtns.find(btn => btn.text().includes('<10'))
-      
+
       expect(lowBtn!.classes()).not.toContain('active')
-      
+
       await lowBtn!.trigger('click')
       await nextTick()
 
@@ -868,7 +868,7 @@ describe('ShowsList.vue - Search and Filter', () => {
 
       expect((searchInput.element as HTMLInputElement).value).toBe('')
       expect(wrapper.findAll('.show-card').length).toBe(5)
-      
+
       // All filter should be active
       const allBtn = filterBtns.find(btn => btn.text() === 'All')
       expect(allBtn!.classes()).toContain('active')

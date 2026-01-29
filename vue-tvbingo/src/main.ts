@@ -9,15 +9,15 @@ console.log('Vue app initializing...')
 
 try {
   const app = createApp(App)
-  
+
   // Add error handler
   app.config.errorHandler = (err, _instance, info) => {
     console.error('Vue Error:', err)
     console.error('Error Info:', info)
   }
-  
+
   app.use(router)
-  
+
   // Check if mount element exists
   const mountElement = document.getElementById('app')
   if (!mountElement) {

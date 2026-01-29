@@ -34,10 +34,7 @@ interface FieldError {
 const fieldErrors = ref<FieldError>({})
 
 // Unsaved changes guard
-const { hasUnsavedChanges, markClean, setupGuards } = useUnsavedChangesGuard(
-  originalShow,
-  show
-)
+const { hasUnsavedChanges, markClean, setupGuards } = useUnsavedChangesGuard(originalShow, show)
 
 onMounted(async () => {
   try {
@@ -71,7 +68,9 @@ onMounted(async () => {
 // Cancel with confirmation
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm('You have unsaved changes. Are you sure you want to discard them?')
+    const answer = window.confirm(
+      'You have unsaved changes. Are you sure you want to discard them?'
+    )
     if (!answer) return
   }
   router.push('/')
@@ -127,7 +126,7 @@ const saveShow = async () => {
         if (e.data && typeof e.data === 'object') {
           Object.keys(e.data).forEach(field => {
             if (field in fieldErrors.value) {
-              (fieldErrors.value as any)[field] = e.data[field]
+              ;(fieldErrors.value as any)[field] = e.data[field]
             }
           })
         }
@@ -168,7 +167,7 @@ const saveShow = async () => {
         <h2>Edit TV Show</h2>
       </div>
 
-      <form v-if="show" @submit.prevent="saveShow" class="edit-form">
+      <form v-if="show" class="edit-form" @submit.prevent="saveShow">
         <!-- General error message -->
         <div v-if="error" class="form-error" role="alert">
           {{ error }}
@@ -176,8 +175,8 @@ const saveShow = async () => {
 
         <!-- Show Title -->
         <FormFieldWithValidation
-          v-model="show.showTitle"
           id="show-title-input"
+          v-model="show.showTitle"
           label="Show Title"
           :required="true"
           :max-length="VALIDATION_LIMITS.SHOW_TITLE"
@@ -187,8 +186,8 @@ const saveShow = async () => {
 
         <!-- Game Title -->
         <FormFieldWithValidation
-          v-model="show.gameTitle"
           id="game-title-input"
+          v-model="show.gameTitle"
           label="Game Title"
           :max-length="VALIDATION_LIMITS.GAME_TITLE"
           placeholder="Enter game title (optional)"
@@ -196,8 +195,8 @@ const saveShow = async () => {
 
         <!-- Center Square -->
         <FormFieldWithValidation
-          v-model="show.centerSquare"
           id="center-square-input"
+          v-model="show.centerSquare"
           label="Center Square"
           :max-length="VALIDATION_LIMITS.CENTER_SQUARE"
           placeholder="Enter center square text (optional)"
@@ -206,21 +205,24 @@ const saveShow = async () => {
         <!-- Phrases -->
         <PhraseListManager
           :phrases="show.phrases"
-          @update:phrases="handlePhrasesUpdate"
           :allow-inline-edit="true"
           :show-bulk-add="true"
           :auto-sort="true"
           :max-phrase-length="VALIDATION_LIMITS.PHRASE"
+          @update:phrases="handlePhrasesUpdate"
         />
 
         <!-- Action Buttons -->
         <div class="buttons">
-          <button type="button" @click="handleCancel" class="cancel-btn" aria-label="Cancel editing and return to show list">
+          <button
+            type="button"
+            class="cancel-btn"
+            aria-label="Cancel editing and return to show list"
+            @click="handleCancel"
+          >
             Cancel
           </button>
-          <button type="submit" class="save-btn" aria-label="Save show changes">
-            Save
-          </button>
+          <button type="submit" class="save-btn" aria-label="Save show changes">Save</button>
         </div>
       </form>
     </div>
@@ -259,7 +261,8 @@ const saveShow = async () => {
   font-weight: 600;
 }
 
-.loading, .error {
+.loading,
+.error {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -267,7 +270,8 @@ const saveShow = async () => {
   width: 100%;
 }
 
-.loading-content, .error-content {
+.loading-content,
+.error-content {
   text-align: center;
   padding: 2rem;
   background-color: #1a1a1a;
@@ -275,7 +279,8 @@ const saveShow = async () => {
   max-width: 400px;
 }
 
-.loading-content h3, .error-content h3 {
+.loading-content h3,
+.error-content h3 {
   margin: 0;
   color: #888;
 }
@@ -308,7 +313,8 @@ const saveShow = async () => {
   border-top: 1px solid #333;
 }
 
-.cancel-btn, .save-btn {
+.cancel-btn,
+.save-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 6px;

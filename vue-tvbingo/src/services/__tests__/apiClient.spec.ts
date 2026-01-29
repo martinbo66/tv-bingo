@@ -152,7 +152,7 @@ describe('ApiClient', () => {
 
       await apiClient.request('/api/test', {
         headers: {
-          'Authorization': 'Bearer token123',
+          Authorization: 'Bearer token123',
           'X-Custom-Header': 'value'
         }
       })
@@ -162,7 +162,7 @@ describe('ApiClient', () => {
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer token123',
+            Authorization: 'Bearer token123',
             'X-Custom-Header': 'value'
           }
         })
@@ -229,8 +229,7 @@ describe('ApiClient', () => {
         json: async () => validationErrors
       })
 
-      await expect(apiClient.request('/api/shows', { method: 'POST' }))
-        .rejects.toThrow(ApiError)
+      await expect(apiClient.request('/api/shows', { method: 'POST' })).rejects.toThrow(ApiError)
 
       try {
         await apiClient.request('/api/shows', { method: 'POST' })
@@ -288,8 +287,7 @@ describe('ApiClient', () => {
         json: async () => conflictData
       })
 
-      await expect(apiClient.request('/api/shows', { method: 'POST' }))
-        .rejects.toThrow(ApiError)
+      await expect(apiClient.request('/api/shows', { method: 'POST' })).rejects.toThrow(ApiError)
 
       try {
         await apiClient.request('/api/shows', { method: 'POST' })
@@ -412,7 +410,7 @@ describe('ApiClient', () => {
         json: async () => mockData
       })
 
-      const result = await apiClient.request<Array<{ id: number, name: string }>>('/api/items')
+      const result = await apiClient.request<Array<{ id: number; name: string }>>('/api/items')
 
       expect(Array.isArray(result)).toBe(true)
       expect(result).toHaveLength(2)
@@ -429,10 +427,7 @@ describe('ApiClient', () => {
 
       await apiClient.request('api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:8080api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080api/test', expect.any(Object))
     })
 
     it('should handle empty base URL', async () => {
@@ -444,10 +439,7 @@ describe('ApiClient', () => {
 
       await client.request('/api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('/api/test', expect.any(Object))
     })
 
     it('should handle base URL with trailing slash', async () => {
@@ -459,10 +451,7 @@ describe('ApiClient', () => {
 
       await client.request('/api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:8080//api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080//api/test', expect.any(Object))
     })
   })
 })

@@ -11,6 +11,5 @@ export const VALIDATION_LIMITS = {
 
 export const ERROR_MESSAGES = {
   REQUIRED: (field: string) => `${field} is required`,
-  TOO_LONG: (field: string, max: number) =>
-    `${field} must be ${max} characters or less`
+  TOO_LONG: (field: string, max: number) => `${field} must be ${max} characters or less`
 } as const

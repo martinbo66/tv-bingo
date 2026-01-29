@@ -8,10 +8,7 @@ import { onBeforeRouteLeave } from 'vue-router'
  * @param currentData - Ref containing the current/working state
  * @returns Object with hasUnsavedChanges computed property and markClean function
  */
-export function useUnsavedChangesGuard<T>(
-  originalData: Ref<T>,
-  currentData: Ref<T>
-) {
+export function useUnsavedChangesGuard<T>(originalData: Ref<T>, currentData: Ref<T>) {
   // Check if there are unsaved changes by comparing JSON strings
   const hasUnsavedChanges = computed(() => {
     return JSON.stringify(currentData.value) !== JSON.stringify(originalData.value)
