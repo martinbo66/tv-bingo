@@ -33,6 +33,7 @@ describe('ApiClient', () => {
   beforeEach(() => {
     apiClient = new ApiClient('http://localhost:8080')
     fetchMock = vi.fn()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     global.fetch = fetchMock as any
   })
 
@@ -152,7 +153,7 @@ describe('ApiClient', () => {
 
       await apiClient.request('/api/test', {
         headers: {
-          'Authorization': 'Bearer token123',
+          Authorization: 'Bearer token123',
           'X-Custom-Header': 'value'
         }
       })
@@ -162,7 +163,7 @@ describe('ApiClient', () => {
         expect.objectContaining({
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer token123',
+            Authorization: 'Bearer token123',
             'X-Custom-Header': 'value'
           }
         })
@@ -229,8 +230,7 @@ describe('ApiClient', () => {
         json: async () => validationErrors
       })
 
-      await expect(apiClient.request('/api/shows', { method: 'POST' }))
-        .rejects.toThrow(ApiError)
+      await expect(apiClient.request('/api/shows', { method: 'POST' })).rejects.toThrow(ApiError)
 
       try {
         await apiClient.request('/api/shows', { method: 'POST' })
@@ -288,8 +288,7 @@ describe('ApiClient', () => {
         json: async () => conflictData
       })
 
-      await expect(apiClient.request('/api/shows', { method: 'POST' }))
-        .rejects.toThrow(ApiError)
+      await expect(apiClient.request('/api/shows', { method: 'POST' })).rejects.toThrow(ApiError)
 
       try {
         await apiClient.request('/api/shows', { method: 'POST' })
@@ -366,7 +365,7 @@ describe('ApiClient', () => {
     })
 
     it('should preserve ApiError when re-thrown', async () => {
-      const originalError = new ApiError('Custom error', 418, { teapot: true })
+      const originalError = new ApiError('Custom error', 418, { teapot: 'true' })
       fetchMock.mockRejectedValue(originalError)
 
       await expect(apiClient.request('/api/test')).rejects.toThrow(ApiError)
@@ -377,7 +376,7 @@ describe('ApiClient', () => {
         expect(error).toBe(originalError) // Same instance
         const apiError = error as ApiError
         expect(apiError.status).toBe(418)
-        expect(apiError.data).toEqual({ teapot: true })
+        expect(apiError.data).toEqual({ teapot: 'true' })
       }
     })
   })
@@ -412,7 +411,7 @@ describe('ApiClient', () => {
         json: async () => mockData
       })
 
-      const result = await apiClient.request<Array<{ id: number, name: string }>>('/api/items')
+      const result = await apiClient.request<Array<{ id: number; name: string }>>('/api/items')
 
       expect(Array.isArray(result)).toBe(true)
       expect(result).toHaveLength(2)
@@ -429,10 +428,7 @@ describe('ApiClient', () => {
 
       await apiClient.request('api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:8080api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080api/test', expect.any(Object))
     })
 
     it('should handle empty base URL', async () => {
@@ -444,10 +440,7 @@ describe('ApiClient', () => {
 
       await client.request('/api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        '/api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('/api/test', expect.any(Object))
     })
 
     it('should handle base URL with trailing slash', async () => {
@@ -459,10 +452,7 @@ describe('ApiClient', () => {
 
       await client.request('/api/test')
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        'http://localhost:8080//api/test',
-        expect.any(Object)
-      )
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:8080//api/test', expect.any(Object))
     })
   })
 })

@@ -1,9 +1,9 @@
 export interface Show {
-    id: number;
-    showTitle: string;
-    gameTitle?: string;
-    centerSquare?: string;
-    phrases: string[];
+  id: number
+  showTitle: string
+  gameTitle?: string
+  centerSquare?: string
+  phrases: string[]
 }
 
-export type CreateShowInput = Omit<Show, 'id'>;
+export type CreateShowInput = Omit<Show, 'id'>

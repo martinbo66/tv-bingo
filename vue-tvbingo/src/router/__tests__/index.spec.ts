@@ -6,7 +6,7 @@ describe('Vue Router', () => {
   describe('Route definitions', () => {
     it('should have route for home page', () => {
       const routes = router.getRoutes()
-      const homeRoute = routes.find((r) => r.path === '/')
+      const homeRoute = routes.find(r => r.path === '/')
 
       expect(homeRoute).toBeDefined()
       expect(homeRoute?.components?.default).toBeDefined()
@@ -14,7 +14,7 @@ describe('Vue Router', () => {
 
     it('should have route for show details with id parameter', () => {
       const routes = router.getRoutes()
-      const showRoute = routes.find((r) => r.path === '/show/:id')
+      const showRoute = routes.find(r => r.path === '/show/:id')
 
       expect(showRoute).toBeDefined()
       expect(showRoute?.components?.default).toBeDefined()
@@ -24,7 +24,7 @@ describe('Vue Router', () => {
 
     it('should have route for edit show with id parameter', () => {
       const routes = router.getRoutes()
-      const editRoute = routes.find((r) => r.path === '/show/:id/edit')
+      const editRoute = routes.find(r => r.path === '/show/:id/edit')
 
       expect(editRoute).toBeDefined()
       expect(editRoute?.components?.default).toBeDefined()
@@ -34,7 +34,7 @@ describe('Vue Router', () => {
 
     it('should have route for create show page', () => {
       const routes = router.getRoutes()
-      const createRoute = routes.find((r) => r.path === '/create')
+      const createRoute = routes.find(r => r.path === '/create')
 
       expect(createRoute).toBeDefined()
       expect(createRoute?.components?.default).toBeDefined()

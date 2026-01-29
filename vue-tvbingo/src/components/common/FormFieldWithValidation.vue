@@ -177,7 +177,9 @@ input {
   border-radius: 6px;
   color: #fff;
   font-size: 1rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-sizing: border-box;
 }
 

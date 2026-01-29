@@ -47,15 +47,35 @@ describe('BingoCard.vue', () => {
     id: 1,
     showTitle: 'The Office',
     gameTitle: 'Office Bingo',
-    centerSquare: 'That\'s what she said',
+    centerSquare: "That's what she said",
     phrases: [
-      'Dwight moment', 'Jim prank', 'Michael awkwardness', 'Angela cat lady',
-      'Kevin math fail', 'Stanley crossword', 'Pam art', 'Ryan scheme',
-      'Toby hate', 'Creed weird', 'Meredith chaos', 'Oscar explains',
-      'Andy sings', 'Phyllis sass', 'Darryl wisdom', 'Kelly drama',
-      'Jan appears', 'David Wallace', 'Conference room', 'Pranks on Dwight',
-      'Beets reference', 'Schrute Farms', 'Dunder Mifflin', 'Scranton branch',
-      'Extra phrase 1', 'Extra phrase 2', 'Extra phrase 3' // 27 total
+      'Dwight moment',
+      'Jim prank',
+      'Michael awkwardness',
+      'Angela cat lady',
+      'Kevin math fail',
+      'Stanley crossword',
+      'Pam art',
+      'Ryan scheme',
+      'Toby hate',
+      'Creed weird',
+      'Meredith chaos',
+      'Oscar explains',
+      'Andy sings',
+      'Phyllis sass',
+      'Darryl wisdom',
+      'Kelly drama',
+      'Jan appears',
+      'David Wallace',
+      'Conference room',
+      'Pranks on Dwight',
+      'Beets reference',
+      'Schrute Farms',
+      'Dunder Mifflin',
+      'Scranton branch',
+      'Extra phrase 1',
+      'Extra phrase 2',
+      'Extra phrase 3' // 27 total
     ]
   }
 
@@ -67,8 +87,8 @@ describe('BingoCard.vue', () => {
 
   describe('Loading and Error States', () => {
     it('should show loading state initially', async () => {
-      vi.mocked(showService.getShowById).mockImplementation(() =>
-        new Promise(() => {}) // Never resolves
+      vi.mocked(showService.getShowById).mockImplementation(
+        () => new Promise(() => {}) // Never resolves
       )
 
       const wrapper = mount(BingoCard, createMountOptions())
@@ -89,6 +109,7 @@ describe('BingoCard.vue', () => {
     })
 
     it('should show error when show not found', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(showService.getShowById).mockResolvedValue(null as any)
 
       const wrapper = mount(BingoCard, createMountOptions())
@@ -156,7 +177,7 @@ describe('BingoCard.vue', () => {
       const cells = wrapper.findAll('.bingo-cell')
       const centerCell = cells[12]
 
-      expect(centerCell.text()).toBe('That\'s what she said')
+      expect(centerCell.text()).toBe("That's what she said")
       expect(centerCell.classes()).toContain('center-square')
     })
 
@@ -521,9 +542,7 @@ describe('BingoCard.vue', () => {
       const uniqueGrids = new Set<string>()
       grids.forEach(grid => {
         // Create a string representation of non-center cells
-        const gridKey = grid
-          .map((cell, idx) => idx === 12 ? 'CENTER' : cell)
-          .join('|')
+        const gridKey = grid.map((cell, idx) => (idx === 12 ? 'CENTER' : cell)).join('|')
         uniqueGrids.add(gridKey)
       })
 
@@ -545,7 +564,7 @@ describe('BingoCard.vue', () => {
         const text = cell.text()
         if (idx === 12) {
           // Center square
-          expect(text).toBe('That\'s what she said')
+          expect(text).toBe("That's what she said")
         } else {
           // Should be one of the phrases
           expect(mockShow.phrases).toContain(text)

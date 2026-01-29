@@ -22,7 +22,9 @@ import { ApiError } from '../services/apiClient'
 const router = useRouter()
 const error = ref<string | null>(null)
 
-const formatValidationErrors = (errorData: any): string => {
+const formatValidationErrors = (
+  errorData: Record<string, string | string[]> | null | undefined
+): string => {
   if (!errorData || typeof errorData !== 'object') {
     return 'Validation error occurred'
   }
@@ -48,7 +50,8 @@ const onShowCreated = async (showInput: CreateShowInput) => {
         error.value = formatValidationErrors(e.data)
       } else if (e.status === 409) {
         // Conflict - duplicate show title
-        error.value = e.data?.showTitle || 'Show title must be unique'
+        const errorMsg = e.data?.showTitle
+        error.value = typeof errorMsg === 'string' ? errorMsg : 'Show title must be unique'
       } else {
         error.value = `Failed to create show: ${e.message}`
       }

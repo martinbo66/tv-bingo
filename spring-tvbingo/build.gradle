@@ -3,10 +3,12 @@ plugins {
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.4'
 	id 'jacoco'
+	id 'checkstyle'
 }
 
 group = 'org.bomartin'
-version = '0.0.1-SNAPSHOT'
+// Version is inherited from root project's Git tag-based versioning
+version = rootProject.version
 
 java {
 	toolchain {
@@ -76,18 +78,48 @@ jacoco {
 
 jacocoTestReport {
 	dependsOn test
-	
+
 	reports {
 		xml.required = true  // For SonarQube/SonarCloud integration
 		html.required = true // For human-readable reports
 		csv.required = false
 	}
-	
+
 	doLast {
 		println "\n" + "=" * 80
 		println "Code coverage report generated:"
 		println "  HTML: file://${project.buildDir}/reports/jacoco/test/html/index.html"
 		println "  XML:  ${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
 		println "=" * 80
+	}
+}
+
+checkstyle {
+	toolVersion = '10.22.0'
+	configFile = file("${projectDir}/config/checkstyle/checkstyle.xml")
+	// Allow warnings without failing the build initially
+	// TODO: Set maxWarnings = 0 and ignoreFailures = false once all violations are fixed
+	maxWarnings = Integer.MAX_VALUE
+	maxErrors = 0
+	// Don't fail the build on violations yet, just report them
+	ignoreFailures = true
+}
+
+tasks.withType(Checkstyle) {
+	reports {
+		xml.required = false
+		html.required = true
+	}
+
+	// Show violations in the console
+	doLast {
+		def reportFile = reports.html.outputLocation.asFile.get()
+		if (reportFile.exists()) {
+			def reportDir = reportFile.parentFile
+			println "\n" + "=" * 80
+			println "Checkstyle report generated:"
+			println "  HTML: file://${reportFile}"
+			println "=" * 80
+		}
 	}
 }

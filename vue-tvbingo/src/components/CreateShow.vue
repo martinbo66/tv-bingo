@@ -33,10 +33,7 @@ const currentData = computed(() => ({
 }))
 
 // Unsaved changes guard
-const { hasUnsavedChanges, setupGuards } = useUnsavedChangesGuard(
-  originalData,
-  currentData
-)
+const { hasUnsavedChanges, setupGuards } = useUnsavedChangesGuard(originalData, currentData)
 
 setupGuards()
 
@@ -90,7 +87,9 @@ const createShow = () => {
 // Cancel and go back
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm('You have unsaved changes. Are you sure you want to discard them?')
+    const answer = window.confirm(
+      'You have unsaved changes. Are you sure you want to discard them?'
+    )
     if (!answer) return
   }
   // Navigate back by emitting an event or using router directly
@@ -100,11 +99,11 @@ const handleCancel = () => {
 
 <template>
   <div class="create-show-container">
-    <form @submit.prevent="createShow" class="create-form">
+    <form class="create-form" @submit.prevent="createShow">
       <!-- Show Title -->
       <FormFieldWithValidation
-        v-model="showTitle"
         id="show-title-input"
+        v-model="showTitle"
         label="Show Title"
         :required="true"
         :max-length="VALIDATION_LIMITS.SHOW_TITLE"
@@ -114,8 +113,8 @@ const handleCancel = () => {
 
       <!-- Game Title -->
       <FormFieldWithValidation
-        v-model="gameTitle"
         id="game-title-input"
+        v-model="gameTitle"
         label="Game Title"
         :max-length="VALIDATION_LIMITS.GAME_TITLE"
         placeholder="Enter game title (optional)"
@@ -123,8 +122,8 @@ const handleCancel = () => {
 
       <!-- Center Square -->
       <FormFieldWithValidation
-        v-model="centerSquare"
         id="center-square-input"
+        v-model="centerSquare"
         label="Center Square"
         :max-length="VALIDATION_LIMITS.CENTER_SQUARE"
         placeholder="Enter center square text (optional)"
@@ -133,11 +132,11 @@ const handleCancel = () => {
       <!-- Phrases -->
       <PhraseListManager
         :phrases="phrases"
-        @update:phrases="handlePhrasesUpdate"
         :allow-inline-edit="true"
         :show-bulk-add="true"
         :auto-sort="true"
         :max-phrase-length="VALIDATION_LIMITS.PHRASE"
+        @update:phrases="handlePhrasesUpdate"
       />
 
       <!-- Validation message for phrases -->
@@ -147,7 +146,12 @@ const handleCancel = () => {
 
       <!-- Action Buttons -->
       <div class="buttons">
-        <button type="button" @click="handleCancel" class="cancel-btn" aria-label="Cancel and return">
+        <button
+          type="button"
+          class="cancel-btn"
+          aria-label="Cancel and return"
+          @click="handleCancel"
+        >
           Cancel
         </button>
         <button

@@ -86,6 +86,7 @@ All commands run from the repository root:
 ./gradlew frontendInstall   # Install npm dependencies
 ./gradlew frontendBuild     # Build for production
 ./gradlew frontendTypeCheck # TypeScript type checking
+./gradlew frontendLint      # Run ESLint
 
 # Or use npm directly from vue-tvbingo/:
 cd vue-tvbingo
@@ -93,6 +94,10 @@ npm install
 npm run dev          # Start dev server (http://localhost:5173)
 npm run build        # Build for production
 npm run type-check   # TypeScript type checking
+npm run lint         # Run ESLint
+npm run lint:fix     # Auto-fix ESLint issues
+npm run format       # Format code with Prettier
+npm run format:check # Check Prettier formatting
 ```
 
 ### Docker / Deployment
@@ -104,6 +109,118 @@ npm run type-check   # TypeScript type checking
 # Or use Docker directly:
 docker build -t tv-bingo .
 docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo
+```
+
+## Semantic Versioning
+
+The project uses Git tags for semantic versioning via the [axion-release-plugin](https://github.com/allegro/axion-release-plugin). Versions are automatically derived from Git tags and applied to:
+- JAR artifacts (e.g., `spring-tvbingo-1.2.3.jar`)
+- Docker images (e.g., `tv-bingo:1.2.3`, `tv-bingo:latest`)
+
+### Version Format
+
+- **Release builds** (tagged commits on main): `1.2.3`
+- **Development builds** (untagged commits): `0.1.0-branch-name-SNAPSHOT`
+- **Tags**: Use the `v` prefix (e.g., `v1.2.3`)
+
+### Common Versioning Commands
+
+```bash
+# Check current version
+./gradlew currentVersion
+
+# Build with versioned artifacts
+./gradlew buildUnifiedJar    # Creates spring-tvbingo-{version}.jar
+./gradlew dockerBuild        # Creates tv-bingo:{version} and tv-bingo:latest
+```
+
+### Creating a Release
+
+To create a new release version:
+
+```bash
+# 1. Ensure you're on the main branch with all changes committed
+git checkout main
+git pull origin main
+
+# 2. Check current version
+./gradlew currentVersion
+
+# 3. Create an annotated tag (use semantic versioning: MAJOR.MINOR.PATCH)
+git tag -a v1.0.0 -m "Release 1.0.0
+
+Features:
+- Feature 1
+- Feature 2
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+# 4. Verify the version changed
+./gradlew currentVersion    # Should show "1.0.0"
+
+# 5. Build release artifacts
+./gradlew build
+./gradlew dockerBuild       # Creates tv-bingo:1.0.0 and tv-bingo:latest
+
+# 6. Push the tag to GitHub
+git push origin v1.0.0
+```
+
+### Semantic Versioning Guidelines
+
+Follow [semver.org](https://semver.org/) principles:
+
+- **MAJOR** (v2.0.0): Breaking changes to the API or database schema
+- **MINOR** (v1.1.0): New features, backward-compatible
+- **PATCH** (v1.0.1): Bug fixes, backward-compatible
+
+Examples:
+```bash
+# Initial release
+git tag -a v1.0.0 -m "Release 1.0.0: Initial public release"
+
+# Adding new feature (backward-compatible)
+git tag -a v1.1.0 -m "Release 1.1.0: Add show search feature"
+
+# Bug fix
+git tag -a v1.1.1 -m "Release 1.1.1: Fix bingo card generation bug"
+
+# Breaking change (e.g., API changes)
+git tag -a v2.0.0 -m "Release 2.0.0: Refactor API endpoints (breaking change)"
+```
+
+### Version in Development
+
+On feature branches, the version automatically includes the branch name:
+```bash
+# On branch "bo/build-improvements"
+./gradlew currentVersion
+# Output: 0.1.0-bo-build-improvements-SNAPSHOT
+```
+
+This ensures development builds are clearly distinguished from releases.
+
+### Docker Image Tagging Strategy
+
+The `dockerBuild` task creates two tags:
+1. **Version tag**: `tv-bingo:{version}` (e.g., `tv-bingo:1.2.3`)
+2. **Latest tag**: `tv-bingo:latest`
+
+This allows for:
+- **Pinned deployments**: `docker run tv-bingo:1.2.3`
+- **Rolling deployments**: `docker run tv-bingo:latest`
+
+### CI/CD Integration
+
+In CI/CD pipelines, versioning happens automatically:
+```bash
+# On main branch with tag v1.2.3
+./gradlew currentVersion  # Returns: 1.2.3
+./gradlew dockerBuild     # Creates: tv-bingo:1.2.3, tv-bingo:latest
+
+# On feature branch without tag
+./gradlew currentVersion  # Returns: 0.1.0-feature-name-SNAPSHOT
+./gradlew dockerBuild     # Creates: tv-bingo:0.1.0-feature-name-SNAPSHOT, tv-bingo:latest
 ```
 
 ## Configuration
@@ -196,15 +313,23 @@ vue-tvbingo/src/
 ## Development Standards
 
 ### Code Style
-- **Java**: 
+- **Java**:
   - Standard Java conventions
   - Lombok for boilerplate reduction (@Data, @RequiredArgsConstructor, etc.)
   - Jakarta Bean Validation annotations for input validation
   - Custom validators for business rules (e.g., @UniqueShowTitle)
-- **TypeScript**: ESLint + Prettier defaults, strict mode enabled
+  - Checkstyle for linting (configured in Spring Boot project)
+- **TypeScript/Vue**:
+  - ESLint with Vue, TypeScript, and Prettier plugins
+  - Prettier for code formatting (no semicolons, single quotes, 100 char line width)
+  - TypeScript strict mode enabled
+  - Run `npm run lint` to check code style
+  - Run `npm run lint:fix` to auto-fix issues
+  - Run `npm run format` to format code with Prettier
 - **Vue**: Composition API with `<script setup lang="ts">`
   - Use scoped CSS in components
   - Group imports as: Vue → external → local → types
+  - Allow single-word component names (disabled multi-word rule)
 
 ### Naming Conventions
 - Java classes: PascalCase

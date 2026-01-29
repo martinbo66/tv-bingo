@@ -1,0 +1,16 @@
+# Build outputs
+dist/
+coverage/
+test-results/
+
+# Dependencies
+node_modules/
+
+# Cache
+.vite/
+*.tsbuildinfo
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

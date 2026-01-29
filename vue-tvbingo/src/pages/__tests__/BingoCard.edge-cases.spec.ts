@@ -126,7 +126,7 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       await nextTick()
 
       expect(wrapper.text()).toContain('Minimal Show')
-      
+
       const cells = wrapper.findAll('.bingo-cell')
       expect(cells).toHaveLength(25)
 
@@ -228,7 +228,9 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       const secondGrid = wrapper.findAll('.bingo-cell').map(cell => cell.text())
 
       // Grids should be different (very high probability with 1000 phrases)
-      const differentCount = firstGrid.filter((cell, idx) => idx !== 12 && cell !== secondGrid[idx]).length
+      const differentCount = firstGrid.filter(
+        (cell, idx) => idx !== 12 && cell !== secondGrid[idx]
+      ).length
       expect(differentCount).toBeGreaterThan(0)
     })
   })
@@ -236,13 +238,14 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
   describe('Edge Case: Network timeout handling', () => {
     it('should handle network timeout gracefully', async () => {
       vi.mocked(showService.getShowById).mockImplementation(
-        () => new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Network timeout')), 100)
-        })
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Network timeout')), 100)
+          })
       )
 
       const wrapper = mount(BingoCard, createMountOptions())
-      
+
       // Should show loading state initially
       expect(wrapper.text()).toContain('Loading bingo card...')
 
@@ -265,13 +268,14 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       }
 
       vi.mocked(showService.getShowById).mockImplementation(
-        () => new Promise(resolve => {
-          setTimeout(() => resolve(slowShow), 200)
-        })
+        () =>
+          new Promise(resolve => {
+            setTimeout(() => resolve(slowShow), 200)
+          })
       )
 
       const wrapper = mount(BingoCard, createMountOptions())
-      
+
       // Should show loading during delay
       expect(wrapper.text()).toContain('Loading bingo card...')
 
@@ -481,9 +485,15 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       const originalLocalStorage = window.localStorage
       Object.defineProperty(window, 'localStorage', {
         value: {
-          getItem: () => { throw new Error('QuotaExceededError') },
-          setItem: () => { throw new Error('QuotaExceededError') },
-          clear: () => { throw new Error('QuotaExceededError') }
+          getItem: () => {
+            throw new Error('QuotaExceededError')
+          },
+          setItem: () => {
+            throw new Error('QuotaExceededError')
+          },
+          clear: () => {
+            throw new Error('QuotaExceededError')
+          }
         },
         writable: true
       })
