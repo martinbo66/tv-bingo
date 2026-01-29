@@ -12,6 +12,27 @@
  *   ./gradlew frontendDev  - Start Vue dev server (for local development)
  */
 
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.21.1'
+}
+
+// ============================================================================
+// Semantic Versioning from Git Tags
+// ============================================================================
+scmVersion {
+    // Tag prefix (e.g., v1.0.0)
+    tag {
+        prefix = 'v'
+        versionSeparator = ''
+    }
+
+    // Use highest version when multiple tags on same commit
+    useHighestVersion = true
+}
+
+// Set project version from Git tags
+project.version = scmVersion.version
+
 // Detect npm or use npx as fallback
 def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
 def frontendDir = file("${projectDir}/vue-tvbingo")
@@ -235,10 +256,11 @@ task buildUnifiedJar {
     description = 'Build a single JAR with frontend embedded'
     group = 'docker'
     dependsOn ':spring-tvbingo:bootJar'
-    
+
     doLast {
-        println "\n✓ Unified JAR built at: spring-tvbingo/build/libs/"
-        println "  Run with: java -jar spring-tvbingo/build/libs/spring-tvbingo-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod"
+        def jarName = "spring-tvbingo-${project.version}.jar"
+        println "\n✓ Unified JAR built: spring-tvbingo/build/libs/${jarName}"
+        println "  Run with: java -jar spring-tvbingo/build/libs/${jarName} --spring.profiles.active=prod"
     }
 }
 
@@ -254,14 +276,20 @@ project(':spring-tvbingo').afterEvaluate {
 task dockerBuild(type: Exec) {
     description = 'Build Docker image for TV Bingo'
     group = 'docker'
-    commandLine 'docker', 'build', '-t', 'tv-bingo', '.'
-    
+
     doFirst {
-        println "Building Docker image 'tv-bingo'..."
+        println "Building Docker image 'tv-bingo:${project.version}'..."
     }
+
+    commandLine 'docker', 'build',
+        '-t', "tv-bingo:${project.version}",
+        '-t', 'tv-bingo:latest',
+        '.'
+
     doLast {
         println "\n✓ Docker image built successfully!"
-        println "  Run with: docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo"
+        println "  Tags: tv-bingo:${project.version}, tv-bingo:latest"
+        println "  Run with: docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo:${project.version}"
     }
 }
 
@@ -462,6 +490,14 @@ tasks.named('kindRestart').configure {
     mustRunAfter kindLoadImage
 }
 
+// ============================================================================
+// Version Management Tasks
+// ============================================================================
+// Version management tasks are provided by axion-release plugin:
+//   - currentVersion: Show current version
+//   - createRelease: Create and push a release tag
+//   - markNextVersion: Mark next version to be released
+
 // Print available tasks
 task showTasks {
     description = 'Show commonly used tasks'
@@ -470,6 +506,7 @@ task showTasks {
         println """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                           TV Bingo - Gradle Tasks                              ║
+║                          Current Version: ${project.version.padRight(31)}║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ UNIFIED COMMANDS                                                               ║
 ║   ./gradlew build      Build both frontend and backend                         ║
@@ -502,6 +539,10 @@ task showTasks {
 ║   ./gradlew kindLogs         Tail application logs                             ║
 ║   ./gradlew kindUndeploy     Remove deployment from KinD                       ║
 ║   ./gradlew kindDeleteCluster Delete the KinD cluster                          ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ VERSIONING                                                                     ║
+║   ./gradlew currentVersion   Show current version from Git tags                ║
+║   ./gradlew createRelease    Show how to create a new release                  ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
     }

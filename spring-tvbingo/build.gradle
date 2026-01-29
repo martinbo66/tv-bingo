@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'org.bomartin'
-version = '0.0.1-SNAPSHOT'
+// Version is inherited from root project's Git tag-based versioning
+version = rootProject.version
 
 java {
 	toolchain {
