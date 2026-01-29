@@ -93,7 +93,9 @@ const validateShowTitle = (_value: string): string | undefined => {
 }
 
 // Format validation errors from API
-const formatValidationErrors = (errorData: any): string => {
+const formatValidationErrors = (
+  errorData: Record<string, string | string[]> | null | undefined
+): string => {
   if (!errorData || typeof errorData !== 'object') {
     return 'Validation error occurred'
   }
@@ -125,8 +127,10 @@ const saveShow = async () => {
         // Validation errors - try to extract field-specific errors
         if (e.data && typeof e.data === 'object') {
           Object.keys(e.data).forEach(field => {
-            if (field in fieldErrors.value) {
-              ;(fieldErrors.value as any)[field] = e.data[field]
+            if (field in fieldErrors.value && typeof e.data === 'object' && e.data !== null) {
+              const typedErrors = fieldErrors.value as Record<string, string | undefined>
+              const errorValue = e.data[field]
+              typedErrors[field] = Array.isArray(errorValue) ? errorValue[0] : String(errorValue)
             }
           })
         }
@@ -134,7 +138,8 @@ const saveShow = async () => {
       } else if (e.status === 409) {
         // Conflict - duplicate show title
         fieldErrors.value.showTitle = 'Show title must be unique'
-        error.value = e.data?.showTitle || 'Show title must be unique'
+        const errorMsg = e.data?.showTitle
+        error.value = typeof errorMsg === 'string' ? errorMsg : 'Show title must be unique'
       } else if (e.status === 404) {
         error.value = 'Show not found. It may have been deleted.'
       } else {

@@ -4,9 +4,6 @@ import './styles/form-theme.css'
 import App from './App.vue'
 import router from './router'
 
-// Add console logging for debugging
-console.log('Vue app initializing...')
-
 try {
   const app = createApp(App)
 
@@ -23,9 +20,7 @@ try {
   if (!mountElement) {
     console.error('Mount element #app not found in DOM')
   } else {
-    console.log('Mount element found, mounting app...')
     app.mount('#app')
-    console.log('App mounted successfully')
   }
 } catch (error) {
   console.error('Failed to initialize Vue app:', error)

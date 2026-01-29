@@ -109,6 +109,7 @@ describe('BingoCard.vue', () => {
     })
 
     it('should show error when show not found', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.mocked(showService.getShowById).mockResolvedValue(null as any)
 
       const wrapper = mount(BingoCard, createMountOptions())

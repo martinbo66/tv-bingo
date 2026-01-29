@@ -33,6 +33,7 @@ describe('ApiClient', () => {
   beforeEach(() => {
     apiClient = new ApiClient('http://localhost:8080')
     fetchMock = vi.fn()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     global.fetch = fetchMock as any
   })
 
@@ -364,7 +365,7 @@ describe('ApiClient', () => {
     })
 
     it('should preserve ApiError when re-thrown', async () => {
-      const originalError = new ApiError('Custom error', 418, { teapot: true })
+      const originalError = new ApiError('Custom error', 418, { teapot: 'true' })
       fetchMock.mockRejectedValue(originalError)
 
       await expect(apiClient.request('/api/test')).rejects.toThrow(ApiError)
@@ -375,7 +376,7 @@ describe('ApiClient', () => {
         expect(error).toBe(originalError) // Same instance
         const apiError = error as ApiError
         expect(apiError.status).toBe(418)
-        expect(apiError.data).toEqual({ teapot: true })
+        expect(apiError.data).toEqual({ teapot: 'true' })
       }
     })
   })

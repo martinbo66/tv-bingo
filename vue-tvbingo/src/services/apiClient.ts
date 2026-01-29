@@ -1,8 +1,11 @@
+// Type for API error response data
+export type ApiErrorData = Record<string, string | string[]> | null | undefined
+
 export class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
-    public data?: any
+    public data?: ApiErrorData
   ) {
     super(message)
     this.name = 'ApiError'
