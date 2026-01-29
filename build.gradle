@@ -158,6 +158,12 @@ task backendClean {
     dependsOn ':spring-tvbingo:clean'
 }
 
+task backendLint {
+    description = 'Run Checkstyle on backend code'
+    group = 'backend'
+    dependsOn ':spring-tvbingo:checkstyleMain', ':spring-tvbingo:checkstyleTest'
+}
+
 // ============================================================================
 // Unified CI/CD Tasks
 // ============================================================================
@@ -187,10 +193,16 @@ task coverage {
     }
 }
 
+task lint {
+    description = 'Run all linting (backend and frontend)'
+    group = 'verification'
+    dependsOn backendLint, frontendLint
+}
+
 task check {
     description = 'Run all verification tasks'
     group = 'verification'
-    dependsOn test, frontendTypeCheck
+    dependsOn test, frontendTypeCheck, lint
 }
 
 task clean {
@@ -211,14 +223,15 @@ task bootRun {
 // ============================================================================
 
 task ci {
-    description = 'Full CI pipeline: clean, build, test, and coverage'
+    description = 'Full CI pipeline: clean, build, test, lint, and coverage'
     group = 'ci'
-    dependsOn clean, build, test, coverage
-    
-    // Ensure proper execution order: clean -> build -> test -> coverage
+    dependsOn clean, build, test, lint, coverage
+
+    // Ensure proper execution order: clean -> build -> test -> lint -> coverage
     build.mustRunAfter clean
     test.mustRunAfter build
-    coverage.mustRunAfter test
+    lint.mustRunAfter test
+    coverage.mustRunAfter lint
 }
 
 task ciBackend {
@@ -511,18 +524,21 @@ task showTasks {
 ║ UNIFIED COMMANDS                                                               ║
 ║   ./gradlew build      Build both frontend and backend                         ║
 ║   ./gradlew test       Run all tests                                           ║
+║   ./gradlew lint       Run all linting (backend + frontend)                    ║
 ║   ./gradlew clean      Clean all build artifacts                               ║
-║   ./gradlew ci         Full CI pipeline (clean + build + test)                 ║
+║   ./gradlew ci         Full CI pipeline (clean + build + test + lint)          ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ BACKEND (Spring Boot)                                                          ║
 ║   ./gradlew bootRun          Run the Spring Boot application                   ║
 ║   ./gradlew backendBuild     Build backend only                                ║
 ║   ./gradlew backendTest      Run backend tests only                            ║
+║   ./gradlew backendLint      Run Checkstyle on backend code                    ║
 ║   ./gradlew backendCoverage  Generate code coverage report                     ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ FRONTEND (Vue.js)                                                              ║
 ║   ./gradlew frontendDev      Start Vite dev server                             ║
 ║   ./gradlew frontendBuild    Build frontend for production                     ║
+║   ./gradlew frontendLint     Run ESLint on frontend code                       ║
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
