@@ -14,6 +14,7 @@
 
 plugins {
     id 'pl.allegro.tech.build.axion-release' version '1.21.1'
+    id 'org.sonarqube' version '6.0.1.5171'
 }
 
 // ============================================================================
@@ -32,6 +33,32 @@ scmVersion {
 
 // Set project version from Git tags
 project.version = scmVersion.version
+
+// ============================================================================
+// SonarQube / SonarCloud Configuration
+// ============================================================================
+sonar {
+    properties {
+        property 'sonar.projectKey', 'martinbo66_tv-bingo'
+        property 'sonar.organization', 'martinbo66'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+
+        // Coverage reports
+        property 'sonar.coverage.jacoco.xmlReportPaths', 'spring-tvbingo/build/reports/jacoco/test/jacocoTestReport.xml'
+
+        // Exclusions
+        property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**'
+
+        // Include JavaScript/TypeScript analysis
+        property 'sonar.sources', 'vue-tvbingo/src'
+        property 'sonar.tests', 'vue-tvbingo/src/__tests__,vue-tvbingo/src/**/__tests__'
+    }
+}
+
+// Ensure coverage report exists before running sonar
+tasks.named('sonar').configure {
+    dependsOn ':spring-tvbingo:jacocoTestReport'
+}
 
 // Detect npm or use npx as fallback
 def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
@@ -223,15 +250,18 @@ task bootRun {
 // ============================================================================
 
 task ci {
-    description = 'Full CI pipeline: clean, build, test, lint, and coverage'
+    description = 'Full CI pipeline: clean, build, test, lint, coverage, and sonar'
     group = 'ci'
-    dependsOn clean, build, test, lint, coverage
+    dependsOn clean, build, test, lint, coverage, 'sonar'
 
-    // Ensure proper execution order: clean -> build -> test -> lint -> coverage
+    // Ensure proper execution order: clean -> build -> test -> lint -> coverage -> sonar
     build.mustRunAfter clean
     test.mustRunAfter build
     lint.mustRunAfter test
     coverage.mustRunAfter lint
+    tasks.named('sonar').configure {
+        mustRunAfter coverage
+    }
 }
 
 task ciBackend {
@@ -526,7 +556,11 @@ task showTasks {
 ║   ./gradlew test       Run all tests                                           ║
 ║   ./gradlew lint       Run all linting (backend + frontend)                    ║
 ║   ./gradlew clean      Clean all build artifacts                               ║
-║   ./gradlew ci         Full CI pipeline (clean + build + test + lint)          ║
+║   ./gradlew ci         Full CI: clean, build, test, lint, coverage, sonar      ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ CODE QUALITY                                                                   ║
+║   ./gradlew sonar      Run SonarCloud analysis only (requires SONAR_TOKEN)     ║
+║   ./gradlew coverage   Generate code coverage reports                          ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ BACKEND (Spring Boot)                                                          ║
 ║   ./gradlew bootRun          Run the Spring Boot application                   ║

@@ -49,6 +49,8 @@ jobs:
           queries: +security-and-quality
 
       - name: Run CI pipeline
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew ci
 
       - name: Perform CodeQL Analysis
