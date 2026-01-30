@@ -28,7 +28,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   padding: 1rem;
   flex-shrink: 0;
 }
