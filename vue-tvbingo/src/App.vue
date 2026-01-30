@@ -28,7 +28,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   padding: 1rem;
   flex-shrink: 0;
 }
@@ -141,6 +141,21 @@
     left: 4px;
     right: 4px;
     bottom: 4px;
+  }
+}
+
+/* Print styles - hide header when printing */
+@media print {
+  .header {
+    display: none !important;
+  }
+
+  .app-container {
+    min-height: auto !important;
+  }
+
+  .main-content {
+    min-height: auto !important;
   }
 }
 </style>

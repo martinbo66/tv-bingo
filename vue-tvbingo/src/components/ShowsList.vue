@@ -4,11 +4,17 @@ import { useRouter } from 'vue-router'
 import { showService } from '../services/showService'
 import type { Show } from '../types/Show'
 import { ApiError } from '../services/apiClient'
+import { useFeatureFlags } from '../composables/useFeatureFlags'
 
 const router = useRouter()
 const shows = ref<Show[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+const showShareToast = ref(false)
+const shareToastMessage = ref('')
+
+// Feature flags
+const { flags } = useFeatureFlags()
 
 // Search and filter state
 const searchQuery = ref('')
@@ -61,8 +67,8 @@ const filteredShows = computed(() => {
     )
   }
 
-  // Apply phrase count filter
-  if (activeFilter.value !== 'all') {
+  // Apply phrase count filter (only if feature flag is enabled)
+  if (flags.enablePhraseCountFilter && activeFilter.value !== 'all') {
     result = result.filter(show => {
       const status = getPhraseCountStatus(show.phrases.length)
       return status === activeFilter.value
@@ -123,6 +129,27 @@ const handleDelete = async (event: Event, showId: number) => {
   }
 }
 
+const handleShare = async (event: Event, showId: number) => {
+  event.stopPropagation()
+  const shareUrl = `${window.location.origin}${window.location.pathname}#/show/${showId}`
+
+  try {
+    await navigator.clipboard.writeText(shareUrl)
+    shareToastMessage.value = 'Link copied to clipboard!'
+    showShareToast.value = true
+    setTimeout(() => {
+      showShareToast.value = false
+    }, 3000)
+  } catch (err) {
+    shareToastMessage.value = 'Could not copy link. Please copy manually.'
+    showShareToast.value = true
+    setTimeout(() => {
+      showShareToast.value = false
+    }, 3000)
+    console.error('Failed to copy to clipboard:', err)
+  }
+}
+
 // Get phrase count category for color-coding
 const getPhraseCountStatus = (phraseCount: number) => {
   if (phraseCount >= 25) return 'complete'
@@ -153,7 +180,9 @@ const setFilter = (filter: 'all' | 'low' | 'medium' | 'complete') => {
 }
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value.trim() !== '' || activeFilter.value !== 'all'
+  const hasSearchFilter = searchQuery.value.trim() !== ''
+  const hasPhraseFilter = flags.enablePhraseCountFilter && activeFilter.value !== 'all'
+  return hasSearchFilter || hasPhraseFilter
 })
 
 // Keyboard shortcut handler
@@ -305,7 +334,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="filter-container">
+      <!-- Phrase count filter (controlled by feature flag) -->
+      <div v-if="flags.enablePhraseCountFilter" class="filter-container">
         <label class="filter-label">Filter by phrases:</label>
         <div class="filter-buttons" role="group" aria-label="Filter by phrase count">
           <button
@@ -423,6 +453,14 @@ onUnmounted(() => {
         </div>
         <div class="show-controls">
           <button
+            class="control-btn share-btn"
+            title="Share show"
+            aria-label="Share show"
+            @click="e => handleShare(e, show.id)"
+          >
+            🔗
+          </button>
+          <button
             class="control-btn edit-btn"
             title="Edit show"
             aria-label="Edit show"
@@ -477,6 +515,14 @@ onUnmounted(() => {
         </div>
         <div class="list-cell actions-cell" role="cell">
           <button
+            class="control-btn share-btn"
+            title="Share show"
+            aria-label="Share show"
+            @click="e => handleShare(e, show.id)"
+          >
+            🔗
+          </button>
+          <button
             class="control-btn edit-btn"
             title="Edit show"
             aria-label="Edit show"
@@ -495,6 +541,13 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+
+    <!-- Share Toast Notification -->
+    <Transition name="toast">
+      <div v-if="showShareToast" class="share-toast" role="alert" aria-live="polite">
+        {{ shareToastMessage }}
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -848,6 +901,32 @@ onUnmounted(() => {
 .control-btn:hover {
   background-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
+}
+
+/* Share Toast Notification */
+.share-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 200;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
 }
 
 .show-card:hover {

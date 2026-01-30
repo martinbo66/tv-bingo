@@ -28,6 +28,13 @@ vi.mock('../../services/showService', () => ({
   }
 }))
 
+// Mock featureFlags to enable phrase count filter for tests
+vi.mock('../../config/featureFlags', () => ({
+  featureFlags: {
+    enablePhraseCountFilter: true
+  }
+}))
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
