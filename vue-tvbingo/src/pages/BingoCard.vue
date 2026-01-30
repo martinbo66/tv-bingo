@@ -898,6 +898,7 @@ onMounted(() => {
 @media print {
   .bingo-bg {
     background: white !important;
+    min-height: 0 !important;
   }
 
   .button-row,
@@ -910,6 +911,11 @@ onMounted(() => {
 
   .bingo-card-page {
     background: white;
+    min-height: 0 !important;
+  }
+
+  .bingo-card-container {
+    min-height: 0 !important;
   }
 
   .show-title {

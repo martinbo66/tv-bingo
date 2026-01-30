@@ -143,4 +143,19 @@
     bottom: 4px;
   }
 }
+
+/* Print styles - hide header when printing */
+@media print {
+  .header {
+    display: none !important;
+  }
+
+  .app-container {
+    min-height: auto !important;
+  }
+
+  .main-content {
+    min-height: auto !important;
+  }
+}
 </style>
