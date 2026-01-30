@@ -77,3 +77,13 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Print styles - remove viewport-based heights */
+@media print {
+  body,
+  #app {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+}
