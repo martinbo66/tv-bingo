@@ -4,11 +4,15 @@ import { useRouter } from 'vue-router'
 import { showService } from '../services/showService'
 import type { Show } from '../types/Show'
 import { ApiError } from '../services/apiClient'
+import { useFeatureFlags } from '../composables/useFeatureFlags'
 
 const router = useRouter()
 const shows = ref<Show[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
+
+// Feature flags
+const { flags } = useFeatureFlags()
 
 // Search and filter state
 const searchQuery = ref('')
@@ -61,8 +65,8 @@ const filteredShows = computed(() => {
     )
   }
 
-  // Apply phrase count filter
-  if (activeFilter.value !== 'all') {
+  // Apply phrase count filter (only if feature flag is enabled)
+  if (flags.enablePhraseCountFilter && activeFilter.value !== 'all') {
     result = result.filter(show => {
       const status = getPhraseCountStatus(show.phrases.length)
       return status === activeFilter.value
@@ -153,7 +157,9 @@ const setFilter = (filter: 'all' | 'low' | 'medium' | 'complete') => {
 }
 
 const hasActiveFilters = computed(() => {
-  return searchQuery.value.trim() !== '' || activeFilter.value !== 'all'
+  const hasSearchFilter = searchQuery.value.trim() !== ''
+  const hasPhraseFilter = flags.enablePhraseCountFilter && activeFilter.value !== 'all'
+  return hasSearchFilter || hasPhraseFilter
 })
 
 // Keyboard shortcut handler
@@ -305,7 +311,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="filter-container">
+      <!-- Phrase count filter (controlled by feature flag) -->
+      <div v-if="flags.enablePhraseCountFilter" class="filter-container">
         <label class="filter-label">Filter by phrases:</label>
         <div class="filter-buttons" role="group" aria-label="Filter by phrase count">
           <button
