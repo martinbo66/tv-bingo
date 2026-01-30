@@ -244,6 +244,50 @@ VITE_API_BASE_URL=http://localhost:8080
 
 In production builds, the frontend is bundled into Spring Boot's static resources and served from the same origin, so no separate API URL configuration is needed.
 
+### SonarCloud Configuration
+
+The project uses the Gradle SonarQube plugin for code quality analysis with SonarCloud.
+
+**Required Environment Variable:**
+- `SONAR_TOKEN` - SonarCloud authentication token (get from https://sonarcloud.io/account/security)
+
+**Local Development with direnv:**
+
+Create a `.envrc` file in the project root:
+```bash
+export SONAR_TOKEN=your_token_here
+```
+
+Then run `direnv allow` to enable the environment variable.
+
+**Running SonarCloud Analysis:**
+
+```bash
+# Run SonarCloud analysis only
+./gradlew sonar
+
+# Run full CI pipeline (includes SonarCloud analysis)
+./gradlew ci
+```
+
+**CI/CD Integration:**
+
+The `ci` task runs the complete CI pipeline including SonarCloud analysis:
+1. Clean
+2. Build (frontend + backend)
+3. Test (all tests)
+4. Lint (Checkstyle + ESLint)
+5. Coverage (JaCoCo report)
+6. SonarCloud analysis
+
+In GitHub Actions, set the `SONAR_TOKEN` as a repository secret and use:
+```yaml
+- name: Run CI with SonarCloud
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  run: ./gradlew ci
+```
+
 ## API Documentation
 
 When the backend is running: http://localhost:8080/swagger-ui.html
