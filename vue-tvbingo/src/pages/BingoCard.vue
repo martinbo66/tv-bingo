@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showService } from '../services/showService'
+import { ApiError } from '../services/apiClient'
 import type { Show } from '../types/Show'
 import type { Ref } from 'vue'
 
@@ -15,6 +16,8 @@ const selectedCells = ref<Set<number>>(new Set())
 const winningLines: Ref<number[][]> = ref([])
 const showBingoAlert = ref(false)
 const showRegenerateConfirm = ref(false)
+const showShareToast = ref(false)
+const shareToastMessage = ref('')
 
 // Check if any cells are marked beyond the center square
 const hasMarkedCells = computed(() => {
@@ -137,6 +140,29 @@ const printBingoCard = () => {
   window.print()
 }
 
+const shareShow = async () => {
+  if (!show.value) return
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}#/show/${show.value.id}`
+
+  try {
+    await navigator.clipboard.writeText(shareUrl)
+    shareToastMessage.value = 'Link copied to clipboard!'
+    showShareToast.value = true
+    setTimeout(() => {
+      showShareToast.value = false
+    }, 3000)
+  } catch (err) {
+    // Fallback for browsers that don't support clipboard API
+    shareToastMessage.value = 'Could not copy link. Please copy manually.'
+    showShareToast.value = true
+    setTimeout(() => {
+      showShareToast.value = false
+    }, 3000)
+    console.error('Failed to copy to clipboard:', err)
+  }
+}
+
 const loadShow = async () => {
   const showId = parseInt(route.params.id as string)
   if (isNaN(showId)) {
@@ -162,7 +188,11 @@ const loadShow = async () => {
     show.value = fetchedShow
     bingoGrid.value = generateBingoGrid(fetchedShow.phrases, fetchedShow.centerSquare)
   } catch (e) {
-    error.value = 'Failed to load show'
+    if (e instanceof ApiError && e.status === 404) {
+      error.value = 'Show not found'
+    } else {
+      error.value = 'Failed to load show'
+    }
     console.error(e)
   } finally {
     loading.value = false
@@ -205,6 +235,9 @@ onMounted(() => {
             </button>
             <button class="print-button" @click="printBingoCard">
               <span class="print-icon">🖨️</span> Print
+            </button>
+            <button class="share-button" @click="shareShow">
+              <span class="share-icon">🔗</span> Share
             </button>
           </div>
           <div class="marked-counter" aria-live="polite" aria-atomic="true">
@@ -262,6 +295,12 @@ onMounted(() => {
             </div>
           </div>
         </div>
+
+        <Transition name="toast">
+          <div v-if="showShareToast" class="share-toast" role="alert" aria-live="polite">
+            {{ shareToastMessage }}
+          </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -421,6 +460,60 @@ onMounted(() => {
 
 .print-icon {
   font-size: 1.1em;
+}
+
+.share-button {
+  background: linear-gradient(90deg, #9c27b0 0%, #ba68c8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.15);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.share-button:hover {
+  background: linear-gradient(90deg, #7b1fa2 0%, #ab47bc 100%);
+  box-shadow: 0 4px 16px rgba(156, 39, 176, 0.25);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.share-icon {
+  font-size: 1.1em;
+}
+
+.share-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 200;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
 }
 
 .marked-counter {
@@ -838,7 +931,8 @@ onMounted(() => {
   }
   .regenerate-button,
   .reset-button,
-  .print-button {
+  .print-button,
+  .share-button {
     font-size: 0.9rem;
     padding: 0.5em 1em;
   }
@@ -873,13 +967,15 @@ onMounted(() => {
   }
   .regenerate-button,
   .reset-button,
-  .print-button {
+  .print-button,
+  .share-button {
     font-size: 0.8rem;
     padding: 0.4em 0.8em;
   }
   .regen-icon,
   .reset-icon,
-  .print-icon {
+  .print-icon,
+  .share-icon {
     font-size: 1em;
   }
   .back-link {
@@ -905,7 +1001,8 @@ onMounted(() => {
   .back-link,
   .marked-counter,
   .bingo-alert,
-  .confirm-overlay {
+  .confirm-overlay,
+  .share-toast {
     display: none !important;
   }
 
