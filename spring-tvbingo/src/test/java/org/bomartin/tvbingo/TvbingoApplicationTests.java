@@ -11,8 +11,8 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class TvbingoApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }
