@@ -14,5 +14,5 @@ export interface FeatureFlags {
  */
 export const featureFlags: FeatureFlags = {
   // Enable/disable the phrase count filter in the shows list
-  enablePhraseCountFilter: false,
+  enablePhraseCountFilter: false
 }

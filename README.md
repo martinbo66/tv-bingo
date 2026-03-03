@@ -1,3 +1,5 @@
+[![CI/CD Pipeline](https://github.com/martinbo66/tv-bingo/actions/workflows/ci.yml/badge.svg)](https://github.com/martinbo66/tv-bingo/actions/workflows/ci.yml)
+
 # TV Bingo
 
 A web application for creating custom bingo cards for TV shows. Users can define common phrases, catchphrases, and recurring moments for their favorite shows, then generate randomized 5x5 bingo cards to play while watching.

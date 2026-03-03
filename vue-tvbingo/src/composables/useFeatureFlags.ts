@@ -10,6 +10,6 @@ const flags = reactive(featureFlags)
 
 export function useFeatureFlags() {
   return {
-    flags: readonly(flags),
+    flags: readonly(flags)
   }
 }
