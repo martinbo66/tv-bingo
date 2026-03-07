@@ -45,6 +45,7 @@ sonar {
 
         // Coverage reports
         property 'sonar.coverage.jacoco.xmlReportPaths', 'spring-tvbingo/build/reports/jacoco/test/jacocoTestReport.xml'
+        property 'sonar.javascript.lcov.reportPaths', 'vue-tvbingo/coverage/lcov.info'
 
         // Exclusions
         property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**'
@@ -57,7 +58,7 @@ sonar {
 
 // Ensure coverage report exists before running sonar
 tasks.named('sonar').configure {
-    dependsOn ':spring-tvbingo:jacocoTestReport'
+    dependsOn ':spring-tvbingo:jacocoTestReport', frontendCoverage
 }
 
 // Detect npm or use npx as fallback
@@ -120,6 +121,14 @@ task frontendTest(type: Exec) {
     }
 
     commandLine npmCommand, 'run', 'test', '--', '--run'
+}
+
+task frontendCoverage(type: Exec) {
+    description = 'Run frontend tests with coverage (Vitest)'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:coverage'
 }
 
 task frontendLint(type: Exec) {
@@ -210,12 +219,13 @@ task test {
 task coverage {
     description = 'Generate code coverage reports for all projects'
     group = 'verification'
-    dependsOn backendCoverage
-    
+    dependsOn backendCoverage, frontendCoverage
+
     doLast {
         println "\n" + "=" * 80
         println "Coverage reports generated:"
-        println "  Backend: file://${projectDir}/spring-tvbingo/build/reports/jacoco/test/html/index.html"
+        println "  Backend:  file://${projectDir}/spring-tvbingo/build/reports/jacoco/test/html/index.html"
+        println "  Frontend: file://${projectDir}/vue-tvbingo/coverage/index.html"
         println "=" * 80
     }
 }
