@@ -3,6 +3,7 @@
 **Baseline (as of 2026-03-07):** 40% statements / 36% branches / 40% functions
 **After Task 1 (2026-03-07):** 41% statements / 36% branches / 45% functions
 **After Task 2 (2026-03-07):** 45.7% statements / 43.3% branches / 49.7% functions
+**After Task 3 (2026-03-07):** 54.4% statements / 54.7% branches / 54.4% functions
 **Target:** ~72% statements / ~68% branches / ~74% functions
 **Tooling:** Vitest + @vue/test-utils + @vitest/coverage-v8
 **Test pattern reference:** `src/components/__tests__/ShowsList.spec.ts`
@@ -95,8 +96,9 @@ Mount the component with `@vue/test-utils`. Props: `modelValue`, `label`, `id`, 
 ## Task 3 — `ShowDetail.vue` tests
 
 **File to create:** `src/components/__tests__/ShowDetail.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~10–12% overall, 3% → ~70% for this file
+**Status:** [x] Complete — 21 tests, all passing
+**Actual coverage:** 82.2% statements / 76.9% branches / 77.8% functions / 82.9% lines
+**Actual overall gain:** +8.7% statements, +11.4% branches, +4.7% functions
 
 ### Setup pattern
 
