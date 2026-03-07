@@ -1,6 +1,7 @@
 # Frontend Coverage Improvements
 
 **Baseline (as of 2026-03-07):** 40% statements / 36% branches / 40% functions
+**After Task 1 (2026-03-07):** 41% statements / 36% branches / 45% functions
 **Target:** ~72% statements / ~68% branches / ~74% functions
 **Tooling:** Vitest + @vue/test-utils + @vitest/coverage-v8
 **Test pattern reference:** `src/components/__tests__/ShowsList.spec.ts`
@@ -17,8 +18,13 @@
 ## Task 1 — `showService.ts` tests
 
 **File to create:** `src/services/__tests__/showService.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~2–3% overall, 20% → ~100% for this file
+**Status:** [x] Complete — 16 tests, all passing
+**Actual coverage:** 100% statements / 50% branch* / 100% functions / 100% lines
+**Actual overall gain:** +1.2% statements, +4.8% functions
+
+> *Branch at 50%: the `|| ''` fallback in `new ApiClient(import.meta.env.VITE_API_BASE_URL || '')`
+> is a module-init expression — the `''` branch can't be exercised when `VITE_API_BASE_URL` is set
+> in `.env.local`. Not a meaningful gap.
 
 ### What to test
 
