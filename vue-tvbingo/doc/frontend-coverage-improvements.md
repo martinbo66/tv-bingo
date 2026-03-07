@@ -2,6 +2,7 @@
 
 **Baseline (as of 2026-03-07):** 40% statements / 36% branches / 40% functions
 **After Task 1 (2026-03-07):** 41% statements / 36% branches / 45% functions
+**After Task 2 (2026-03-07):** 45.7% statements / 43.3% branches / 49.7% functions
 **Target:** ~72% statements / ~68% branches / ~74% functions
 **Tooling:** Vitest + @vue/test-utils + @vitest/coverage-v8
 **Test pattern reference:** `src/components/__tests__/ShowsList.spec.ts`
@@ -55,8 +56,9 @@ Also test `searchShowsByTitle` filtering logic:
 ## Task 2 — `FormFieldWithValidation.vue` tests
 
 **File to create:** `src/components/common/__tests__/FormFieldWithValidation.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~3–4% overall, 9% → ~85% for this file
+**Status:** [x] Complete — 27 tests, all passing
+**Actual coverage:** 100% statements / 100% branches / 100% functions / 100% lines
+**Actual overall gain:** +4.7% statements, +7.3% branches, +4.7% functions
 
 ### What to test
 
