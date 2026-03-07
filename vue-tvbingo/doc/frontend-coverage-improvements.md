@@ -4,6 +4,8 @@
 **After Task 1 (2026-03-07):** 41% statements / 36% branches / 45% functions
 **After Task 2 (2026-03-07):** 45.7% statements / 43.3% branches / 49.7% functions
 **After Task 3 (2026-03-07):** 54.4% statements / 54.7% branches / 54.4% functions
+**After Task 4 (2026-03-07):** 60.2% statements / 59.2% branches / 57.8% functions
+**After Task 5 (2026-03-07):** 63.0% statements / 60.6% branches / 63.3% functions
 **Target:** ~72% statements / ~68% branches / ~74% functions
 **Tooling:** Vitest + @vue/test-utils + @vitest/coverage-v8
 **Test pattern reference:** `src/components/__tests__/ShowsList.spec.ts`
@@ -166,8 +168,9 @@ Mount with `mount(ShowDetail, { props: { id: '1' } })` then `await flushPromises
 ## Task 4 — `CreateShow.vue` tests
 
 **File to create:** `src/components/__tests__/CreateShow.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~6–8% overall, 7% → ~75% for this file
+**Status:** [x] Complete — 15 tests, all passing
+**Actual coverage:** 97.6% statements / 100% branches / 83.3% functions / 100% lines
+**Actual overall gain:** +5.8% statements, +4.5% branches, +3.4% functions
 
 ### Setup pattern
 
@@ -217,8 +220,9 @@ Mount with `mount(CreateShow)`. No router mock needed (uses `window.history.back
 ## Task 5 — `useUnsavedChangesGuard.ts` tests
 
 **File to create:** `src/composables/__tests__/useUnsavedChangesGuard.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~2–3% overall, 0% → ~75% for this file
+**Status:** [x] Complete — 13 tests, all passing
+**Actual coverage:** 100% statements / 100% branches / 100% functions / 100% lines
+**Actual overall gain:** +2.8% statements, +1.4% branches, +5.4% functions
 
 ### What to test
 
