@@ -6,6 +6,7 @@
 **After Task 3 (2026-03-07):** 54.4% statements / 54.7% branches / 54.4% functions
 **After Task 4 (2026-03-07):** 60.2% statements / 59.2% branches / 57.8% functions
 **After Task 5 (2026-03-07):** 63.0% statements / 60.6% branches / 63.3% functions
+**After Task 6 (2026-03-07):** 83.4% statements / 78.35% branches / 80.95% functions
 **Target:** ~72% statements / ~68% branches / ~74% functions
 **Tooling:** Vitest + @vue/test-utils + @vitest/coverage-v8
 **Test pattern reference:** `src/components/__tests__/ShowsList.spec.ts`
@@ -263,8 +264,9 @@ function withSetup<T>(composable: () => T): [T, ReturnType<typeof mount>] {
 ## Task 6 — `PhraseListManager.vue` tests (secondary priority)
 
 **File to create:** `src/components/common/__tests__/PhraseListManager.spec.ts`
-**Status:** [ ]
-**Estimated coverage gain:** ~5–7% overall, 7% → ~60% for this file
+**Status:** [x] Complete — 44 tests, all passing
+**Actual coverage:** 92.4% statements / 84.78% branches / 86.66% functions / 94.32% lines
+**Actual overall gain:** +20.4% statements, +17.75% branches, +17.65% functions
 
 ### What to test
 
@@ -308,6 +310,6 @@ Mount with a `phrases` prop array and verify `update:phrases` emissions.
 
 | Metric | Baseline | After Tasks 1–5 | After Task 6 |
 |---|---|---|---|
-| Statements | 40% | ~72% | ~77% |
-| Branches | 36% | ~68% | ~73% |
-| Functions | 40% | ~74% | ~79% |
+| Statements | 40% | 63.0% | 83.4% |
+| Branches | 36% | 60.6% | 78.35% |
+| Functions | 40% | 63.3% | 80.95% |
