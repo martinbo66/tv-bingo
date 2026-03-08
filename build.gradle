@@ -56,9 +56,28 @@ sonar {
     }
 }
 
+// Rewrite lcov SF: paths to be relative to the project root so Sonar can match them.
+// Vitest generates paths like "SF:src/..." but Sonar resolves them from the project root,
+// expecting "SF:vue-tvbingo/src/...".
+task fixLcovPaths {
+    description = 'Rewrite lcov.info SF: paths to be relative to the project root'
+    group = 'frontend'
+    dependsOn 'frontendCoverage'
+    doLast {
+        def lcovFile = file("vue-tvbingo/coverage/lcov.info")
+        if (lcovFile.exists()) {
+            def fixed = lcovFile.text.replace('SF:src/', 'SF:vue-tvbingo/src/')
+            lcovFile.text = fixed
+            println "Fixed lcov paths in ${lcovFile}"
+        } else {
+            println "Warning: lcov.info not found at ${lcovFile}"
+        }
+    }
+}
+
 // Ensure coverage report exists before running sonar
 tasks.named('sonar').configure {
-    dependsOn ':spring-tvbingo:jacocoTestReport', frontendCoverage
+    dependsOn ':spring-tvbingo:jacocoTestReport', fixLcovPaths
 }
 
 // Detect npm or use npx as fallback
