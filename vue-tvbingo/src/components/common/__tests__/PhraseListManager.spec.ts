@@ -369,7 +369,9 @@ describe('PhraseListManager.vue', () => {
       await wrapper.find('.bulk-toggle-btn').trigger('click')
       await nextTick()
 
-      await wrapper.find('#bulk-phrases-input').setValue('Short\nThis line is way too long for the limit')
+      await wrapper
+        .find('#bulk-phrases-input')
+        .setValue('Short\nThis line is way too long for the limit')
       await wrapper.find('.add-bulk-btn').trigger('click')
       await nextTick()
 

@@ -55,7 +55,9 @@ describe('FormFieldWithValidation.vue', () => {
       await nextTick()
 
       expect(wrapper.find('.field-error').exists()).toBe(true)
-      expect(wrapper.find('.field-error').text()).toContain('Show Title must be 10 characters or less')
+      expect(wrapper.find('.field-error').text()).toContain(
+        'Show Title must be 10 characters or less'
+      )
     })
 
     it('shows no error when value is within maxLength', async () => {

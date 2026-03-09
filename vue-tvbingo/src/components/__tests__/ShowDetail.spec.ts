@@ -269,9 +269,7 @@ describe('ShowDetail.vue', () => {
     })
 
     it('shows fallback error message for unknown ApiError status', async () => {
-      vi.mocked(showService.updateShow).mockRejectedValue(
-        new ApiError('Server Error', 500)
-      )
+      vi.mocked(showService.updateShow).mockRejectedValue(new ApiError('Server Error', 500))
 
       const wrapper = mount(ShowDetail, mountOptions())
       await flushPromises()

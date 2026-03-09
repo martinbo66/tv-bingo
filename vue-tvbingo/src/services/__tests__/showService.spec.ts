@@ -46,7 +46,10 @@ describe('showService', () => {
 
       const result = await showService.getShows()
 
-      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('/api/shows'), expect.any(Object))
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows'),
+        expect.any(Object)
+      )
       expect(result).toEqual([mockShow, mockShow2])
     })
 
@@ -65,7 +68,10 @@ describe('showService', () => {
 
       const result = await showService.getShowById(1)
 
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/shows/1'), expect.any(Object))
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows/1'),
+        expect.any(Object)
+      )
       expect(result).toEqual(mockShow)
     })
 
@@ -74,7 +80,10 @@ describe('showService', () => {
 
       await showService.getShowById(42)
 
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/shows/42'), expect.any(Object))
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows/42'),
+        expect.any(Object)
+      )
     })
   })
 
@@ -139,7 +148,10 @@ describe('showService', () => {
 
       await showService.updateShow(show)
 
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/shows/99'), expect.anything())
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows/99'),
+        expect.anything()
+      )
     })
   })
 
@@ -160,7 +172,10 @@ describe('showService', () => {
 
       await showService.deleteShow(55)
 
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/shows/55'), expect.anything())
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows/55'),
+        expect.anything()
+      )
     })
   })
 
@@ -182,7 +197,11 @@ describe('showService', () => {
     })
 
     it('should return multiple matches when the query matches more than one show', async () => {
-      global.fetch = mockFetchOk([mockShow, mockShow2, { id: 3, showTitle: 'The Wire', phrases: [] }]) as never
+      global.fetch = mockFetchOk([
+        mockShow,
+        mockShow2,
+        { id: 3, showTitle: 'The Wire', phrases: [] }
+      ]) as never
 
       // 'the' matches 'The Office' and 'The Wire' but not 'Parks and Recreation'
       const result = await showService.searchShowsByTitle('the')
@@ -206,7 +225,10 @@ describe('showService', () => {
     it('should call GET /api/shows to fetch all shows before filtering', async () => {
       await showService.searchShowsByTitle('anything')
 
-      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/shows'), expect.any(Object))
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/shows'),
+        expect.any(Object)
+      )
     })
   })
 })
