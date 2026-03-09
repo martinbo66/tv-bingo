@@ -179,8 +179,8 @@ describe('CreateShow.vue', () => {
   describe('Cancel — no unsaved changes', () => {
     it('calls window.history.back() immediately without confirm dialog', async () => {
       mockHasUnsavedChanges.value = false
-      const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {})
-      const confirmSpy = vi.spyOn(window, 'confirm')
+      const backSpy = vi.spyOn(globalThis.history, 'back').mockImplementation(() => {})
+      const confirmSpy = vi.spyOn(globalThis, 'confirm')
 
       const wrapper = mount(CreateShow, mountOptions())
 
@@ -195,8 +195,8 @@ describe('CreateShow.vue', () => {
   describe('Cancel — with unsaved changes', () => {
     it('calls window.confirm when there are unsaved changes', async () => {
       mockHasUnsavedChanges.value = true
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
-      vi.spyOn(window.history, 'back').mockImplementation(() => {})
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
+      vi.spyOn(globalThis.history, 'back').mockImplementation(() => {})
 
       const wrapper = mount(CreateShow, mountOptions())
 
@@ -208,8 +208,8 @@ describe('CreateShow.vue', () => {
 
     it('calls window.history.back() when user confirms the dialog', async () => {
       mockHasUnsavedChanges.value = true
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
-      const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {})
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
+      const backSpy = vi.spyOn(globalThis.history, 'back').mockImplementation(() => {})
 
       const wrapper = mount(CreateShow, mountOptions())
 
@@ -221,8 +221,8 @@ describe('CreateShow.vue', () => {
 
     it('does not call window.history.back() when user declines the dialog', async () => {
       mockHasUnsavedChanges.value = true
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
-      const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {})
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
+      const backSpy = vi.spyOn(globalThis.history, 'back').mockImplementation(() => {})
 
       const wrapper = mount(CreateShow, mountOptions())
 

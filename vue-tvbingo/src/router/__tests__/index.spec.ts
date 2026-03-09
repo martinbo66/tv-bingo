@@ -129,7 +129,7 @@ describe('Vue Router', () => {
     it('should execute beforeEach navigation guard', async () => {
       // The router has a beforeEach guard that cleans up URLs
       // We can test that navigation completes successfully
-      const spy = vi.spyOn(window.history, 'replaceState')
+      const spy = vi.spyOn(globalThis.history, 'replaceState')
 
       await router.push('/create')
       await router.isReady()

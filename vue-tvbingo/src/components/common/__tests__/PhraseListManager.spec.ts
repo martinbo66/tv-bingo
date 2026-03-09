@@ -184,7 +184,7 @@ describe('PhraseListManager.vue', () => {
       const wrapper = mountManager(['My Phrase'])
       await wrapper.find('.remove-btn').trigger('click')
 
-      expect(window.confirm).toHaveBeenCalledWith('Remove phrase "My Phrase"?')
+      expect(globalThis.confirm).toHaveBeenCalledWith('Remove phrase "My Phrase"?')
     })
   })
 

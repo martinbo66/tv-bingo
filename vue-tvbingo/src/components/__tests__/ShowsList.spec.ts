@@ -53,9 +53,9 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 })
 
-// Mock window.confirm
-const originalConfirm = window.confirm
-window.confirm = vi.fn(() => true)
+// Mock globalThis.confirm
+const originalConfirm = globalThis.confirm
+globalThis.confirm = vi.fn(() => true)
 
 // Helper to create mount options
 const createMountOptions = () => ({
@@ -102,7 +102,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
   })
 
   afterEach(() => {
-    window.confirm = originalConfirm
+    globalThis.confirm = originalConfirm
   })
 
   describe('View Toggle - Switching views maintains data state', () => {
@@ -571,7 +571,7 @@ describe('ShowsList.vue - Search and Filter', () => {
   })
 
   afterEach(() => {
-    window.confirm = originalConfirm
+    globalThis.confirm = originalConfirm
   })
 
   describe('Search Functionality', () => {
