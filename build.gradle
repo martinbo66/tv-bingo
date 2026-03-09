@@ -50,6 +50,7 @@ sonar {
         // Exclusions
         property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**'
         property 'sonar.coverage.exclusions', '**/*.spec.ts,**/*.test.ts'
+        property 'sonar.cpd.exclusions', '**/*.spec.ts,**/*.test.ts,**/*Test.java,**/*Tests.java'
 
         // Include JavaScript/TypeScript analysis
         property 'sonar.sources', 'vue-tvbingo/src'
