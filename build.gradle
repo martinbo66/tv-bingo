@@ -45,9 +45,12 @@ sonar {
 
         // Coverage reports
         property 'sonar.coverage.jacoco.xmlReportPaths', 'spring-tvbingo/build/reports/jacoco/test/jacocoTestReport.xml'
+        property 'sonar.javascript.lcov.reportPaths', 'vue-tvbingo/coverage/lcov.info'
 
         // Exclusions
         property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**'
+        property 'sonar.coverage.exclusions', '**/*.spec.ts,**/*.test.ts'
+        property 'sonar.cpd.exclusions', '**/*.spec.ts,**/*.test.ts,**/*Test.java,**/*Tests.java'
 
         // Include JavaScript/TypeScript analysis
         property 'sonar.sources', 'vue-tvbingo/src'
@@ -55,9 +58,28 @@ sonar {
     }
 }
 
+// Rewrite lcov SF: paths to be relative to the project root so Sonar can match them.
+// Vitest generates paths like "SF:src/..." but Sonar resolves them from the project root,
+// expecting "SF:vue-tvbingo/src/...".
+task fixLcovPaths {
+    description = 'Rewrite lcov.info SF: paths to be relative to the project root'
+    group = 'frontend'
+    dependsOn 'frontendCoverage'
+    doLast {
+        def lcovFile = file("vue-tvbingo/coverage/lcov.info")
+        if (lcovFile.exists()) {
+            def fixed = lcovFile.text.replace('SF:src/', 'SF:vue-tvbingo/src/')
+            lcovFile.text = fixed
+            println "Fixed lcov paths in ${lcovFile}"
+        } else {
+            println "Warning: lcov.info not found at ${lcovFile}"
+        }
+    }
+}
+
 // Ensure coverage report exists before running sonar
 tasks.named('sonar').configure {
-    dependsOn ':spring-tvbingo:jacocoTestReport'
+    dependsOn ':spring-tvbingo:jacocoTestReport', fixLcovPaths
 }
 
 // Detect npm or use npx as fallback
@@ -120,6 +142,14 @@ task frontendTest(type: Exec) {
     }
 
     commandLine npmCommand, 'run', 'test', '--', '--run'
+}
+
+task frontendCoverage(type: Exec) {
+    description = 'Run frontend tests with coverage (Vitest)'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:coverage'
 }
 
 task frontendLint(type: Exec) {
@@ -210,12 +240,13 @@ task test {
 task coverage {
     description = 'Generate code coverage reports for all projects'
     group = 'verification'
-    dependsOn backendCoverage
-    
+    dependsOn backendCoverage, frontendCoverage
+
     doLast {
         println "\n" + "=" * 80
         println "Coverage reports generated:"
-        println "  Backend: file://${projectDir}/spring-tvbingo/build/reports/jacoco/test/html/index.html"
+        println "  Backend:  file://${projectDir}/spring-tvbingo/build/reports/jacoco/test/html/index.html"
+        println "  Frontend: file://${projectDir}/vue-tvbingo/coverage/index.html"
         println "=" * 80
     }
 }

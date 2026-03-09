@@ -482,8 +482,8 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       vi.mocked(showService.getShowById).mockResolvedValue(mockShow)
 
       // Simulate localStorage being unavailable
-      const originalLocalStorage = window.localStorage
-      Object.defineProperty(window, 'localStorage', {
+      const originalLocalStorage = globalThis.localStorage
+      Object.defineProperty(globalThis, 'localStorage', {
         value: {
           getItem: () => {
             throw new Error('QuotaExceededError')
@@ -506,7 +506,7 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       expect(wrapper.findAll('.bingo-cell')).toHaveLength(25)
 
       // Restore original localStorage
-      Object.defineProperty(window, 'localStorage', {
+      Object.defineProperty(globalThis, 'localStorage', {
         value: originalLocalStorage,
         writable: true
       })
@@ -554,8 +554,8 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       expect(wrapper.findAll('.bingo-cell')).toHaveLength(25)
 
       // Simulate window resize
-      window.innerWidth = 320 // Mobile size
-      window.dispatchEvent(new Event('resize'))
+      globalThis.innerWidth = 320 // Mobile size
+      globalThis.dispatchEvent(new Event('resize'))
       await nextTick()
 
       // Grid should still have 25 cells
@@ -563,8 +563,8 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       expect(wrapper.find('.bingo-grid').exists()).toBe(true)
 
       // Resize to desktop
-      window.innerWidth = 1920
-      window.dispatchEvent(new Event('resize'))
+      globalThis.innerWidth = 1920
+      globalThis.dispatchEvent(new Event('resize'))
       await nextTick()
 
       // Grid should still have 25 cells
@@ -595,8 +595,8 @@ describe('BingoCard.vue - Frontend Edge Cases', () => {
       expect(cells[5].classes()).toContain('selected')
 
       // Simulate resize
-      window.innerWidth = 768 // Tablet size
-      window.dispatchEvent(new Event('resize'))
+      globalThis.innerWidth = 768 // Tablet size
+      globalThis.dispatchEvent(new Event('resize'))
       await nextTick()
 
       // Selections should be preserved
