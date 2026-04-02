@@ -38,7 +38,7 @@ const { hasUnsavedChanges, markClean, setupGuards } = useUnsavedChangesGuard(ori
 
 onMounted(async () => {
   try {
-    const loadedShow = await showService.getShowById(parseInt(props.id))
+    const loadedShow = await showService.getShowById(Number.parseInt(props.id))
     if (loadedShow) {
       // Ensure optional fields are always strings (not undefined)
       show.value = {

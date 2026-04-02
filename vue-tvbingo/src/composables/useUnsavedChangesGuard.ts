@@ -18,7 +18,6 @@ export function useUnsavedChangesGuard<T>(originalData: Ref<T>, currentData: Ref
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
     if (hasUnsavedChanges.value) {
       e.preventDefault()
-      e.returnValue = ''
     }
   }
 

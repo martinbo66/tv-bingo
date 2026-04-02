@@ -164,8 +164,8 @@ const shareShow = async () => {
 }
 
 const loadShow = async () => {
-  const showId = parseInt(route.params.id as string)
-  if (isNaN(showId)) {
+  const showId = Number.parseInt(route.params.id as string)
+  if (Number.isNaN(showId)) {
     error.value = 'Invalid show ID'
     loading.value = false
     return

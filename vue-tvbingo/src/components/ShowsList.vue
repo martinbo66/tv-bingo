@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showService } from '../services/showService'
 import type { Show } from '../types/Show'
@@ -215,7 +215,6 @@ onMounted(() => {
 })
 
 // Clean up event listener
-import { onUnmounted } from 'vue'
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })

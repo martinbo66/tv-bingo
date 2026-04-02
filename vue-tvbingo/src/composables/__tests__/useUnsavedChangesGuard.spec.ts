@@ -170,7 +170,6 @@ describe('useUnsavedChangesGuard', () => {
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalledOnce()
-      expect(mockEvent.returnValue).toBe('')
       wrapper.unmount()
     })
 
