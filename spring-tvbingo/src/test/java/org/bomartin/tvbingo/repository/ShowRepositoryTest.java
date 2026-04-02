@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -98,7 +97,7 @@ class ShowRepositoryTest {
 
         // When
         List<Show> shows = StreamSupport.stream(showRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+                .toList();
 
         // Then
         assertFalse(shows.isEmpty());

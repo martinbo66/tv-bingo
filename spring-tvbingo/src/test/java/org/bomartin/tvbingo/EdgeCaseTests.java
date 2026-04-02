@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,7 +123,7 @@ class EdgeCaseTests {
         // Given - 150 phrases
         List<String> largePhraseList = IntStream.range(0, 150)
                 .mapToObj(i -> "Phrase number " + i)
-                .collect(Collectors.toList());
+                .toList();
         
         ShowRequest request = new ShowRequest();
         request.setShowTitle(generateUniqueTitle("Many Phrases Show"));
@@ -187,8 +186,9 @@ class EdgeCaseTests {
 
         // Then - verify database still has data and wasn't affected
         List<Show> allShows = (List<Show>) showRepository.findAll();
-        assertThat(allShows).isNotEmpty();
-        assertThat(allShows).anyMatch(show -> show.getShowTitle().contains("Robert"));
+        assertThat(allShows)
+                .isNotEmpty()
+                .anyMatch(show -> show.getShowTitle().contains("Robert"));
     }
 
     @Test

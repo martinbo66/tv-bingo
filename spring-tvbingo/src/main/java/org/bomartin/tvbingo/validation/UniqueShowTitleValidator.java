@@ -21,6 +21,7 @@ public class UniqueShowTitleValidator implements ConstraintValidator<UniqueShowT
     
     @Override
     public void initialize(UniqueShowTitle constraintAnnotation) {
+        // No initialization needed; validation logic is in isValid()
     }
     
     @Override

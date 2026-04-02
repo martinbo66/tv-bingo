@@ -25,6 +25,8 @@ import java.util.List;
  * REST controller for managing TV show bingo games.
  */
 public class ShowController {
+    private static final String SHOW_NOT_FOUND_MSG = "Show not found with id: ";
+
     private final ShowService showService;
     
     /**
@@ -66,7 +68,7 @@ public class ShowController {
     public Show getShow(@PathVariable Long id) {
         return showService.getShow(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Show not found with id: " + id));
+                    HttpStatus.NOT_FOUND, SHOW_NOT_FOUND_MSG + id));
     }
     
     /**
@@ -91,8 +93,8 @@ public class ShowController {
     public Show updateShow(@PathVariable Long id, @Valid @RequestBody ShowRequest request) {
         Show show = showService.getShow(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Show not found with id: " + id));
-        
+                    HttpStatus.NOT_FOUND, SHOW_NOT_FOUND_MSG + id));
+
         show.setShowTitle(request.getShowTitle());
         show.setGameTitle(request.getGameTitle());
         show.setCenterSquare(request.getCenterSquare());
@@ -113,7 +115,7 @@ public class ShowController {
         // Verify show exists before attempting deletion
         showService.getShow(id)
                 .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Show not found with id: " + id));
+                    HttpStatus.NOT_FOUND, SHOW_NOT_FOUND_MSG + id));
         showService.deleteShow(id);
     }
 }

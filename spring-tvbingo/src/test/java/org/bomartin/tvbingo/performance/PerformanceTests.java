@@ -199,7 +199,7 @@ class PerformanceTests {
     }
 
     @Test
-    void databaseQueryPerformance_ComplexQueries_ShouldBeFast() throws Exception {
+    void databaseQueryPerformance_ComplexQueries_ShouldBeFast() {
         // Given - create dataset with varied data
         int showCount = 500;
         System.out.println("Creating " + showCount + " shows for query performance test...");
@@ -300,8 +300,6 @@ class PerformanceTests {
         // Given - get baseline memory usage
         Runtime runtime = Runtime.getRuntime();
         System.gc(); // Suggest garbage collection before measurement
-        Thread.sleep(100); // Give GC time to run
-        
         long baselineMemory = runtime.totalMemory() - runtime.freeMemory();
         System.out.printf("Baseline memory: %.2f MB%n", baselineMemory / (1024.0 * 1024.0));
 
