@@ -1,4 +1,6 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import AppFooter from './components/AppFooter.vue'
+</script>
 
 <template>
   <div class="app-container">
@@ -13,6 +15,7 @@
     <main class="main-content">
       <router-view></router-view>
     </main>
+    <AppFooter />
   </div>
 </template>
 
@@ -144,9 +147,10 @@
   }
 }
 
-/* Print styles - hide header when printing */
+/* Print styles - hide header and footer when printing */
 @media print {
-  .header {
+  .header,
+  .app-footer {
     display: none !important;
   }
 
