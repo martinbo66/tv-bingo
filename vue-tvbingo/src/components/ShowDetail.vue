@@ -68,7 +68,7 @@ onMounted(async () => {
 // Cancel with confirmation
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm(
+    const answer = globalThis.confirm(
       'You have unsaved changes. Are you sure you want to discard them?'
     )
     if (!answer) return

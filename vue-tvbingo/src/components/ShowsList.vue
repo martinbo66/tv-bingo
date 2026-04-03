@@ -131,7 +131,7 @@ const handleDelete = async (event: Event, showId: number) => {
 
 const handleShare = async (event: Event, showId: number) => {
   event.stopPropagation()
-  const shareUrl = `${window.location.origin}${window.location.pathname}#/show/${showId}`
+  const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}#/show/${showId}`
 
   try {
     await navigator.clipboard.writeText(shareUrl)
@@ -211,12 +211,12 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   fetchShows()
-  window.addEventListener('keydown', handleKeydown)
+  globalThis.addEventListener('keydown', handleKeydown)
 })
 
 // Clean up event listener
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
+  globalThis.removeEventListener('keydown', handleKeydown)
 })
 </script>
 

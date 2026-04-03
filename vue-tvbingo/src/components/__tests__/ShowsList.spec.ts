@@ -49,7 +49,7 @@ const localStorageMock = (() => {
   }
 })()
 
-Object.defineProperty(window, 'localStorage', {
+Object.defineProperty(globalThis, 'localStorage', {
   value: localStorageMock
 })
 
@@ -331,7 +331,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
 
     it('should delete show from grid view', async () => {
       vi.mocked(showService.deleteShow).mockResolvedValue(undefined)
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
 
       const wrapper = mount(ShowsList, createMountOptions())
       await flushPromises()
@@ -356,7 +356,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
 
     it('should delete show from list view', async () => {
       vi.mocked(showService.deleteShow).mockResolvedValue(undefined)
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
 
       const wrapper = mount(ShowsList, createMountOptions())
       await flushPromises()
@@ -385,7 +385,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
     })
 
     it('should not delete show if user cancels confirmation in grid view', async () => {
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
 
       const wrapper = mount(ShowsList, createMountOptions())
       await flushPromises()
@@ -407,7 +407,7 @@ describe('ShowsList.vue - Phase 2 Integration Tests', () => {
     })
 
     it('should not delete show if user cancels confirmation in list view', async () => {
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
 
       const wrapper = mount(ShowsList, createMountOptions())
       await flushPromises()

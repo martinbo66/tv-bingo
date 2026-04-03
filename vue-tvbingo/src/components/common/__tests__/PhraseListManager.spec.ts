@@ -140,7 +140,7 @@ describe('PhraseListManager.vue', () => {
 
   describe('Delete phrase', () => {
     beforeEach(() => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
     })
 
     afterEach(() => {
@@ -172,7 +172,7 @@ describe('PhraseListManager.vue', () => {
     })
 
     it('does not emit when user cancels confirm', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
       const wrapper = mountManager(['Alpha'])
       await wrapper.find('.remove-btn').trigger('click')
       await nextTick()

@@ -190,7 +190,7 @@ const scrollToPhrase = (phrase: string) => {
 // Remove phrase
 const removePhrase = (index: number) => {
   const phrase = props.phrases[index]
-  const confirmed = window.confirm(`Remove phrase "${phrase}"?`)
+  const confirmed = globalThis.confirm(`Remove phrase "${phrase}"?`)
 
   if (!confirmed) return
 

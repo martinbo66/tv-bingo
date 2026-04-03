@@ -30,17 +30,17 @@ export function useUnsavedChangesGuard<T>(originalData: Ref<T>, currentData: Ref
   const setupGuards = () => {
     // Add beforeunload handler for browser navigation
     onMounted(() => {
-      window.addEventListener('beforeunload', handleBeforeUnload)
+      globalThis.addEventListener('beforeunload', handleBeforeUnload)
     })
 
     onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
+      globalThis.removeEventListener('beforeunload', handleBeforeUnload)
     })
 
     // Vue Router navigation guard
     onBeforeRouteLeave(() => {
       if (hasUnsavedChanges.value) {
-        const answer = window.confirm('You have unsaved changes. Are you sure you want to leave?')
+        const answer = globalThis.confirm('You have unsaved changes. Are you sure you want to leave?')
         if (!answer) return false
       }
     })

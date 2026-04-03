@@ -137,13 +137,13 @@ const resetMarks = () => {
 }
 
 const printBingoCard = () => {
-  window.print()
+  globalThis.print()
 }
 
 const shareShow = async () => {
   if (!show.value) return
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}#/show/${show.value.id}`
+  const shareUrl = `${globalThis.location.origin}${globalThis.location.pathname}#/show/${show.value.id}`
 
   try {
     await navigator.clipboard.writeText(shareUrl)
