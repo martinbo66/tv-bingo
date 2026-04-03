@@ -335,7 +335,7 @@ onUnmounted(() => {
 
       <!-- Phrase count filter (controlled by feature flag) -->
       <div v-if="flags.enablePhraseCountFilter" class="filter-container">
-        <label class="filter-label">Filter by phrases:</label>
+        <span class="filter-label">Filter by phrases:</span>
         <div class="filter-buttons" role="group" aria-label="Filter by phrase count">
           <button
             class="filter-btn"
@@ -480,66 +480,72 @@ onUnmounted(() => {
     </div>
 
     <!-- List View -->
-    <div v-else class="shows-list-view" role="table" aria-label="Shows list">
-      <div class="list-header" role="row">
-        <div class="list-cell header-cell title-cell" role="columnheader">Show Title</div>
-        <div class="list-cell header-cell game-title-cell" role="columnheader">Game Title</div>
-        <div class="list-cell header-cell phrase-count-cell" role="columnheader">Phrases</div>
-        <div class="list-cell header-cell actions-cell" role="columnheader">Actions</div>
-      </div>
-      <div
-        v-for="show in sortedShows"
-        :key="show.id"
-        class="list-row"
-        role="row"
-        :aria-label="`${show.showTitle}${show.gameTitle ? ' - ' + show.gameTitle : ''}, ${show.phrases.length} phrases`"
-        @click="navigateToShow(show.id)"
-      >
-        <div class="list-cell title-cell" role="cell">
-          <span class="show-title-text">{{ show.showTitle }}</span>
-        </div>
-        <div class="list-cell game-title-cell" role="cell">
-          <span class="game-title-text">{{ show.gameTitle || '—' }}</span>
-        </div>
-        <div class="list-cell phrase-count-cell" role="cell">
-          <span
-            class="phrase-count-badge"
-            :class="`status-${getPhraseCountStatus(show.phrases.length)}`"
-          >
-            {{ show.phrases.length }}
-            <span v-if="isShowComplete(show)" class="complete-indicator-list" title="Ready to play!"
-              >✓</span
+    <table v-else class="shows-list-view" aria-label="Shows list">
+      <thead>
+        <tr class="list-header">
+          <th class="list-cell header-cell title-cell" scope="col">Show Title</th>
+          <th class="list-cell header-cell game-title-cell" scope="col">Game Title</th>
+          <th class="list-cell header-cell phrase-count-cell" scope="col">Phrases</th>
+          <th class="list-cell header-cell actions-cell" scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="show in sortedShows"
+          :key="show.id"
+          class="list-row"
+          :aria-label="`${show.showTitle}${show.gameTitle ? ' - ' + show.gameTitle : ''}, ${show.phrases.length} phrases`"
+          @click="navigateToShow(show.id)"
+        >
+          <td class="list-cell title-cell">
+            <span class="show-title-text">{{ show.showTitle }}</span>
+          </td>
+          <td class="list-cell game-title-cell">
+            <span class="game-title-text">{{ show.gameTitle || '—' }}</span>
+          </td>
+          <td class="list-cell phrase-count-cell">
+            <span
+              class="phrase-count-badge"
+              :class="`status-${getPhraseCountStatus(show.phrases.length)}`"
             >
-          </span>
-        </div>
-        <div class="list-cell actions-cell" role="cell">
-          <button
-            class="control-btn share-btn"
-            title="Share show"
-            aria-label="Share show"
-            @click="e => handleShare(e, show.id)"
-          >
-            🔗
-          </button>
-          <button
-            class="control-btn edit-btn"
-            title="Edit show"
-            aria-label="Edit show"
-            @click="e => handleEdit(e, show.id)"
-          >
-            ✏️
-          </button>
-          <button
-            class="control-btn delete-btn"
-            title="Delete show"
-            aria-label="Delete show"
-            @click="e => handleDelete(e, show.id)"
-          >
-            🗑️
-          </button>
-        </div>
-      </div>
-    </div>
+              {{ show.phrases.length }}
+              <span
+                v-if="isShowComplete(show)"
+                class="complete-indicator-list"
+                title="Ready to play!"
+                >✓</span
+              >
+            </span>
+          </td>
+          <td class="list-cell actions-cell">
+            <button
+              class="control-btn share-btn"
+              title="Share show"
+              aria-label="Share show"
+              @click="e => handleShare(e, show.id)"
+            >
+              🔗
+            </button>
+            <button
+              class="control-btn edit-btn"
+              title="Edit show"
+              aria-label="Edit show"
+              @click="e => handleEdit(e, show.id)"
+            >
+              ✏️
+            </button>
+            <button
+              class="control-btn delete-btn"
+              title="Delete show"
+              aria-label="Delete show"
+              @click="e => handleDelete(e, show.id)"
+            >
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <!-- Share Toast Notification -->
     <Transition name="toast">
@@ -675,7 +681,7 @@ onUnmounted(() => {
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .search-input:focus {
@@ -752,19 +758,19 @@ onUnmounted(() => {
 .filter-btn.filter-low.active {
   background: rgba(255, 193, 7, 0.3);
   border-color: rgba(255, 193, 7, 0.6);
-  color: #ffd54f;
+  color: #ffe57f;
 }
 
 .filter-btn.filter-medium.active {
   background: rgba(255, 152, 0, 0.3);
   border-color: rgba(255, 152, 0, 0.6);
-  color: #ffb74d;
+  color: #ffd180;
 }
 
 .filter-btn.filter-complete.active {
   background: rgba(76, 175, 80, 0.3);
   border-color: rgba(76, 175, 80, 0.6);
-  color: #81c784;
+  color: #b9f6ca;
 }
 
 .filter-btn:focus-visible {
@@ -776,7 +782,7 @@ onUnmounted(() => {
   padding: 8px 16px;
   background: rgba(255, 68, 68, 0.3);
   border: 2px solid rgba(255, 68, 68, 0.5);
-  color: #ff8a80;
+  color: #ffb4ae;
   cursor: pointer;
   border-radius: 20px;
   font-size: 0.9em;
@@ -975,26 +981,26 @@ onUnmounted(() => {
 
 .phrase-count.status-low {
   background-color: rgba(255, 193, 7, 0.3);
-  color: #ffd54f;
+  color: #ffe57f;
   border: 1px solid rgba(255, 193, 7, 0.5);
 }
 
 .phrase-count.status-medium {
   background-color: rgba(255, 152, 0, 0.3);
-  color: #ffb74d;
+  color: #ffd180;
   border: 1px solid rgba(255, 152, 0, 0.5);
 }
 
 .phrase-count.status-complete {
   background-color: rgba(76, 175, 80, 0.3);
-  color: #81c784;
+  color: #b9f6ca;
   border: 1px solid rgba(76, 175, 80, 0.5);
 }
 
 .complete-indicator {
   font-weight: bold;
   font-size: 1.1em;
-  color: #81c784;
+  color: #b9f6ca;
   text-shadow: 0 0 8px rgba(129, 199, 132, 0.6);
 }
 
@@ -1008,7 +1014,7 @@ onUnmounted(() => {
 .error {
   text-align: center;
   padding: 40px;
-  color: #ff4444;
+  color: #d32f2f;
   background: rgba(255, 68, 68, 0.1);
   border-radius: 10px;
   margin: 20px;
@@ -1038,6 +1044,15 @@ onUnmounted(() => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  /* Override table defaults so the grid layout works */
+  display: block;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shows-list-view thead,
+.shows-list-view tbody {
+  display: block;
 }
 
 .list-header {
@@ -1078,6 +1093,8 @@ onUnmounted(() => {
 .list-cell {
   display: flex;
   align-items: center;
+  /* Override table-cell defaults */
+  vertical-align: middle;
 }
 
 .header-cell {
@@ -1123,26 +1140,26 @@ onUnmounted(() => {
 
 .phrase-count-badge.status-low {
   background-color: rgba(255, 193, 7, 0.3);
-  color: #ffd54f;
+  color: #ffe57f;
   border: 1px solid rgba(255, 193, 7, 0.5);
 }
 
 .phrase-count-badge.status-medium {
   background-color: rgba(255, 152, 0, 0.3);
-  color: #ffb74d;
+  color: #ffd180;
   border: 1px solid rgba(255, 152, 0, 0.5);
 }
 
 .phrase-count-badge.status-complete {
   background-color: rgba(76, 175, 80, 0.3);
-  color: #81c784;
+  color: #b9f6ca;
   border: 1px solid rgba(76, 175, 80, 0.5);
 }
 
 .complete-indicator-list {
   font-weight: bold;
   font-size: 1.1em;
-  color: #81c784;
+  color: #b9f6ca;
   text-shadow: 0 0 8px rgba(129, 199, 132, 0.6);
 }
 
@@ -1222,7 +1239,8 @@ onUnmounted(() => {
   }
 
   /* List view mobile - stack columns */
-  .list-header {
+  .list-header,
+  .shows-list-view thead {
     display: none; /* Hide header on mobile */
   }
 
@@ -1273,6 +1291,7 @@ onUnmounted(() => {
   .list-row {
     grid-template-columns: 2fr 1fr 100px 100px;
     gap: 12px;
+    display: grid;
   }
 
   .shows-grid {

@@ -25,7 +25,7 @@ describe('PhraseListManager.vue', () => {
 
     it('displays phrase count in label', () => {
       const wrapper = mountManager(['A', 'B', 'C'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('3')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('3')
     })
 
     it('renders each phrase', () => {
@@ -302,15 +302,15 @@ describe('PhraseListManager.vue', () => {
   describe('Phrase count', () => {
     it('reflects props.phrases.length', () => {
       const wrapper = mountManager(['A', 'B', 'C', 'D'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('4')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('4')
     })
 
     it('updates when phrases change', async () => {
       const wrapper = mountManager(['A'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('1')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('1')
 
       await wrapper.setProps({ phrases: ['A', 'B', 'C'] })
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('3')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('3')
     })
   })
 

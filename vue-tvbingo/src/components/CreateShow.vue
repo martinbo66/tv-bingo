@@ -231,7 +231,7 @@ const handleCancel = () => {
 
 .submit-btn:disabled {
   background-color: #333;
-  color: #666;
+  color: #aaa;
   cursor: not-allowed;
   opacity: 0.6;
 }

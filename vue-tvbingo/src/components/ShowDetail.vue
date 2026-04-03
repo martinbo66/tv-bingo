@@ -305,7 +305,7 @@ const saveShow = async () => {
   background-color: rgba(255, 68, 68, 0.1);
   border: 1px solid rgba(255, 68, 68, 0.3);
   border-radius: 6px;
-  color: #ff4444;
+  color: #d32f2f;
   font-size: 0.9rem;
 }
 

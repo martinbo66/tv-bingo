@@ -246,7 +246,7 @@ onMounted(() => {
         </div>
         <div style="height: 1rem"></div>
         <div class="bingo-grid card-shadow">
-          <div
+          <button
             v-for="(phrase, index) in bingoGrid"
             :key="index"
             class="bingo-cell"
@@ -256,17 +256,15 @@ onMounted(() => {
               winning: isWinningCell(index),
               'long-text': phrase.length > 20
             }"
-            role="button"
             :aria-pressed="selectedCells.has(index)"
             :aria-label="`${phrase}${selectedCells.has(index) ? ', marked' : ', not marked'}${index === 12 ? ', center square' : ''}`"
             :title="phrase"
-            tabindex="0"
             @click="toggleCell(index)"
             @keydown.enter.prevent="toggleCell(index)"
             @keydown.space.prevent="toggleCell(index)"
           >
             {{ phrase }}
-          </div>
+          </button>
         </div>
 
         <div
@@ -376,7 +374,7 @@ onMounted(() => {
 }
 
 .regenerate-button {
-  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+  background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -395,7 +393,7 @@ onMounted(() => {
 }
 
 .regenerate-button:hover {
-  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
+  background: linear-gradient(90deg, #1b5e20 0%, #388e3c 100%);
   box-shadow: 0 4px 16px rgba(76, 175, 80, 0.25);
   transform: translateY(-2px) scale(1.04);
 }
@@ -405,7 +403,7 @@ onMounted(() => {
 }
 
 .reset-button {
-  background: linear-gradient(90deg, #f57c00 0%, #ffb74d 100%);
+  background: linear-gradient(90deg, #bf360c 0%, #e64a19 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -424,7 +422,7 @@ onMounted(() => {
 }
 
 .reset-button:hover {
-  background: linear-gradient(90deg, #e65100 0%, #ffa726 100%);
+  background: linear-gradient(90deg, #7f2600 0%, #bf360c 100%);
   box-shadow: 0 4px 16px rgba(245, 124, 0, 0.25);
   transform: translateY(-2px) scale(1.04);
 }
@@ -434,7 +432,7 @@ onMounted(() => {
 }
 
 .print-button {
-  background: linear-gradient(90deg, #2196f3 0%, #64b5f6 100%);
+  background: linear-gradient(90deg, #0d47a1 0%, #1565c0 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -453,7 +451,7 @@ onMounted(() => {
 }
 
 .print-button:hover {
-  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  background: linear-gradient(90deg, #0a2f6b 0%, #0d47a1 100%);
   box-shadow: 0 4px 16px rgba(33, 150, 243, 0.25);
   transform: translateY(-2px) scale(1.04);
 }
@@ -524,7 +522,7 @@ onMounted(() => {
 }
 
 .back-link {
-  background: rgba(160, 132, 202, 0.18);
+  background: rgba(106, 76, 147, 0.75);
   color: #fff;
   border-radius: 20px;
   padding: 0.4em 1.2em 0.4em 1.8em;
@@ -543,8 +541,8 @@ onMounted(() => {
 }
 
 .back-link:hover {
-  background: #a084ca;
-  color: #ffd700;
+  background: #6f42c1;
+  color: #fff;
   box-shadow: 0 4px 16px #a084ca55;
 }
 
@@ -614,6 +612,9 @@ onMounted(() => {
   word-break: break-word;
   hyphens: auto;
   opacity: 0.98;
+  /* Reset native button styles */
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .bingo-cell.long-text {
@@ -681,8 +682,8 @@ onMounted(() => {
 }
 
 .error {
-  color: #ff4444;
-  background: rgba(255, 68, 68, 0.08);
+  color: #d32f2f;
+  background: rgba(255, 68, 68, 0.15);
   border-radius: 10px;
   margin: 20px;
 }
@@ -822,7 +823,7 @@ onMounted(() => {
 .confirm-proceed {
   padding: 0.6rem 1.2rem;
   border: none;
-  background: linear-gradient(90deg, #4caf50 0%, #81c784 100%);
+  background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
   color: #fff;
   border-radius: 20px;
   font-weight: 600;
@@ -831,7 +832,7 @@ onMounted(() => {
 }
 
 .confirm-proceed:hover {
-  background: linear-gradient(90deg, #388e3c 0%, #66bb6a 100%);
+  background: linear-gradient(90deg, #1b5e20 0%, #388e3c 100%);
   transform: translateY(-1px);
 }
 
