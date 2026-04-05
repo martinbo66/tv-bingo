@@ -5,6 +5,7 @@ This directory contains configuration for feature flags that control optional fu
 ## Usage
 
 Feature flags allow you to enable or disable features without removing code. This is useful for:
+
 - Gradually rolling out new features
 - A/B testing
 - Disabling problematic features quickly
@@ -19,6 +20,7 @@ Feature flags allow you to enable or disable features without removing code. Thi
 ## Available Feature Flags
 
 ### `enablePhraseCountFilter`
+
 - **Location**: Shows list page
 - **Description**: Enables filtering shows by phrase count (<10, 10-24, 25+)
 - **Default**: `true`
@@ -31,6 +33,7 @@ To add a new feature flag:
 1. Add the flag to the `FeatureFlags` interface in `featureFlags.ts`
 2. Set the default value in the `featureFlags` object
 3. Use the `useFeatureFlags()` composable in your component:
+
    ```typescript
    import { useFeatureFlags } from '@/composables/useFeatureFlags'
 
@@ -41,6 +44,7 @@ To add a new feature flag:
      // Feature-specific code
    }
    ```
+
 4. Conditionally render UI elements with `v-if`:
    ```vue
    <div v-if="flags.myNewFeature">
@@ -51,9 +55,10 @@ To add a new feature flag:
 ## Example: Disabling Phrase Count Filter
 
 In `featureFlags.ts`:
+
 ```typescript
 export const featureFlags: FeatureFlags = {
-  enablePhraseCountFilter: false, // Changed from true to false
+  enablePhraseCountFilter: false // Changed from true to false
 }
 ```
 

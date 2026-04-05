@@ -285,11 +285,7 @@ const onNewPhraseInput = () => {
 
       <!-- Bulk Add Section -->
       <div v-if="showBulkAdd" class="bulk-add-section">
-        <button
-          type="button"
-          class="bulk-toggle-btn"
-          @click="toggleBulkAdd"
-        >
+        <button type="button" class="bulk-toggle-btn" @click="toggleBulkAdd">
           {{ showBulkAddInterface ? '− Hide Bulk Add' : '+ Bulk Add' }}
         </button>
 
