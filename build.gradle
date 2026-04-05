@@ -48,7 +48,7 @@ sonar {
         property 'sonar.javascript.lcov.reportPaths', 'vue-tvbingo/coverage/lcov.info'
 
         // Exclusions
-        property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**'
+        property 'sonar.exclusions', '**/node_modules/**,**/dist/**,**/build/**,**/static/**,**/__tests__/**,**/*.spec.ts'
         property 'sonar.coverage.exclusions', '**/*.spec.ts,**/*.test.ts'
         property 'sonar.cpd.exclusions', '**/*.spec.ts,**/*.test.ts,**/*Test.java,**/*Tests.java'
 
