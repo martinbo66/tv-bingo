@@ -267,7 +267,7 @@ const onNewPhraseInput = () => {
           @keydown.enter.prevent="addPhrase"
           @blur="
             /* eslint-disable-next-line prettier/prettier */
-            newPhraseTouched = true;
+            newPhraseTouched = true
             onNewPhraseInput()
           "
           @input="onNewPhraseInput"
@@ -285,11 +285,7 @@ const onNewPhraseInput = () => {
 
       <!-- Bulk Add Section -->
       <div v-if="showBulkAdd" class="bulk-add-section">
-        <button
-          type="button"
-          class="bulk-toggle-btn"
-          @click="toggleBulkAdd"
-        >
+        <button type="button" class="bulk-toggle-btn" @click="toggleBulkAdd">
           {{ showBulkAddInterface ? '− Hide Bulk Add' : '+ Bulk Add' }}
         </button>
 

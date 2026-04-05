@@ -40,7 +40,9 @@ export function useUnsavedChangesGuard<T>(originalData: Ref<T>, currentData: Ref
     // Vue Router navigation guard
     onBeforeRouteLeave(() => {
       if (hasUnsavedChanges.value) {
-        const answer = globalThis.confirm('You have unsaved changes. Are you sure you want to leave?')
+        const answer = globalThis.confirm(
+          'You have unsaved changes. Are you sure you want to leave?'
+        )
         if (!answer) return false
       }
     })
