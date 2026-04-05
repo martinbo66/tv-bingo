@@ -329,7 +329,7 @@ onMounted(() => {
 
 .bingo-card-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
   padding: 0;
   display: flex;
@@ -554,9 +554,9 @@ onMounted(() => {
 .bingo-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
+  gap: 8px;
   background: none;
-  padding: 18px;
+  padding: 12px;
   border-radius: 24px;
   box-shadow:
     0 6px 32px #a084ca33,
@@ -565,9 +565,9 @@ onMounted(() => {
   width: 100%;
   aspect-ratio: 1;
   min-width: 320px;
-  max-width: 520px;
+  max-width: 580px;
   min-height: 320px;
-  max-height: 520px;
+  max-height: 580px;
   align-items: center;
   justify-items: center;
   animation: fadeIn 0.7s;
@@ -584,19 +584,17 @@ onMounted(() => {
   width: 100%;
   min-width: 48px;
   min-height: 48px;
-  max-width: 90px;
-  max-height: 90px;
   background: #e0ffe0;
   border-radius: 18px;
   box-shadow: 0 2px 8px #a084ca22;
   border: 2.5px solid #c0ffc0;
-  padding: 0.4em;
+  padding: 0.35em;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-family: 'Inter', 'Roboto', 'Open Sans', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -609,8 +607,6 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   overflow-wrap: break-word;
-  word-break: break-word;
-  hyphens: auto;
   opacity: 0.98;
   /* Reset native button styles */
   appearance: none;
@@ -880,8 +876,8 @@ onMounted(() => {
   }
 
   .bingo-grid {
-    max-width: 600px;
-    max-height: 600px;
+    max-width: 650px;
+    max-height: 650px;
   }
 }
 
