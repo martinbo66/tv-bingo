@@ -102,8 +102,9 @@ class ShowServiceTest {
 
         List<Show> result = showService.getAllShows();
 
-        assertThat(result).hasSize(2);
-        assertThat(result).containsExactlyInAnyOrder(testShow, secondShow);
+        assertThat(result)
+                .hasSize(2)
+                .containsExactlyInAnyOrder(testShow, secondShow);
         verify(showRepository).findAll();
     }
 

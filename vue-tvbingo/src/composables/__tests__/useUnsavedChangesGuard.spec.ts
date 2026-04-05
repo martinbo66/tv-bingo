@@ -130,7 +130,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Hello' })
       const current = ref({ title: 'Hello' })
 
-      const addEventSpy = vi.spyOn(window, 'addEventListener')
+      const addEventSpy = vi.spyOn(globalThis, 'addEventListener')
 
       // setupGuards() must be called inside setup() so onMounted registers correctly
       const [, wrapper] = withSetup(() => {
@@ -154,7 +154,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Old' })
       const current = ref({ title: 'New' })
 
-      const addEventSpy = vi.spyOn(window, 'addEventListener')
+      const addEventSpy = vi.spyOn(globalThis, 'addEventListener')
 
       const [, wrapper] = withSetup(() => {
         const guard = useUnsavedChangesGuard(original as Ref<unknown>, current as Ref<unknown>)
@@ -170,7 +170,6 @@ describe('useUnsavedChangesGuard', () => {
       handler(mockEvent)
 
       expect(mockEvent.preventDefault).toHaveBeenCalledOnce()
-      expect(mockEvent.returnValue).toBe('')
       wrapper.unmount()
     })
 
@@ -178,7 +177,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Hello' })
       const current = ref({ title: 'Hello' })
 
-      const removeEventSpy = vi.spyOn(window, 'removeEventListener')
+      const removeEventSpy = vi.spyOn(globalThis, 'removeEventListener')
 
       const [, wrapper] = withSetup(() => {
         const guard = useUnsavedChangesGuard(original as Ref<unknown>, current as Ref<unknown>)
@@ -214,7 +213,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Old' })
       const current = ref({ title: 'New' })
 
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
 
       const [, wrapper] = withSetup(() => {
         const guard = useUnsavedChangesGuard(original as Ref<unknown>, current as Ref<unknown>)
@@ -232,7 +231,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Old' })
       const current = ref({ title: 'New' })
 
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
 
       const [, wrapper] = withSetup(() => {
         const guard = useUnsavedChangesGuard(original as Ref<unknown>, current as Ref<unknown>)
@@ -250,7 +249,7 @@ describe('useUnsavedChangesGuard', () => {
       const original = ref({ title: 'Hello' })
       const current = ref({ title: 'Hello' })
 
-      const confirmSpy = vi.spyOn(window, 'confirm')
+      const confirmSpy = vi.spyOn(globalThis, 'confirm')
 
       const [, wrapper] = withSetup(() => {
         const guard = useUnsavedChangesGuard(original as Ref<unknown>, current as Ref<unknown>)

@@ -6,6 +6,12 @@ import { fileURLToPath, URL } from 'url'
 export default defineConfig({
   plugins: [vue()],
   base: './', // Ensure all assets use relative paths
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.APP_VERSION ?? 'dev'),
+    __BUILD_DATE__: JSON.stringify(
+      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+    ),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

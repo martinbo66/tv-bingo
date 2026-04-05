@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -33,7 +32,7 @@ public class ShowService {
     
     public List<Show> getAllShows() {
         return StreamSupport.stream(showRepository.findAll().spliterator(), false)
-                .collect(Collectors.toList());
+                .toList();
     }
     
     public Show updateShow(Show show) {

@@ -190,7 +190,7 @@ const scrollToPhrase = (phrase: string) => {
 // Remove phrase
 const removePhrase = (index: number) => {
   const phrase = props.phrases[index]
-  const confirmed = window.confirm(`Remove phrase "${phrase}"?`)
+  const confirmed = globalThis.confirm(`Remove phrase "${phrase}"?`)
 
   if (!confirmed) return
 
@@ -288,7 +288,6 @@ const onNewPhraseInput = () => {
         <button
           type="button"
           class="bulk-toggle-btn"
-          aria-label="Toggle bulk add mode"
           @click="toggleBulkAdd"
         >
           {{ showBulkAddInterface ? '− Hide Bulk Add' : '+ Bulk Add' }}
@@ -344,7 +343,6 @@ const onNewPhraseInput = () => {
               type="button"
               class="add-bulk-btn"
               :disabled="!bulkPhrases.trim()"
-              aria-label="Add all phrases"
               @click="addBulkPhrases"
             >
               Add All ({{ bulkPhrasesLineCount }})
@@ -356,7 +354,7 @@ const onNewPhraseInput = () => {
 
     <!-- Phrases List Section -->
     <div class="phrases-list-section">
-      <label>Phrases ({{ phraseCount }}):</label>
+      <span class="section-label">Phrases ({{ phraseCount }}):</span>
       <div ref="phrasesListRef" class="phrases-list">
         <div
           v-for="({ phrase, originalIndex }, sortedIndex) in sortedPhrases"
@@ -422,8 +420,9 @@ const onNewPhraseInput = () => {
   margin-bottom: 0.5rem;
 }
 
-label {
-  color: #888;
+label,
+.section-label {
+  color: #aaa;
   font-weight: 500;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -431,7 +430,7 @@ label {
 }
 
 .char-counter {
-  color: #666;
+  color: #999;
   font-size: 0.85rem;
   font-weight: 400;
   text-transform: none;
@@ -520,7 +519,7 @@ label {
   width: 100%;
   padding: 0.75rem;
   background-color: #2c2c2c;
-  color: #888;
+  color: #aaa;
   border: 1px solid #444;
   border-radius: 6px;
   cursor: pointer;
@@ -563,7 +562,7 @@ label {
 .line-numbers {
   padding: 0.75rem 0.5rem 0.75rem 0.75rem;
   background-color: #222;
-  color: #666;
+  color: #999;
   font-size: 0.95rem;
   font-family: 'Courier New', Courier, monospace;
   line-height: 1.5;
@@ -599,7 +598,7 @@ textarea::placeholder {
 }
 
 .help-text {
-  color: #666;
+  color: #999;
   font-size: 0.85rem;
   margin-top: 0.5rem;
   line-height: 1.4;
@@ -655,7 +654,7 @@ textarea::placeholder {
 
 .add-bulk-btn:disabled {
   background-color: #333;
-  color: #666;
+  color: #aaa;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -683,7 +682,7 @@ textarea::placeholder {
 }
 
 .phrase-number {
-  color: #666;
+  color: #999;
   font-size: 0.9rem;
   font-weight: 500;
   min-width: 2rem;
@@ -757,7 +756,7 @@ textarea::placeholder {
 .empty-state {
   padding: 2rem;
   text-align: center;
-  color: #666;
+  color: #999;
   font-style: italic;
 }
 

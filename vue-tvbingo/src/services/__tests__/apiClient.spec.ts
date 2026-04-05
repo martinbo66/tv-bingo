@@ -34,7 +34,7 @@ describe('ApiClient', () => {
     apiClient = new ApiClient('http://localhost:8080')
     fetchMock = vi.fn()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    global.fetch = fetchMock as any
+    globalThis.fetch = fetchMock as any
   })
 
   afterEach(() => {

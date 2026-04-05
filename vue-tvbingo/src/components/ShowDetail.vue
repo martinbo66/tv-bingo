@@ -38,7 +38,7 @@ const { hasUnsavedChanges, markClean, setupGuards } = useUnsavedChangesGuard(ori
 
 onMounted(async () => {
   try {
-    const loadedShow = await showService.getShowById(parseInt(props.id))
+    const loadedShow = await showService.getShowById(Number.parseInt(props.id))
     if (loadedShow) {
       // Ensure optional fields are always strings (not undefined)
       show.value = {
@@ -68,7 +68,7 @@ onMounted(async () => {
 // Cancel with confirmation
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm(
+    const answer = globalThis.confirm(
       'You have unsaved changes. Are you sure you want to discard them?'
     )
     if (!answer) return
@@ -305,7 +305,7 @@ const saveShow = async () => {
   background-color: rgba(255, 68, 68, 0.1);
   border: 1px solid rgba(255, 68, 68, 0.3);
   border-radius: 6px;
-  color: #ff4444;
+  color: #d32f2f;
   font-size: 0.9rem;
 }
 

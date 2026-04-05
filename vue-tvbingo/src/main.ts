@@ -17,10 +17,10 @@ try {
 
   // Check if mount element exists
   const mountElement = document.getElementById('app')
-  if (!mountElement) {
-    console.error('Mount element #app not found in DOM')
-  } else {
+  if (mountElement) {
     app.mount('#app')
+  } else {
+    console.error('Mount element #app not found in DOM')
   }
 } catch (error) {
   console.error('Failed to initialize Vue app:', error)

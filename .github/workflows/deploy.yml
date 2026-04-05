@@ -40,7 +40,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Build (frontend embedded in backend JAR)
-        run: ./gradlew build -x test -x lint
+        run: ./gradlew buildUnifiedJar
 
       - name: Diagnose SSH connection
         env:
@@ -89,7 +89,7 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             set -e
-            JAR=$(ls -t /opt/tvbingo/deploy/*.jar | head -1)
+            JAR=$(ls -t /opt/tvbingo/deploy/*.jar | grep -v plain | head -1)
             cp "$JAR" /opt/tvbingo/tv-bingo-app.jar
             rm -f /opt/tvbingo/deploy/*.jar
             sudo systemctl restart tvbingo

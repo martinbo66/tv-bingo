@@ -13,8 +13,8 @@ export class ApiError extends Error {
 }
 
 export class ApiClient {
-  private baseUrl: string
-  private headers: Record<string, string>
+  private readonly baseUrl: string
+  private readonly headers: Record<string, string>
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl

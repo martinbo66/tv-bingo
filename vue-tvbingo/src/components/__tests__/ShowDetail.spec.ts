@@ -285,7 +285,7 @@ describe('ShowDetail.vue', () => {
   describe('Cancel — no unsaved changes', () => {
     it('navigates to "/" immediately without confirming', async () => {
       mockHasUnsavedChanges.value = false
-      const confirmSpy = vi.spyOn(window, 'confirm')
+      const confirmSpy = vi.spyOn(globalThis, 'confirm')
 
       const wrapper = mount(ShowDetail, mountOptions())
       await flushPromises()
@@ -301,7 +301,7 @@ describe('ShowDetail.vue', () => {
   describe('Cancel — with unsaved changes', () => {
     it('calls window.confirm when there are unsaved changes', async () => {
       mockHasUnsavedChanges.value = true
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
 
       const wrapper = mount(ShowDetail, mountOptions())
       await flushPromises()
@@ -314,7 +314,7 @@ describe('ShowDetail.vue', () => {
 
     it('navigates to "/" when user confirms the dialog', async () => {
       mockHasUnsavedChanges.value = true
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
 
       const wrapper = mount(ShowDetail, mountOptions())
       await flushPromises()
@@ -327,7 +327,7 @@ describe('ShowDetail.vue', () => {
 
     it('stays on page when user declines the dialog', async () => {
       mockHasUnsavedChanges.value = true
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
 
       const wrapper = mount(ShowDetail, mountOptions())
       await flushPromises()

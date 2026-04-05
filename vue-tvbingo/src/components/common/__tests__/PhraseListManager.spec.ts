@@ -25,7 +25,7 @@ describe('PhraseListManager.vue', () => {
 
     it('displays phrase count in label', () => {
       const wrapper = mountManager(['A', 'B', 'C'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('3')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('3')
     })
 
     it('renders each phrase', () => {
@@ -140,7 +140,7 @@ describe('PhraseListManager.vue', () => {
 
   describe('Delete phrase', () => {
     beforeEach(() => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(true)
     })
 
     afterEach(() => {
@@ -172,7 +172,7 @@ describe('PhraseListManager.vue', () => {
     })
 
     it('does not emit when user cancels confirm', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      vi.spyOn(globalThis, 'confirm').mockReturnValue(false)
       const wrapper = mountManager(['Alpha'])
       await wrapper.find('.remove-btn').trigger('click')
       await nextTick()
@@ -302,15 +302,15 @@ describe('PhraseListManager.vue', () => {
   describe('Phrase count', () => {
     it('reflects props.phrases.length', () => {
       const wrapper = mountManager(['A', 'B', 'C', 'D'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('4')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('4')
     })
 
     it('updates when phrases change', async () => {
       const wrapper = mountManager(['A'])
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('1')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('1')
 
       await wrapper.setProps({ phrases: ['A', 'B', 'C'] })
-      expect(wrapper.find('.phrases-list-section label').text()).toContain('3')
+      expect(wrapper.find('.phrases-list-section .section-label').text()).toContain('3')
     })
   })
 

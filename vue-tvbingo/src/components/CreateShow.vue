@@ -87,13 +87,13 @@ const createShow = () => {
 // Cancel and go back
 const handleCancel = () => {
   if (hasUnsavedChanges.value) {
-    const answer = window.confirm(
+    const answer = globalThis.confirm(
       'You have unsaved changes. Are you sure you want to discard them?'
     )
     if (!answer) return
   }
   // Navigate back by emitting an event or using router directly
-  window.history.back()
+  globalThis.history.back()
 }
 </script>
 
@@ -231,7 +231,7 @@ const handleCancel = () => {
 
 .submit-btn:disabled {
   background-color: #333;
-  color: #666;
+  color: #aaa;
   cursor: not-allowed;
   opacity: 0.6;
 }
