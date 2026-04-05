@@ -267,7 +267,7 @@ const onNewPhraseInput = () => {
           @keydown.enter.prevent="addPhrase"
           @blur="
             /* eslint-disable-next-line prettier/prettier */
-            newPhraseTouched = true
+            newPhraseTouched = true;
             onNewPhraseInput()
           "
           @input="onNewPhraseInput"
