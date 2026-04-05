@@ -3,6 +3,9 @@ spring:
     default: dev
   application:
     name: tvbingo
+  threads:
+    virtual:
+      enabled: true
   liquibase:
     default-schema: tvbingo_schema
     change-log: classpath:db/changelog/db.changelog-master.yaml

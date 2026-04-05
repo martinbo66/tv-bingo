@@ -51,7 +51,7 @@ API documentation: http://localhost:8080/swagger-ui.html
 
 ## Tech Stack
 
-- Java 21
+- Java 25
 - Spring Boot 3.5.x
 - Spring Data JDBC
 - PostgreSQL

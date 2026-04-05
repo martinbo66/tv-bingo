@@ -12,7 +12,7 @@ version = rootProject.version
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -37,8 +37,8 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.zonky.test:embedded-postgres:2.0.7'
-	testImplementation 'io.zonky.test:embedded-database-spring-test:2.5.1'
+	testImplementation 'io.zonky.test:embedded-postgres:2.2.2'
+	testImplementation 'io.zonky.test:embedded-database-spring-test:2.8.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -48,9 +48,9 @@ test {
 	// Show test results in the console
 	testLogging {
 		events "passed", "skipped", "failed"
-		showExceptions true
-		showCauses true
-		showStackTraces true
+		showExceptions = true
+		showCauses = true
+		showStackTraces = true
 		
 		// Show test results as they happen
 		showStandardStreams = true
@@ -73,7 +73,7 @@ test {
 }
 
 jacoco {
-	toolVersion = "0.8.12"
+	toolVersion = "0.8.14"
 }
 
 jacocoTestReport {
@@ -86,10 +86,12 @@ jacocoTestReport {
 	}
 
 	doLast {
+		def htmlDir = reports.html.outputLocation.get().asFile
+		def xmlFile = reports.xml.outputLocation.get().asFile
 		println "\n" + "=" * 80
 		println "Code coverage report generated:"
-		println "  HTML: file://${project.buildDir}/reports/jacoco/test/html/index.html"
-		println "  XML:  ${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+		println "  HTML: file://${htmlDir}/index.html"
+		println "  XML:  ${xmlFile}"
 		println "=" * 80
 	}
 }
