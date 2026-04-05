@@ -2,7 +2,7 @@
 # TV Bingo - Multi-stage Dockerfile
 # =============================================================================
 # Builds a single container with:
-#   - Spring Boot backend (Java 21)
+#   - Spring Boot backend (Java 25)
 #   - Vue.js frontend (served as static resources)
 #
 # Build: docker build -t tv-bingo .
@@ -29,7 +29,7 @@ RUN npm run build
 # -----------------------------------------------------------------------------
 # Stage 2: Build Backend
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jdk-alpine AS backend-builder
+FROM eclipse-temurin:25-jdk-alpine AS backend-builder
 
 WORKDIR /app
 
@@ -55,7 +55,7 @@ RUN chmod +x gradlew && \
 # -----------------------------------------------------------------------------
 # Stage 3: Runtime Image
 # -----------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Add non-root user for security
 RUN addgroup -g 1001 -S tvbingo && \

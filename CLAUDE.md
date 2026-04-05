@@ -12,7 +12,7 @@ TV Bingo is a web application for creating custom bingo cards for TV shows. User
 
 ```
 tv-bingo/
-├── spring-tvbingo/     # Spring Boot backend (Java 21)
+├── spring-tvbingo/     # Spring Boot backend (Java 25)
 ├── vue-tvbingo/        # Vue.js frontend (TypeScript + Vite)
 ├── specs/              # PRD and specifications
 │   └── tv-bingo-prd.md # Complete product requirements
@@ -34,7 +34,7 @@ This eliminates the need for a separate web server or reverse proxy in simple de
 ## Technology Stack
 
 ### Backend (spring-tvbingo)
-- Java 21
+- Java 25
 - Spring Boot 3.5.x
 - Spring Data JDBC
 - PostgreSQL with Liquibase migrations
