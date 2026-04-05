@@ -572,4 +572,49 @@ describe('BingoCard.vue', () => {
       })
     })
   })
+
+  describe('Share Functionality', () => {
+    beforeEach(() => {
+      vi.mocked(showService.getShowById).mockResolvedValue(mockShow)
+    })
+
+    it('should copy share URL to clipboard and show success toast', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true
+      })
+
+      const wrapper = mount(BingoCard, createMountOptions())
+      await flushPromises()
+      await nextTick()
+
+      await wrapper.find('.share-button').trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      expect(writeText).toHaveBeenCalledWith(expect.stringContaining('/show/1'))
+      expect(wrapper.text()).toContain('Link copied to clipboard!')
+    })
+
+    it('should show fallback toast when clipboard write fails', async () => {
+      const writeText = vi.fn().mockRejectedValue(new Error('Not allowed'))
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true
+      })
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const wrapper = mount(BingoCard, createMountOptions())
+      await flushPromises()
+      await nextTick()
+
+      await wrapper.find('.share-button').trigger('click')
+      await flushPromises()
+      await nextTick()
+
+      expect(wrapper.text()).toContain('Could not copy link. Please copy manually.')
+      consoleSpy.mockRestore()
+    })
+  })
 })
