@@ -48,9 +48,9 @@ test {
 	// Show test results in the console
 	testLogging {
 		events "passed", "skipped", "failed"
-		showExceptions true
-		showCauses true
-		showStackTraces true
+		showExceptions = true
+		showCauses = true
+		showStackTraces = true
 		
 		// Show test results as they happen
 		showStandardStreams = true
@@ -86,10 +86,12 @@ jacocoTestReport {
 	}
 
 	doLast {
+		def htmlDir = reports.html.outputLocation.get().asFile
+		def xmlFile = reports.xml.outputLocation.get().asFile
 		println "\n" + "=" * 80
 		println "Code coverage report generated:"
-		println "  HTML: file://${project.buildDir}/reports/jacoco/test/html/index.html"
-		println "  XML:  ${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+		println "  HTML: file://${htmlDir}/index.html"
+		println "  XML:  ${xmlFile}"
 		println "=" * 80
 	}
 }
