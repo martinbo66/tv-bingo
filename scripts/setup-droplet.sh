@@ -18,10 +18,14 @@ fi
 
 echo "=== TV Bingo App - Droplet Setup ==="
 
-# ── Install Java 21 ──────────────────────────────────────────────────────────
-echo "Installing Java 21..."
+# ── Install Eclipse Temurin Java 25 ──────────────────────────────────────────
+echo "Installing Eclipse Temurin JRE 25..."
 apt-get update -q
-apt-get install -y openjdk-21-jre-headless
+apt-get install -y wget apt-transport-https gpg
+wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg
+echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb $(. /etc/os-release && echo "$VERSION_CODENAME") main" > /etc/apt/sources.list.d/adoptium.list
+apt-get update -q
+apt-get install -y temurin-25-jre
 java -version
 
 # ── Create dedicated app user and directories ─────────────────────────────────
