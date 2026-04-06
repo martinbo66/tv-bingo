@@ -222,9 +222,14 @@ onMounted(() => {
 
       <div v-else-if="show" class="bingo-card-container">
         <div class="header-vertical">
-          <router-link to="/" class="back-link">
-            <span class="back-icon">←</span> Back to Shows
-          </router-link>
+          <div class="nav-row">
+            <router-link to="/" class="back-link">
+              <span class="back-icon">←</span> Back to Shows
+            </router-link>
+            <button class="edit-show-link" @click="navigateToShowDetail">
+              <span class="edit-icon">✏️</span> Edit Show
+            </button>
+          </div>
           <h2 class="show-title" @click="navigateToShowDetail">{{ show.showTitle }}</h2>
           <div class="button-row">
             <button class="regenerate-button" @click="regenerateBingoCard">
@@ -521,6 +526,14 @@ onMounted(() => {
   font-weight: 500;
 }
 
+.nav-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .back-link {
   background: rgba(106, 76, 147, 0.75);
   color: #fff;
@@ -537,7 +550,33 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  margin-bottom: 0.2rem;
+}
+
+.edit-show-link {
+  background: rgba(74, 108, 247, 0.75);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.4em 1.2em;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #4a6cf722;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.edit-show-link:hover {
+  background: #3a5ce5;
+  box-shadow: 0 4px 16px #4a6cf755;
+}
+
+.edit-icon {
+  font-size: 1em;
 }
 
 .back-link:hover {
@@ -933,7 +972,8 @@ onMounted(() => {
     font-size: 0.9rem;
     padding: 0.5em 1em;
   }
-  .back-link {
+  .back-link,
+  .edit-show-link {
     font-size: 0.95rem;
     padding: 0.3em 0.8em 0.3em 1.2em;
   }
@@ -975,7 +1015,8 @@ onMounted(() => {
   .share-icon {
     font-size: 1em;
   }
-  .back-link {
+  .back-link,
+  .edit-show-link {
     font-size: 0.85rem;
     padding: 0.25em 0.6em 0.25em 1em;
   }
@@ -995,7 +1036,7 @@ onMounted(() => {
   }
 
   .button-row,
-  .back-link,
+  .nav-row,
   .marked-counter,
   .bingo-alert,
   .confirm-overlay,
