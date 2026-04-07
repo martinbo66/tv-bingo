@@ -54,7 +54,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("error", "Invalid request body");
+        String message = ex.getMostSpecificCause() != null && ex.getMostSpecificCause().getMessage() != null
+                ? ex.getMostSpecificCause().getMessage()
+                : "Invalid request body";
+        errors.put("error", message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
