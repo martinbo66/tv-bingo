@@ -7,6 +7,7 @@ import { ApiError } from '../services/apiClient'
 import { useUnsavedChangesGuard } from '../composables/useUnsavedChangesGuard'
 import FormFieldWithValidation from './common/FormFieldWithValidation.vue'
 import PhraseListManager from './common/PhraseListManager.vue'
+import Toast from './common/Toast.vue'
 import { VALIDATION_LIMITS } from '../constants/formValidation'
 
 const props = defineProps<{
@@ -111,6 +112,12 @@ const formatValidationErrors = (
 const saveShow = async () => {
   if (!show.value) return
 
+  // No changes — just go back without calling the API
+  if (!hasUnsavedChanges.value) {
+    router.push('/')
+    return
+  }
+
   // Clear previous errors
   error.value = null
   fieldErrors.value = {}
@@ -143,7 +150,12 @@ const saveShow = async () => {
       } else if (e.status === 404) {
         error.value = 'Show not found. It may have been deleted.'
       } else {
-        error.value = `Failed to save show: ${e.message}`
+        // Try to use server-provided error message; fall back to generic
+        const serverMsg =
+          e.data && typeof e.data === 'object' && 'error' in e.data
+            ? String(e.data.error)
+            : null
+        error.value = serverMsg ?? (e.message ? `Failed to save show: ${e.message}` : 'Failed to save show. Please try again.')
       }
     } else {
       error.value = 'Failed to save show. Please try again.'
@@ -173,10 +185,6 @@ const saveShow = async () => {
       </div>
 
       <form v-if="show" class="edit-form" @submit.prevent="saveShow">
-        <!-- General error message -->
-        <div v-if="error" class="form-error" role="alert">
-          {{ error }}
-        </div>
 
         <!-- Show Title -->
         <FormFieldWithValidation
@@ -232,6 +240,8 @@ const saveShow = async () => {
       </form>
     </div>
   </div>
+
+  <Toast :message="error" @dismiss="error = null" />
 </template>
 
 <style scoped>
@@ -297,16 +307,6 @@ const saveShow = async () => {
   width: 100%;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border: 1px solid #333;
-}
-
-.form-error {
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  background-color: rgba(255, 68, 68, 0.1);
-  border: 1px solid rgba(255, 68, 68, 0.3);
-  border-radius: 6px;
-  color: #d32f2f;
-  font-size: 0.9rem;
 }
 
 .buttons {

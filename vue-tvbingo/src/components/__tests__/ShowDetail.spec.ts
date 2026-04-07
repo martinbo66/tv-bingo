@@ -43,6 +43,12 @@ const mountOptions = () => ({
   global: {
     stubs: {
       FormFieldWithValidation: true,
+      Toast: {
+        name: 'Toast',
+        template: '<div v-if="message" role="alert" class="toast">{{ message }}</div>',
+        props: ['message', 'type', 'duration'],
+        emits: ['dismiss']
+      },
       PhraseListManager: {
         name: 'PhraseListManager',
         template: '<div class="phrase-list-manager-stub"></div>',
@@ -139,6 +145,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Save — happy path', () => {
     it('calls updateShow with a plain copy of the show', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockResolvedValue(mockShow)
 
       const wrapper = mount(ShowDetail, mountOptions())
@@ -154,6 +161,7 @@ describe('ShowDetail.vue', () => {
     })
 
     it('calls markClean after successful save', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockResolvedValue(mockShow)
 
       const wrapper = mount(ShowDetail, mountOptions())
@@ -180,6 +188,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Save — 400 validation error', () => {
     it('shows formatted validation error message', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(
         new ApiError('Bad Request', 400, { showTitle: 'Title is required' })
       )
@@ -195,6 +204,7 @@ describe('ShowDetail.vue', () => {
     })
 
     it('does not navigate after 400 error', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(
         new ApiError('Bad Request', 400, { showTitle: 'Title is required' })
       )
@@ -211,6 +221,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Save — 409 conflict', () => {
     it('shows "Show title must be unique" error message', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(
         new ApiError('Conflict', 409, { showTitle: 'Show title must be unique' })
       )
@@ -226,6 +237,7 @@ describe('ShowDetail.vue', () => {
     })
 
     it('does not navigate after 409 error', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(
         new ApiError('Conflict', 409, { showTitle: 'Show title must be unique' })
       )
@@ -242,6 +254,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Save — 404 not found', () => {
     it('shows "Show not found. It may have been deleted." message', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(new ApiError('Not Found', 404))
 
       const wrapper = mount(ShowDetail, mountOptions())
@@ -256,6 +269,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Save — generic error', () => {
     it('shows fallback error message for non-ApiError', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(new Error('Something went wrong'))
 
       const wrapper = mount(ShowDetail, mountOptions())
@@ -269,6 +283,7 @@ describe('ShowDetail.vue', () => {
     })
 
     it('shows fallback error message for unknown ApiError status', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockRejectedValue(new ApiError('Server Error', 500))
 
       const wrapper = mount(ShowDetail, mountOptions())
@@ -341,6 +356,7 @@ describe('ShowDetail.vue', () => {
 
   describe('Phrase update', () => {
     it('updates show phrases when PhraseListManager emits update:phrases', async () => {
+      mockHasUnsavedChanges.value = true
       vi.mocked(showService.updateShow).mockResolvedValue(mockShow)
 
       const wrapper = mount(ShowDetail, mountOptions())

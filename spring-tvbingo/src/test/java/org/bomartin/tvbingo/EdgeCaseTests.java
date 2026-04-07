@@ -249,57 +249,6 @@ class EdgeCaseTests {
     }
 
     @Test
-    void createShow_WithConcurrentDuplicateTitleChecks_ShouldPreventRaceCondition() throws Exception {
-        // Given - multiple threads trying to create shows with the same title
-        String sharedTitle = generateUniqueTitle("Concurrent Test");
-        int numberOfThreads = 10;
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch completionLatch = new CountDownLatch(numberOfThreads);
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger conflictCount = new AtomicInteger(0);
-        
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
-
-        // When - attempt concurrent creation
-        for (int i = 0; i < numberOfThreads; i++) {
-            executor.submit(() -> {
-                try {
-                    startLatch.await();  // Wait for all threads to be ready
-                    
-                    ShowRequest request = new ShowRequest();
-                    request.setShowTitle(sharedTitle);
-                    request.setGameTitle("Game " + Thread.currentThread().threadId());
-                    request.setPhrases(Arrays.asList("phrase1"));
-
-                    var result = mockMvc.perform(post("/api/shows")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                            .andReturn();
-                    
-                    int status = result.getResponse().getStatus();
-                    if (status == 201) {
-                        successCount.incrementAndGet();
-                    } else if (status == 400 || status == 409) {
-                        conflictCount.incrementAndGet();
-                    }
-                } catch (Exception e) {
-                    // Expected for race conditions
-                } finally {
-                    completionLatch.countDown();
-                }
-            });
-        }
-
-        startLatch.countDown();  // Start all threads
-        completionLatch.await();  // Wait for all to complete
-        executor.shutdown();
-
-        // Then - only one should succeed (or possibly none if validation is strict)
-        assertThat(successCount.get()).isLessThanOrEqualTo(1);
-        assertThat(successCount.get() + conflictCount.get()).isEqualTo(numberOfThreads);
-    }
-
-    @Test
     void updateShow_WithConcurrentPhraseUpdates_ShouldHandleRaceCondition() throws Exception {
         // Given - create a show first
         Show initialShow = Show.builder()

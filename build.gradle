@@ -82,8 +82,46 @@ tasks.named('sonar').configure {
     dependsOn ':spring-tvbingo:jacocoTestReport', fixLcovPaths
 }
 
-// Detect npm or use npx as fallback
-def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+// Detect npm — checks NVM_BIN env var, then scans ~/.nvm/versions/node, then falls back to 'npm'
+// Also captures the bin directory so it can be injected into PATH for child processes (node must be found too).
+def npmCommand
+def nvmBinDir = null
+if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+    npmCommand = 'npm.cmd'
+} else {
+    def nvmBin = System.getenv('NVM_BIN')
+    if (nvmBin) {
+        def candidate = new File("${nvmBin}/npm")
+        if (candidate.canExecute()) {
+            npmCommand = candidate.absolutePath
+            nvmBinDir = nvmBin
+        }
+    }
+    if (!npmCommand) {
+        def nvmVersionsDir = new File("${System.getProperty('user.home')}/.nvm/versions/node")
+        def candidate = nvmVersionsDir.exists()
+            ? nvmVersionsDir.listFiles()
+                ?.findAll { it.isDirectory() }
+                ?.collect { new File(it, 'bin/npm') }
+                ?.find { it.canExecute() }
+            : null
+        if (candidate) {
+            npmCommand = candidate.absolutePath
+            nvmBinDir = candidate.parentFile.absolutePath
+        } else {
+            npmCommand = 'npm'
+        }
+    }
+}
+
+// Inject the nvm bin dir into PATH so that npm scripts can find node
+if (nvmBinDir) {
+    def currentPath = System.getenv('PATH') ?: ''
+    def augmentedPath = "${nvmBinDir}:${currentPath}"
+    tasks.withType(Exec).configureEach {
+        environment 'PATH', augmentedPath
+    }
+}
 def frontendDir = file("${projectDir}/vue-tvbingo")
 
 // ============================================================================
