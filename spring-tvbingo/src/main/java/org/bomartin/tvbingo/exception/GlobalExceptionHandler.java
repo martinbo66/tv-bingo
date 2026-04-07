@@ -7,8 +7,10 @@
 package org.bomartin.tvbingo.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.relational.core.conversion.DbActionExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +50,14 @@ public class GlobalExceptionHandler {
         }
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "Invalid request body");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, String>> handleResponseStatusException(
             ResponseStatusException ex) {
@@ -56,9 +66,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(ex.getStatusCode()).body(errors);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+    @ExceptionHandler(DbActionExecutionException.class)
+    public ResponseEntity<Map<String, String>> handleDbActionExecutionException(
+            DbActionExecutionException ex) {
         Map<String, String> errors = new HashMap<>();
+
+        if (ex.getCause() instanceof DataIntegrityViolationException dive) {
+            if (dive.getMessage() != null && dive.getMessage().contains("uk_shows_show_title")) {
+                errors.put("showTitle", "Show title must be unique");
+            } else {
+                errors.put("error", "Database constraint violation");
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+        }
+
         errors.put("error", "An unexpected error occurred. Please try again.");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
@@ -67,13 +88,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(
             DataIntegrityViolationException ex) {
         Map<String, String> errors = new HashMap<>();
-        
+
         if (ex.getMessage().contains("uk_shows_show_title")) {
             errors.put("showTitle", "Show title must be unique");
         } else {
             errors.put("error", "Database constraint violation");
         }
-        
+
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", "An unexpected error occurred. Please try again.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 } 
