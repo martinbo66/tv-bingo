@@ -313,7 +313,11 @@ onMounted(() => {
 .bingo-bg {
   min-height: 100%;
   width: 100%;
-  background: linear-gradient(135deg, #2d183a 0%, #1a1024 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-start) 0%,
+    var(--color-bg-gradient-end) 100%
+  );
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -361,7 +365,7 @@ onMounted(() => {
   letter-spacing: 0.04em;
   margin: 0.2em 0 0.1em 0;
   text-align: center;
-  text-shadow: 0 2px 12px #a084ca55;
+  text-shadow: 0 2px 12px rgba(129, 199, 132, 0.33);
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -466,14 +470,18 @@ onMounted(() => {
 }
 
 .share-button {
-  background: linear-gradient(90deg, #9c27b0 0%, #ba68c8 100%);
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-teal-dark) 0%,
+    var(--color-accent-teal) 100%
+  );
   color: #fff;
   border: none;
   border-radius: 24px;
   padding: 0.75em 1.5em;
   font-size: 1rem;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(156, 39, 176, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 137, 123, 0.15);
   transition:
     background 0.2s,
     box-shadow 0.2s,
@@ -485,8 +493,8 @@ onMounted(() => {
 }
 
 .share-button:hover {
-  background: linear-gradient(90deg, #7b1fa2 0%, #ab47bc 100%);
-  box-shadow: 0 4px 16px rgba(156, 39, 176, 0.25);
+  background: linear-gradient(90deg, #004d40 0%, var(--color-accent-teal-dark) 100%);
+  box-shadow: 0 4px 16px rgba(0, 137, 123, 0.25);
   transform: translateY(-2px) scale(1.04);
 }
 
@@ -522,7 +530,7 @@ onMounted(() => {
 .marked-counter {
   margin-top: 0.75rem;
   font-size: 0.95rem;
-  color: #a084ca;
+  color: var(--color-accent-muted);
   font-weight: 500;
 }
 
@@ -535,14 +543,14 @@ onMounted(() => {
 }
 
 .back-link {
-  background: rgba(106, 76, 147, 0.75);
+  background: rgba(var(--color-accent-emerald-rgb), 0.75);
   color: #fff;
   border-radius: 20px;
   padding: 0.4em 1.2em 0.4em 1.8em;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  box-shadow: 0 2px 8px #a084ca22;
+  box-shadow: 0 2px 8px rgba(129, 199, 132, 0.13);
   transition:
     background 0.2s,
     color 0.2s,
@@ -580,9 +588,9 @@ onMounted(() => {
 }
 
 .back-link:hover {
-  background: #6f42c1;
+  background: var(--color-accent-emerald);
   color: #fff;
-  box-shadow: 0 4px 16px #a084ca55;
+  box-shadow: 0 4px 16px rgba(129, 199, 132, 0.33);
 }
 
 .back-icon {
@@ -598,7 +606,7 @@ onMounted(() => {
   padding: 12px;
   border-radius: 24px;
   box-shadow:
-    0 6px 32px #a084ca33,
+    0 6px 32px rgba(129, 199, 132, 0.2),
     0 1.5px 8px #0002;
   margin-bottom: 2.5rem;
   width: 100%;
@@ -614,7 +622,7 @@ onMounted(() => {
 
 .card-shadow {
   box-shadow:
-    0 6px 32px #a084ca33,
+    0 6px 32px rgba(129, 199, 132, 0.2),
     0 1.5px 8px #0002;
 }
 
@@ -625,7 +633,7 @@ onMounted(() => {
   min-height: 48px;
   background: #e0ffe0;
   border-radius: 18px;
-  box-shadow: 0 2px 8px #a084ca22;
+  box-shadow: 0 2px 8px rgba(129, 199, 132, 0.13);
   border: 2.5px solid #c0ffc0;
   padding: 0.35em;
   display: flex;
@@ -660,12 +668,12 @@ onMounted(() => {
 .bingo-cell:hover {
   background: #c0ffc0;
   transform: scale(1.06);
-  box-shadow: 0 4px 16px #a084ca44;
+  box-shadow: 0 4px 16px rgba(129, 199, 132, 0.27);
   z-index: 2;
 }
 
 .bingo-cell:focus {
-  outline: 3px solid #a084ca;
+  outline: 3px solid var(--color-accent-muted);
   outline-offset: 2px;
   z-index: 2;
 }
@@ -678,21 +686,21 @@ onMounted(() => {
 .bingo-cell.selected {
   background: #222;
   color: #fff;
-  border-color: #6f42c1;
-  box-shadow: 0 4px 16px #6f42c1aa;
+  border-color: var(--color-accent-emerald);
+  box-shadow: 0 4px 16px rgba(var(--color-accent-emerald-rgb), 0.67);
   z-index: 3;
 }
 
 .bingo-cell.center-square {
   font-weight: 900;
-  background: #f0eaff;
-  color: #6f42c1;
-  border: 2.5px solid #a084ca;
-  box-shadow: 0 2px 8px #a084ca33;
+  background: var(--color-accent-tint);
+  color: var(--color-accent-emerald);
+  border: 2.5px solid var(--color-accent-muted);
+  box-shadow: 0 2px 8px rgba(129, 199, 132, 0.2);
 }
 
 .bingo-cell.center-square.selected {
-  background: #6f42c1;
+  background: var(--color-accent-emerald);
   color: #fff;
   border-color: #ffd700;
 }
@@ -703,7 +711,7 @@ onMounted(() => {
   border-color: #ffd700;
   box-shadow:
     0 0 24px #ffd70099,
-    0 2px 8px #a084ca33;
+    0 2px 8px rgba(129, 199, 132, 0.2);
   animation: pulse 1.2s infinite;
   z-index: 4;
 }
@@ -810,8 +818,12 @@ onMounted(() => {
 }
 
 .confirm-dialog {
-  background: linear-gradient(135deg, #2d183a 0%, #1a1024 100%);
-  border: 1px solid #a084ca44;
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-start) 0%,
+    var(--color-bg-gradient-end) 100%
+  );
+  border: 1px solid rgba(129, 199, 132, 0.27);
   border-radius: 1rem;
   padding: 1.5rem 2rem;
   max-width: 320px;

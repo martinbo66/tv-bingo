@@ -59,17 +59,21 @@ import AppFooter from './components/AppFooter.vue'
   border-radius: 20px;
   overflow: hidden;
   box-shadow:
-    0 8px 32px rgba(160, 132, 202, 0.3),
+    0 8px 32px var(--color-accent-glow),
     0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, #2d183a 0%, #1a1024 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-start) 0%,
+    var(--color-bg-gradient-end) 100%
+  );
   padding: 8px;
 }
 
 .logo-container:hover {
   box-shadow:
-    0 12px 40px rgba(160, 132, 202, 0.4),
+    0 12px 40px var(--color-accent-glow-strong),
     0 6px 20px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
@@ -98,8 +102,8 @@ import AppFooter from './components/AppFooter.vue'
   border-radius: 16px;
   background: linear-gradient(
     135deg,
-    rgba(160, 132, 202, 0.1) 0%,
-    rgba(160, 132, 202, 0.05) 50%,
+    rgba(129, 199, 132, 0.1) 0%,
+    rgba(129, 199, 132, 0.05) 50%,
     transparent 100%
   );
   pointer-events: none;

@@ -340,11 +340,11 @@ const saveShow = async () => {
 }
 
 .save-btn {
-  background-color: #646cff;
+  background-color: var(--color-accent);
 }
 
 .save-btn:hover {
-  background-color: #535bf2;
+  background-color: var(--color-accent-hover);
   transform: translateY(-1px);
 }
 

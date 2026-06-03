@@ -4,7 +4,12 @@
  */
 
 :root {
-  /* Colors */
+  /* App backgrounds */
+  --color-bg-app: #1a2e22;
+  --color-bg-gradient-start: #1a3228;
+  --color-bg-gradient-end: #0f1f16;
+
+  /* Form / panel backgrounds */
   --color-bg-primary: #1a1a1a;
   --color-bg-secondary: #2c2c2c;
   --color-bg-tertiary: #222;
@@ -16,10 +21,21 @@
   --color-text-secondary: #888;
   --color-text-tertiary: #666;
 
-  --color-accent: #646cff;
-  --color-accent-hover: #535bf2;
-  --color-accent-light: rgba(100, 108, 255, 0.2);
-  --color-accent-lighter: rgba(100, 108, 255, 0.15);
+  /* Accent greens */
+  --color-accent: #43a047;
+  --color-accent-hover: #388e3c;
+  --color-accent-light: rgba(67, 160, 71, 0.2);
+  --color-accent-lighter: rgba(67, 160, 71, 0.15);
+  --color-accent-muted: #a5d6a7;
+  --color-accent-emerald: #2e7d32;
+  --color-accent-emerald-dark: #1b5e20;
+  --color-accent-emerald-deep: #1b5e20;
+  --color-accent-teal: #00897b;
+  --color-accent-teal-dark: #00695c;
+  --color-accent-tint: #e8f5e9;
+  --color-accent-glow: rgba(129, 199, 132, 0.3);
+  --color-accent-glow-strong: rgba(129, 199, 132, 0.4);
+  --color-accent-emerald-rgb: 46, 125, 50;
 
   --color-error: #ff4444;
   --color-error-bg: rgba(255, 68, 68, 0.1);

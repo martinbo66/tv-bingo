@@ -475,7 +475,7 @@ label,
 
 .add-phrase input:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
@@ -490,7 +490,7 @@ label,
 
 .add-phrase button {
   padding: 0.75rem 1rem;
-  background-color: #646cff;
+  background-color: var(--color-accent);
   color: white;
   border: none;
   border-radius: 6px;
@@ -501,7 +501,7 @@ label,
 }
 
 .add-phrase button:hover {
-  background-color: #535bf2;
+  background-color: var(--color-accent-hover);
 }
 
 /* Bulk Add Section */
@@ -551,7 +551,7 @@ label,
 }
 
 .textarea-with-lines:focus-within {
-  border-color: #646cff;
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
@@ -640,12 +640,12 @@ textarea::placeholder {
 }
 
 .add-bulk-btn {
-  background-color: #646cff;
+  background-color: var(--color-accent);
   color: white;
 }
 
 .add-bulk-btn:hover:not(:disabled) {
-  background-color: #535bf2;
+  background-color: var(--color-accent-hover);
 }
 
 .add-bulk-btn:disabled {
@@ -702,7 +702,7 @@ textarea::placeholder {
   }
   50% {
     background-color: rgba(100, 108, 255, 0.2);
-    border-color: #646cff;
+    border-color: var(--color-accent);
   }
 }
 
@@ -727,7 +727,7 @@ textarea::placeholder {
   flex: 1;
   padding: 0.25rem 0.5rem;
   background-color: #1a1a1a;
-  border: 2px solid #646cff;
+  border: 2px solid var(--color-accent);
   border-radius: 4px;
   color: #fff;
   font-size: inherit;

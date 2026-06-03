@@ -185,7 +185,7 @@ input {
 
 input:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 

@@ -221,11 +221,11 @@ const handleCancel = () => {
 }
 
 .submit-btn {
-  background-color: #646cff;
+  background-color: var(--color-accent);
 }
 
 .submit-btn:hover:not(:disabled) {
-  background-color: #535bf2;
+  background-color: var(--color-accent-hover);
   transform: translateY(-1px);
 }
 
