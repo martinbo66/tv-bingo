@@ -162,11 +162,12 @@ class ShowControllerIntegrationTest {
         // Given - invalid JSON
         String malformedJson = "{showTitle: 'Missing quotes'}";
 
-        // When & Then
+        // When & Then - static message, no Jackson parser detail leaked
         mockMvc.perform(post("/api/shows")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(malformedJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid request body"));
     }
 
     // ========== Field Length Bound Tests ==========

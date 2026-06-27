@@ -13,6 +13,12 @@ server:
   # public scheme/host. This lets CORS correctly detect same-origin requests
   # from the SPA and avoid spurious 403 "Invalid CORS request" responses.
   forward-headers-strategy: framework
+  # Never expose exception messages or stack traces in error responses. These
+  # match Spring Boot's defaults; set explicitly to make the intent clear in prod.
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
 
 # Origins allowed to call /api/** (comma-separated origin patterns).
 # Override via TVBINGO_CORS_ALLOWED_ORIGINS if the frontend is served elsewhere.
