@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 05-resync-shows-id-sequence
+      author: liquibase
+      changes:
+        # The baseline shows (changeSet 04) were inserted with explicit ids 1-7.
+        # Inserting explicit values into the identity column does not advance its
+        # sequence, so application inserts would reuse ids 1-7 and fail with a
+        # primary-key violation ("Database constraint violation"). Advance the
+        # sequence past the highest existing id so new inserts get fresh ids.
+        - sql:
+            sql: SELECT setval(pg_get_serial_sequence('tvbingo_schema.shows', 'id'), (SELECT COALESCE(MAX(id), 1) FROM tvbingo_schema.shows))
