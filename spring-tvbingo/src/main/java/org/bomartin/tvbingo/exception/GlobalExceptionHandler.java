@@ -57,11 +57,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex) {
+        // Log the parser detail server-side, but return a static message so we
+        // don't leak Jackson/JSON internals (field names, types) to clients.
+        log.warn("Unreadable request body", ex);
         Map<String, String> errors = new HashMap<>();
-        String message = ex.getMostSpecificCause() != null && ex.getMostSpecificCause().getMessage() != null
-                ? ex.getMostSpecificCause().getMessage()
-                : "Invalid request body";
-        errors.put("error", message);
+        errors.put("error", "Invalid request body");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 

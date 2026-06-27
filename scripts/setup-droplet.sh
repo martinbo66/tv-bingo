@@ -92,12 +92,52 @@ systemctl enable tvbingo
 echo "Installing nginx..."
 apt-get install -y nginx
 
+# Rate-limit mutating API calls (POST/PUT/DELETE). Defined in the http context
+# via conf.d so it is shared across server blocks. The map yields the client IP
+# as the limit key for write methods and an empty string otherwise; nginx skips
+# limiting when the key is empty, so GET/HEAD reads are never throttled.
+# ~10 req/min per client IP curbs anonymous enumeration/mass-write abuse.
+cat > /etc/nginx/conf.d/tvbingo-ratelimit.conf << 'RATEEOF'
+map $request_method $tvbingo_write_key {
+    default "";
+    POST    $binary_remote_addr;
+    PUT     $binary_remote_addr;
+    PATCH   $binary_remote_addr;
+    DELETE  $binary_remote_addr;
+}
+limit_req_zone $tvbingo_write_key zone=tvbingo_api_write:10m rate=10r/m;
+RATEEOF
+
 cat > /etc/nginx/sites-available/tvbingo << NGINXEOF
 server {
     listen 80;
     server_name ${DOMAIN};
 
-    # Proxy all traffic to the Spring Boot app
+    # Security headers (applied to all responses on this vhost).
+    # HSTS is intentionally omitted here; it is added on the TLS (443) block by
+    # setup-certificate.sh / certbot, since it must only be sent over HTTPS.
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    # CSP for the same-origin Vite SPA. 'unsafe-inline' is required for Vue's
+    # runtime style bindings; scripts are external ('self') so no script inline.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
+    # API requests. limit_req is keyed via the request-method map in conf.d, so
+    # only mutating methods (POST/PUT/DELETE) are throttled; GET/HEAD reads have
+    # an empty key and pass through unthrottled.
+    location /api/ {
+        limit_req zone=tvbingo_api_write burst=5 nodelay;
+
+        proxy_pass         http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              \$host;
+        proxy_set_header   X-Real-IP         \$remote_addr;
+        proxy_set_header   X-Forwarded-For   \$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto \$scheme;
+    }
+
+    # SPA + everything else proxied to the Spring Boot app.
     location / {
         proxy_pass         http://localhost:8080;
         proxy_http_version 1.1;

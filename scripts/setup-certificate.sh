@@ -48,6 +48,18 @@ certbot --nginx \
     --register-unsafely-without-email \
     -d "$DOMAIN"
 
+# ── Add HSTS header to the TLS server block ──────────────────────────────────
+# certbot rewrote the nginx config to add the 443 block (preserving the other
+# security headers from setup-droplet.sh). HSTS must only be sent over HTTPS, so
+# add it here, anchored to the ssl_certificate_key line that exists only in the
+# TLS block. Guarded so re-runs don't duplicate it.
+NGINX_CONF="/etc/nginx/sites-available/tvbingo"
+if ! grep -q "Strict-Transport-Security" "$NGINX_CONF"; then
+    echo "Adding HSTS header to the TLS server block..."
+    sed -i '/ssl_certificate_key/a\    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;' "$NGINX_CONF"
+    nginx -t && systemctl reload nginx
+fi
+
 # ── Verify auto-renewal ───────────────────────────────────────────────────────
 echo "Testing auto-renewal..."
 certbot renew --dry-run

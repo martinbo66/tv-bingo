@@ -1,6 +1,7 @@
 spring:
-  profiles:
-    default: dev
+  # No default profile on purpose: a profile must be set explicitly so an
+  # unconfigured launch fails fast instead of silently running dev settings.
+  # Local dev -> `bootRun` activates 'dev'; production -> '--spring.profiles.active=prod'.
   application:
     name: tvbingo
   threads:
