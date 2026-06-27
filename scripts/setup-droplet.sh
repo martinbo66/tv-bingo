@@ -119,6 +119,9 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header X-Frame-Options SAMEORIGIN always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
+    # CSP for the same-origin Vite SPA. 'unsafe-inline' is required for Vue's
+    # runtime style bindings; scripts are external ('self') so no script inline.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
 
     # API requests. limit_req is keyed via the request-method map in conf.d, so
     # only mutating methods (POST/PUT/DELETE) are throttled; GET/HEAD reads have
