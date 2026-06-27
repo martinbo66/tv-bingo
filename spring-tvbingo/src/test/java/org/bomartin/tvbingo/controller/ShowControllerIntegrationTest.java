@@ -169,6 +169,88 @@ class ShowControllerIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // ========== Field Length Bound Tests ==========
+
+    @Test
+    void createShow_WithShowTitleOver100Characters_ShouldReturn400() throws Exception {
+        // Given - show title with 101 characters (1 over limit)
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle("a".repeat(101));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.showTitle").value("Show title must be 100 characters or less"));
+    }
+
+    @Test
+    void createShow_WithGameTitleOver100Characters_ShouldReturn400() throws Exception {
+        // Given - game title with 101 characters (1 over limit)
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Long Game Title Test"));
+        request.setGameTitle("a".repeat(101));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.gameTitle").value("Game title must be 100 characters or less"));
+    }
+
+    @Test
+    void createShow_WithCenterSquareOver50Characters_ShouldReturn400() throws Exception {
+        // Given - center square with 51 characters (1 over limit)
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Long Center Test"));
+        request.setCenterSquare("a".repeat(51));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.centerSquare").value("Center square must be 50 characters or less"));
+    }
+
+    @Test
+    void createShow_WithMoreThan150Phrases_ShouldReturn400() throws Exception {
+        // Given - 151 unique phrases (1 over the list cap)
+        ArrayList<String> phrases = new ArrayList<>();
+        for (int i = 0; i < 151; i++) {
+            phrases.add("Phrase number " + i);
+        }
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle(generateUniqueTitle("Too Many Phrases Test"));
+        request.setPhrases(phrases);
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.phrases").value("A show cannot have more than 150 phrases"));
+    }
+
+    @Test
+    void createShow_WithExactlyMaxFieldLengths_ShouldReturn201() throws Exception {
+        // Given - boundary values exactly at each limit
+        ShowRequest request = new ShowRequest();
+        request.setShowTitle("a".repeat(99) + "Z"); // 100 chars, unique-ish
+        request.setGameTitle("b".repeat(100));
+        request.setCenterSquare("c".repeat(50));
+
+        // When & Then
+        mockMvc.perform(post("/api/shows")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.gameTitle").value("b".repeat(100)))
+                .andExpect(jsonPath("$.centerSquare").value("c".repeat(50)));
+    }
+
     // ========== GET /api/shows (Get All) Tests ==========
 
     @Test
