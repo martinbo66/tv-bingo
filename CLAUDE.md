@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code when working with the TV Bingo monorepo.
 
-**IMPORTANT:** Always read and follow the global rules at `~/.claude/claude.md` before taking any actions. These rules apply to ALL projects and must be followed without exception.
+**IMPORTANT:** Always read and follow the global rules at `~/.claude/CLAUDE.md` before taking any actions. These rules apply to ALL projects and must be followed without exception.
 
 ## Project Overview
 
@@ -86,6 +86,8 @@ All commands run from the repository root:
 ./gradlew frontendInstall   # Install npm dependencies
 ./gradlew frontendBuild     # Build for production
 ./gradlew frontendTypeCheck # TypeScript type checking
+./gradlew frontendTest      # Run frontend tests (Vitest)
+./gradlew frontendCoverage  # Run frontend tests with coverage
 ./gradlew frontendLint      # Run ESLint
 
 # Or use npm directly from vue-tvbingo/:
@@ -94,6 +96,9 @@ npm install
 npm run dev          # Start dev server (http://localhost:5173)
 npm run build        # Build for production
 npm run type-check   # TypeScript type checking
+npm run test         # Run Vitest in watch mode
+npm run test:run     # Run Vitest once (CI mode)
+npm run test:coverage # Run Vitest with coverage
 npm run lint         # Run ESLint
 npm run lint:fix     # Auto-fix ESLint issues
 npm run format       # Format code with Prettier
@@ -113,114 +118,26 @@ docker run -p 8080:8080 -e TVBINGO_DB_PASSWORD=xxx tv-bingo
 
 ## Semantic Versioning
 
-The project uses Git tags for semantic versioning via the [axion-release-plugin](https://github.com/allegro/axion-release-plugin). Versions are automatically derived from Git tags and applied to:
-- JAR artifacts (e.g., `spring-tvbingo-1.2.3.jar`)
-- Docker images (e.g., `tv-bingo:1.2.3`, `tv-bingo:latest`)
+Versions are derived automatically from Git tags via the [axion-release-plugin](https://github.com/allegro/axion-release-plugin) and applied to JAR artifacts (`spring-tvbingo-{version}.jar`) and Docker images (`tv-bingo:{version}` + `tv-bingo:latest`). This happens with no extra steps in both local and CI builds.
 
-### Version Format
-
-- **Release builds** (tagged commits on main): `1.2.3`
-- **Development builds** (untagged commits): `0.1.0-branch-name-SNAPSHOT`
-- **Tags**: Use the `v` prefix (e.g., `v1.2.3`)
-
-### Common Versioning Commands
+**Version format** (follow [semver.org](https://semver.org/): MAJOR = breaking API/schema, MINOR = new backward-compatible feature, PATCH = bug fix):
+- **Release** (tagged commit on main): `1.2.3` — tag with a `v` prefix (`v1.2.3`)
+- **Development** (untagged): `0.1.0-branch-name-SNAPSHOT`
 
 ```bash
-# Check current version
-./gradlew currentVersion
-
-# Build with versioned artifacts
-./gradlew buildUnifiedJar    # Creates spring-tvbingo-{version}.jar
-./gradlew dockerBuild        # Creates tv-bingo:{version} and tv-bingo:latest
+./gradlew currentVersion     # Show the current derived version
+./gradlew buildUnifiedJar    # Build versioned JAR (frontend embedded)
+./gradlew dockerBuild        # Build tv-bingo:{version} + tv-bingo:latest
 ```
 
-### Creating a Release
-
-To create a new release version:
+**Cutting a release:** from an up-to-date `main`, create an annotated tag, then build and push it. The version updates automatically once the tag exists.
 
 ```bash
-# 1. Ensure you're on the main branch with all changes committed
-git checkout main
-git pull origin main
-
-# 2. Check current version
-./gradlew currentVersion
-
-# 3. Create an annotated tag (use semantic versioning: MAJOR.MINOR.PATCH)
-git tag -a v1.0.0 -m "Release 1.0.0
-
-Features:
-- Feature 1
-- Feature 2
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-
-# 4. Verify the version changed
-./gradlew currentVersion    # Should show "1.0.0"
-
-# 5. Build release artifacts
-./gradlew build
-./gradlew dockerBuild       # Creates tv-bingo:1.0.0 and tv-bingo:latest
-
-# 6. Push the tag to GitHub
+git checkout main && git pull origin main
+git tag -a v1.0.0 -m "Release 1.0.0: <summary>"
+./gradlew currentVersion     # Confirm it now shows "1.0.0"
+./gradlew build dockerBuild
 git push origin v1.0.0
-```
-
-### Semantic Versioning Guidelines
-
-Follow [semver.org](https://semver.org/) principles:
-
-- **MAJOR** (v2.0.0): Breaking changes to the API or database schema
-- **MINOR** (v1.1.0): New features, backward-compatible
-- **PATCH** (v1.0.1): Bug fixes, backward-compatible
-
-Examples:
-```bash
-# Initial release
-git tag -a v1.0.0 -m "Release 1.0.0: Initial public release"
-
-# Adding new feature (backward-compatible)
-git tag -a v1.1.0 -m "Release 1.1.0: Add show search feature"
-
-# Bug fix
-git tag -a v1.1.1 -m "Release 1.1.1: Fix bingo card generation bug"
-
-# Breaking change (e.g., API changes)
-git tag -a v2.0.0 -m "Release 2.0.0: Refactor API endpoints (breaking change)"
-```
-
-### Version in Development
-
-On feature branches, the version automatically includes the branch name:
-```bash
-# On branch "bo/build-improvements"
-./gradlew currentVersion
-# Output: 0.1.0-bo-build-improvements-SNAPSHOT
-```
-
-This ensures development builds are clearly distinguished from releases.
-
-### Docker Image Tagging Strategy
-
-The `dockerBuild` task creates two tags:
-1. **Version tag**: `tv-bingo:{version}` (e.g., `tv-bingo:1.2.3`)
-2. **Latest tag**: `tv-bingo:latest`
-
-This allows for:
-- **Pinned deployments**: `docker run tv-bingo:1.2.3`
-- **Rolling deployments**: `docker run tv-bingo:latest`
-
-### CI/CD Integration
-
-In CI/CD pipelines, versioning happens automatically:
-```bash
-# On main branch with tag v1.2.3
-./gradlew currentVersion  # Returns: 1.2.3
-./gradlew dockerBuild     # Creates: tv-bingo:1.2.3, tv-bingo:latest
-
-# On feature branch without tag
-./gradlew currentVersion  # Returns: 0.1.0-feature-name-SNAPSHOT
-./gradlew dockerBuild     # Creates: tv-bingo:0.1.0-feature-name-SNAPSHOT, tv-bingo:latest
 ```
 
 ## Configuration
@@ -321,7 +238,9 @@ org.bomartin.tvbingo/
 │   └── ShowService.java     # Show management business logic
 ├── validation/      # Custom validators
 │   ├── UniqueShowTitle.java
-│   └── UniqueShowTitleValidator.java
+│   ├── UniqueShowTitleValidator.java
+│   ├── ValidPhrases.java
+│   └── ValidPhrasesValidator.java
 └── TvbingoApplication.java  # Main application class
 ```
 
@@ -337,21 +256,32 @@ Key components:
 ```
 vue-tvbingo/src/
 ├── components/      # Reusable Vue components
+│   ├── AppFooter.vue
 │   ├── CreateShow.vue
 │   ├── ShowDetail.vue
-│   └── ShowsList.vue
+│   ├── ShowsList.vue
+│   └── common/      # Shared building blocks (FormFieldWithValidation,
+│                    #   PhraseListManager, Toast)
 ├── pages/           # Page-level components
 │   ├── BingoCard.vue
 │   └── CreateShowPage.vue
+├── composables/     # Reusable composition functions
+│   ├── useFeatureFlags.ts
+│   └── useUnsavedChangesGuard.ts
+├── config/          # Feature flags (featureFlags.ts)
+├── constants/       # Shared constants (formValidation.ts)
 ├── services/        # API client services
 │   ├── apiClient.ts      # Base HTTP client
 │   └── showService.ts    # Show-specific API methods
 ├── types/           # TypeScript type definitions
 │   └── Show.ts
 ├── router/          # Vue Router configuration
+├── styles/          # Shared CSS (form-theme.css)
 ├── assets/          # Static assets
 ├── App.vue          # Root component
 └── main.ts          # Application entry point
+
+# Unit/component tests live in `__tests__/` dirs alongside the code (Vitest).
 ```
 
 ## Development Standards
@@ -374,6 +304,9 @@ vue-tvbingo/src/
   - Use scoped CSS in components
   - Group imports as: Vue → external → local → types
   - Allow single-word component names (disabled multi-word rule)
+- **Feature flags**: UI features are gated via `src/config/featureFlags.ts`
+  (consumed through the `useFeatureFlags` composable). Toggle flags there
+  rather than removing code.
 
 ### Naming Conventions
 - Java classes: PascalCase
@@ -383,8 +316,10 @@ vue-tvbingo/src/
 - API endpoints: kebab-case, plural nouns
 
 ### Testing
-- Backend: JUnit 5, Embedded Postgres for integration tests
-- Frontend: Vitest (planned), TypeScript type checking
+- Backend: JUnit 5 + Embedded Postgres. Includes integration, edge-case,
+  performance, API-contract, and concurrency tests.
+- Frontend: Vitest (unit + component tests in `__tests__/` dirs) plus
+  `vue-tsc` type checking. Run via `./gradlew frontendTest` or `npm run test`.
 
 ## Git Commit Guidelines
 
