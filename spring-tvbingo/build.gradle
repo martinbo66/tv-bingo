@@ -42,6 +42,13 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// Local development runs with the dev profile. Production (Docker/systemd)
+// passes --spring.profiles.active=prod explicitly. There is intentionally no
+// default profile (see application.yml), so a profile must always be chosen.
+bootRun {
+	systemProperty 'spring.profiles.active', 'dev'
+}
+
 test {
 	useJUnitPlatform()
 	
