@@ -14,6 +14,8 @@ export default [
       '*.config.js',
       '*.config.ts',
       'test-results/**',
+      'playwright-report/**',
+      'blob-report/**',
       '.vite/**'
     ]
   },

@@ -14,10 +14,10 @@ This document tracks the testing plan for the TV Bingo monorepo: current coverag
 
 ## Overview
 
-**Total Tests:** 379 (verified 2026-07-12)
+**Total Tests:** 379 unit/integration + Playwright e2e (verified 2026-07-12)
 - **Backend:** 107 tests (JUnit 5 + Spring Boot Test)
-- **Frontend:** 272 tests (Vitest + Vue Test Utils)
-- **E2E:** 0 (not implemented)
+- **Frontend unit/component:** 272 tests (Vitest + Vue Test Utils)
+- **E2E:** Playwright (`@readonly` + `@destructive`); not wired into `./gradlew ci` yet
 
 **Frontend coverage (v8):** ~83% statements / ~78% branches / ~79% functions / ~83% lines
 
@@ -201,28 +201,46 @@ Also in place beyond the original Phase 2 list:
 
 ### 🔄 Phase 4: Advanced & E2E (PARTIALLY COMPLETE)
 
-**Priority:** LOWER for remaining E2E work  
-**Status:** Phase 4.1 ✅, Phase 4.3 ✅, Phase 4.2 ❌ not started
+**Priority:** LOWER for remaining polish / CI wiring  
+**Status:** Phase 4.1 ✅, Phase 4.2 ✅ (tooling + suites), Phase 4.3 ✅
 
 #### 4.1 Edge Case Tests ✅
 - ✅ Backend `EdgeCaseTests` (9) + `ConcurrentIntegrationTests` (1)
 - ✅ Frontend `BingoCard.edge-cases.spec.ts` (20)
 
-#### 4.2 End-to-End Tests ❌ NOT STARTED
+#### 4.2 End-to-End Tests ✅ TOOLING + SUITES
 
-No `e2e/` directory. No Playwright or Cypress dependency in `vue-tvbingo/package.json`.
+**Runner:** Playwright (Chromium), config at `vue-tvbingo/playwright.config.ts`  
+**Base URL:** `E2E_BASE_URL` (default `http://localhost:8080`) — app must already be running (`bootRun` / Docker)  
+**API URL (destructive helpers):** `E2E_API_BASE_URL` (default `http://localhost:8080`) — required when the UI is served from Vite (`http://localhost:5173`) so setup/teardown does not hit the Vite server  
+**Tags:** `@readonly` (non-destructive) vs `@destructive` (create/edit/delete with cleanup)
 
-**Planned workflows** (~10–15 tests, Playwright recommended):
-- [ ] Create show → add phrases → generate card → win
-- [ ] Edit existing show and verify changes
-- [ ] Delete show with confirmation
-- [ ] Search and filter shows
+| Gradle task | npm script | Scope |
+|-------------|------------|--------|
+| **`./gradlew frontendE2eReadonly`** | `test:e2e:readonly` | Non-destructive only (safe default) |
+| `./gradlew frontendE2eDestructive` | `test:e2e:destructive` | Mutating flows |
+| `./gradlew frontendE2e` | `test:e2e` | All e2e |
+
+**Read-only** (`vue-tvbingo/e2e/readonly/`) — uses Liquibase baseline shows; never mutates data:
+- ✅ Shows list loads + view toggle
+- ✅ Search / clear / no-results (phrase filters when `enablePhraseCountFilter` is on)
+- ✅ Bingo card grid, regenerate, mark/reset, BINGO line
+- ✅ Navigation: list ↔ card; edit cancel; create leave without submit
+
+**Destructive** (`vue-tvbingo/e2e/destructive/`) — unique titles; API cleanup; never deletes baseline IDs 1–7:
+- ✅ Create show via UI
+- ✅ Edit title via UI
+- ✅ Open bingo card for created show
+- ✅ Delete with confirm / cancel delete
+
+**Still nice-to-have (not implemented):**
 - [ ] Error recovery (network failure → retry)
 - [ ] Multiple browser tabs
-- [ ] Mobile responsive behavior
-- [ ] Accessibility (keyboard / screen reader)
-- [ ] Performance with large datasets
-- [ ] Session / preference persistence
+- [ ] Mobile / multi-browser matrix
+- [ ] Accessibility (axe / screen reader)
+- [ ] CI job that boots the app then runs `frontendE2eReadonly`
+
+**Browsers:** `npx playwright install chromium` (once per machine)
 
 #### 4.3 Performance Tests ✅
 - ✅ `PerformanceTests.java` (5) — concurrent load, large dataset, query timing, memory
@@ -273,6 +291,20 @@ cd vue-tvbingo && npm run test:run
 cd vue-tvbingo && npm run test        # watch mode
 cd vue-tvbingo && npm run test:ui
 cd vue-tvbingo && npm run test:coverage
+```
+
+### E2E (Playwright — app must be running)
+```bash
+# Safe / non-destructive (preferred)
+./gradlew frontendE2eReadonly
+# or: cd vue-tvbingo && npm run test:e2e:readonly
+
+./gradlew frontendE2eDestructive   # mutating
+./gradlew frontendE2e              # all
+
+# Optional overrides:
+#   E2E_BASE_URL=http://localhost:5173 E2E_API_BASE_URL=http://localhost:8080 ./gradlew frontendE2eReadonly
+# Browsers (once): cd vue-tvbingo && npx playwright install chromium
 ```
 
 ### Specific Test Files
@@ -354,15 +386,24 @@ vue-tvbingo/src/
     └── useUnsavedChangesGuard.spec.ts            # 13
 ```
 
-### E2E Tests Structure (Future — not created)
+### E2E Structure
 ```
-e2e/
-├── specs/
-│   ├── create-show.spec.ts
-│   ├── play-bingo.spec.ts
-│   └── edit-delete-show.spec.ts
-└── fixtures/
-    └── test-data.json
+vue-tvbingo/
+├── playwright.config.ts
+└── e2e/
+    ├── readonly/
+    │   ├── shows-list.spec.ts
+    │   ├── search-filter.spec.ts
+    │   ├── bingo-card.spec.ts
+    │   └── navigation.spec.ts
+    ├── destructive/
+    │   ├── create-show.spec.ts
+    │   └── edit-delete-show.spec.ts
+    ├── fixtures/
+    │   └── baseline-shows.ts
+    └── support/
+        ├── selectors.ts
+        └── cleanup.ts
 ```
 
 ---
@@ -424,18 +465,19 @@ e2e/
 - [x] API Contract tests (8)
 - **Status:** COMPLETE
 
-### Phase 4: Advanced & E2E 🔄
+### Phase 4: Advanced & E2E ✅ (CI wiring optional)
 - [x] Backend edge cases + concurrency
 - [x] Frontend edge cases (20)
-- [ ] E2E workflows (~10–15) — **not started**
+- [x] E2E Playwright (`@readonly` + `@destructive`) + Gradle tasks
+- [ ] Wire `frontendE2eReadonly` into CI (needs app bootstrap)
 - [x] Performance tests (5)
-- **Status:** 4.1 & 4.3 COMPLETE; 4.2 outstanding
+- **Status:** Suites complete; CI integration still open
 
 ---
 
 ## Next Steps
 
-1. **E2E (Phase 4.2):** Add Playwright (or equivalent), wire Gradle/CI, cover critical user flows
+1. **CI:** Boot app/DB in Actions, then run `./gradlew frontendE2eReadonly`
 2. **Coverage polish (optional):** `Toast.vue`, `CreateShowPage.vue`, remaining ShowDetail/ShowsList branches
 3. Keep this doc in sync when adding suites or changing infrastructure
 
@@ -450,5 +492,5 @@ Update this document when:
 - A phase completes
 - Gaps are discovered
 
-**Last Updated:** 2026-07-12 (counts verified: 107 backend + 272 frontend; Phase 2 marked complete; E2E still absent)  
-**Next Review:** After Phase 4.2 E2E tests land
+**Last Updated:** 2026-07-12 (Playwright e2e: readonly + destructive; `frontendE2eReadonly` Gradle task)  
+**Next Review:** After CI wires `frontendE2eReadonly`

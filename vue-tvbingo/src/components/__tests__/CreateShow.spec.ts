@@ -4,12 +4,14 @@ import { nextTick } from 'vue'
 import CreateShow from '../CreateShow.vue'
 
 const mockSetupGuards = vi.fn()
+const mockMarkClean = vi.fn()
 const mockHasUnsavedChanges = { value: false }
 
 vi.mock('../../composables/useUnsavedChangesGuard', () => ({
   useUnsavedChangesGuard: vi.fn(() => ({
     hasUnsavedChanges: mockHasUnsavedChanges,
-    setupGuards: mockSetupGuards
+    setupGuards: mockSetupGuards,
+    markClean: mockMarkClean
   }))
 }))
 
@@ -87,6 +89,7 @@ describe('CreateShow.vue', () => {
       const payload = wrapper.emitted('showCreated')![0][0] as Record<string, unknown>
       expect(payload.showTitle).toBe('The Office')
       expect(payload.phrases).toEqual(['Thats what she said', 'Dwight'])
+      expect(mockMarkClean).toHaveBeenCalled()
     })
 
     it('includes gameTitle in payload when non-empty', async () => {

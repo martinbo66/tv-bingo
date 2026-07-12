@@ -191,6 +191,30 @@ task frontendCoverage(type: Exec) {
     commandLine npmCommand, 'run', 'test:coverage'
 }
 
+task frontendE2eReadonly(type: Exec) {
+    description = 'Run non-destructive Playwright e2e tests (@readonly). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e:readonly'
+}
+
+task frontendE2eDestructive(type: Exec) {
+    description = 'Run mutating Playwright e2e tests (@destructive). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e:destructive'
+}
+
+task frontendE2e(type: Exec) {
+    description = 'Run all Playwright e2e tests (readonly + destructive). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'frontend'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e'
+}
+
 task frontendLint(type: Exec) {
     description = 'Run ESLint on frontend code'
     group = 'frontend'
@@ -456,6 +480,9 @@ task showTasks {
 ║   ./gradlew frontendLint     Run ESLint on frontend code                       ║
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
+║   ./gradlew frontendE2eReadonly  Playwright e2e (non-destructive only)         ║
+║   ./gradlew frontendE2eDestructive  Playwright e2e (mutating)                  ║
+║   ./gradlew frontendE2e      Playwright e2e (all)                              ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ DOCKER                                                                         ║
 ║   ./gradlew buildUnifiedJar  Build JAR with frontend embedded                  ║
