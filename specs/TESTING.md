@@ -1,6 +1,6 @@
 # TV Bingo Testing Strategy & Progress
 
-This document tracks the comprehensive testing plan for the TV Bingo monorepo, including current coverage, gaps, and implementation roadmap.
+This document tracks the testing plan for the TV Bingo monorepo: current coverage, gaps, and remaining work.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -14,114 +14,109 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ## Overview
 
-**Total Tests:** 213 (as of Phase 2.3 + Phase 3 + Phase 4.1 Backend + Phase 4.3 Performance + Phase 4.1 Frontend)
-- **Backend:** 81 tests (JUnit 5 + Spring Boot Test)
-- **Frontend:** 132 tests (Vitest + Vue Test Utils)
+**Total Tests:** 379 (verified 2026-07-12)
+- **Backend:** 107 tests (JUnit 5 + Spring Boot Test)
+- **Frontend:** 272 tests (Vitest + Vue Test Utils)
+- **E2E:** 0 (not implemented)
+
+**Frontend coverage (v8):** ~83% statements / ~78% branches / ~79% functions / ~83% lines
 
 **Testing Goal:** Achieve comprehensive coverage across all layers:
 - Unit tests for business logic
 - Integration tests for API endpoints
 - Component tests for Vue UI
-- End-to-end tests for critical user flows
+- End-to-end tests for critical user flows (still outstanding)
 
 ---
 
 ## Current Test Coverage
 
-### Backend Tests ✅ WELL COVERED
+### Backend Tests ✅ WELL COVERED (107 tests)
 
-#### ShowServiceTest.java (Unit Tests - 7 tests)
+#### ShowServiceTest.java (9 tests)
 **Location:** `spring-tvbingo/src/test/java/org/bomartin/tvbingo/service/`
 
 **Coverage:**
 - ✅ createShow() - saves and returns show
+- ✅ createShow() - rejects duplicate title
 - ✅ getShow(id) - retrieves existing show
 - ✅ getShow(id) - returns empty when not found
 - ✅ getAllShows() - returns all shows
 - ✅ updateShow() - updates and returns show
-- ✅ updateShow() - throws exception for null ID
+- ✅ updateShow() - throws for null ID / not found / duplicate title
 - ✅ deleteShow() - deletes show
 
-**Gaps:**
-- ❌ No tests for duplicate title validation logic
-- ❌ No tests for repository failure scenarios
-- ❌ No tests for empty phrases list edge cases
-
-#### ShowRepositoryTest.java (Integration Tests - 7 tests)
+#### ShowRepositoryTest.java (7 tests)
 **Location:** `spring-tvbingo/src/test/java/org/bomartin/tvbingo/repository/`
 
 **Coverage:**
 - ✅ Full CRUD operations
-- ✅ Custom query methods (existsByShowTitle, existsByShowTitleExceptId)
+- ✅ Custom query methods (`existsByShowTitle`, `existsByShowTitleExceptId`)
 - ✅ Database constraints
 
-**Gaps:**
-- ❌ Concurrent access scenarios
-- ❌ Transaction rollback testing
-- ❌ Data integrity violations
-
-#### ShowControllerIntegrationTest.java (REST API Tests - 18 tests)
+#### ShowControllerIntegrationTest.java (31 tests)
 **Location:** `spring-tvbingo/src/test/java/org/bomartin/tvbingo/controller/`
 
 **Coverage:**
-- ✅ POST /api/shows - all scenarios (valid, minimal, validation errors, duplicates, malformed JSON)
+- ✅ POST /api/shows - valid, minimal, validation errors, duplicates, malformed JSON
 - ✅ GET /api/shows - list all (with data, empty)
-- ✅ GET /api/shows/{id} - get one (exists, not found)
-- ✅ PUT /api/shows/{id} - update (valid, validation, duplicates, same title)
-- ✅ DELETE /api/shows/{id} - delete (success, not found, verification)
+- ✅ GET /api/shows/{id} - exists, not found
+- ✅ PUT /api/shows/{id} - valid, validation, duplicates, same title
+- ✅ DELETE /api/shows/{id} - success, not found, verification
 
-**Gaps:**
-- ❌ Concurrent request handling
-- ❌ Large payload testing
-- ❌ Special characters in phrases
-- ❌ Extremely long strings
-- ❌ Very large phrase counts (>100)
+#### Exception & Validation
+- ✅ `GlobalExceptionHandlerTest.java` (9 tests)
+- ✅ `UniqueShowTitleValidatorTest.java` (5 tests)
+- ✅ `ValidPhrasesValidatorTest.java` (12 tests)
 
-#### TvbingoApplicationTests.java (Smoke Test - 1 test)
-**Location:** `spring-tvbingo/src/test/java/org/bomartin/tvbingo/`
+#### Configuration & Contract
+- ✅ `WebConfigTest.java` (5 tests) — CORS
+- ✅ `SpaWebConfigTest.java` (4 tests) — SPA forwarding
+- ✅ `ApiContractTest.java` (8 tests) — response shape / OpenAPI alignment
 
-**Coverage:**
-- ✅ Application context loads
+#### Edge Cases, Concurrency & Performance
+- ✅ `EdgeCaseTests.java` (9 tests) — long strings, large arrays, special chars, injection/XSS attempts
+- ✅ `ConcurrentIntegrationTests.java` (1 test) — concurrent create race
+- ✅ `PerformanceTests.java` (5 tests) — load, large dataset, query timing, memory
+
+#### Smoke / Migration
+- ✅ `TvbingoApplicationTests.java` (1 test) — context loads
+- ✅ `ShowsIdSequenceMigrationTest.java` (1 test)
 
 ---
 
-### Frontend Tests ✅ PHASE 1 COMPLETE
+### Frontend Tests ✅ WELL COVERED (272 tests, 12 files)
 
-#### BingoCard.spec.ts (Component Tests - 28 tests)
-**Location:** `vue-tvbingo/src/pages/__tests__/`
+All tests pass via Vitest (`npm run test:run` / `./gradlew frontendTest`).
 
-**Coverage:**
-- ✅ Loading and error states (loading, invalid ID, not found, insufficient phrases, navigation)
-- ✅ Grid generation (5x5 grid, center square, FREE SPACE, regeneration)
-- ✅ Fisher-Yates shuffle algorithm verification
-- ✅ Cell selection (toggle, auto-select center, deselect, reset)
-- ✅ Win detection - all 12 combinations (5 rows, 5 columns, 2 diagonals)
-- ✅ Multiple winning lines, incomplete rows
-- ✅ Navigation (back to list, edit on click)
+#### Pages
+| File | Tests | Coverage highlights |
+|------|------:|---------------------|
+| `BingoCard.spec.ts` | 30 | Loading/errors, 5×5 grid, shuffle, cell select, all 12 win lines, navigation |
+| `BingoCard.edge-cases.spec.ts` | 20 | 24 / 1000+ phrases, timeouts, rapid clicks, storage, resize, touch/a11y |
 
-#### BingoCard.edge-cases.spec.ts (Edge Case Tests - 20 tests)
-**Location:** `vue-tvbingo/src/pages/__tests__/`
+#### Components
+| File | Tests | Coverage highlights |
+|------|------:|---------------------|
+| `ShowsList.spec.ts` | 46 | Views, localStorage prefs, edit/delete, sort, search/filter, keyboard hints |
+| `ShowDetail.spec.ts` | 21 | Load/error, save happy path, 400/409/404/generic errors, cancel + unsaved, phrases |
+| `CreateShow.spec.ts` | 15 | Submit blocked/success, validation, cancel + unsaved, phrase list help |
+| `PhraseListManager.spec.ts` | 44 | Render, add/delete/edit, sort, counts, bulk add |
+| `FormFieldWithValidation.spec.ts` | 27 | Required/maxLength/custom validators, counters, blur behavior |
 
-**Coverage:**
-- ✅ Minimal phrases (exactly 24 phrases) - 2 tests
-- ✅ Large phrase arrays (1000+ phrases) - 2 tests
-- ✅ Network timeout handling - 2 tests
-- ✅ Rapid button clicking (debounce behavior) - 3 tests
-- ✅ Browser back button behavior - 2 tests
-- ✅ LocalStorage/SessionStorage handling - 3 tests
-- ✅ Window resize on bingo grid - 2 tests
-- ✅ Touch events and keyboard accessibility - 4 tests
+#### Services, Router, Composables, Bootstrap
+| File | Tests | Coverage highlights |
+|------|------:|---------------------|
+| `apiClient.spec.ts` | 27 | ApiError, GET/POST/PUT/DELETE, HTTP + network errors, edge cases |
+| `showService.spec.ts` | 16 | CRUD URLs/bodies, `searchShowsByTitle` filtering |
+| `router/index.spec.ts` | 11 | Route defs, params, navigation, hash mode, unknown routes |
+| `useUnsavedChangesGuard.spec.ts` | 13 | Dirty tracking, `markClean`, beforeunload, router confirm |
+| `main.spec.ts` | 2 | Mount when `#app` exists; error when missing |
 
-#### apiClient.spec.ts (API Client Tests - 27 tests)
-**Location:** `vue-tvbingo/src/services/__tests__/`
-
-**Coverage:**
-- ✅ ApiError class (constructor, properties, error data)
-- ✅ HTTP methods (GET, POST, PUT, DELETE)
-- ✅ Success cases (JSON parsing, empty responses, header merging)
-- ✅ HTTP errors (400, 401, 404, 409, 500 with error data)
-- ✅ Network errors (failures, timeouts, DNS errors)
-- ✅ Edge cases (invalid JSON, empty base URL, TypeScript generics)
+#### Frontend gaps (unit/component)
+- ❌ Near-zero coverage: `Toast.vue`, `CreateShowPage.vue`
+- ❌ Partial: some `ShowDetail` / `ShowsList` branches; `formValidation.ts` helpers
+- ❌ No real-browser E2E (see Phase 4.2)
 
 ---
 
@@ -129,7 +124,7 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ### Backend
 - **Framework:** JUnit 5
-- **Spring Support:** Spring Boot Test, MockMvc
+- **Spring Support:** Spring Boot Test, MockMvc, TestRestTemplate (concurrency)
 - **Database:** Embedded Postgres (Zonky)
 - **Mocking:** Mockito
 - **Configuration:** `application-test.yml`
@@ -138,16 +133,22 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 ### Frontend
 - **Framework:** Vitest 4.x
 - **Vue Testing:** @vue/test-utils 2.x
-- **Environment:** jsdom (for DOM simulation)
-- **Coverage:** v8 provider
+- **Environment:** jsdom
+- **Coverage:** `@vitest/coverage-v8` (text, json, html, lcov)
+- **Reports:** JUnit XML → `vue-tvbingo/test-results/junit.xml`
 - **Configuration:** `vue-tvbingo/vitest.config.ts`
-- **Run:** `./gradlew frontendTest` or `npm run test`
+- **Run:** `./gradlew frontendTest` or `npm run test:run`
+
+### CI/CD
+- `./gradlew ci` runs clean, build, backend + frontend tests, type-check, lint, coverage, Sonar
+- GitHub Actions publishes JUnit results from `**/build/test-results/**/*.xml` and `vue-tvbingo/test-results/**/*.xml`
+- Frontend coverage artifact: `vue-tvbingo/coverage/`
 
 ### Unified Commands
 ```bash
 ./gradlew test     # Run all tests (frontend + backend)
 ./gradlew check    # Run all verification tasks
-./gradlew ci       # Full CI pipeline (clean + build + test)
+./gradlew ci       # Full CI pipeline
 ```
 
 ---
@@ -156,279 +157,95 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 
 ### ✅ Phase 1: Critical Foundation (COMPLETED)
 
-**Status:** ✅ 100% Complete (55 tests)
+**Status:** ✅ Complete (BingoCard + apiClient foundation; counts grew slightly since first landing)
 
-**Completed:**
 1. ✅ Vitest infrastructure setup
-2. ✅ BingoCard.vue tests (28 tests) - Most complex component
-3. ✅ apiClient.ts tests (27 tests) - Foundation for all API calls
-
-**Results:**
-- All 55 frontend tests passing
-- Integrated with Gradle build
-- CI pipeline includes frontend tests
+2. ✅ BingoCard.vue tests (30) + edge cases (20)
+3. ✅ apiClient.ts tests (27)
+4. ✅ Gradle + CI integration
 
 ---
 
-### 🔄 Phase 2: Component & Service Tests (SHORT-TERM)
+### ✅ Phase 2: Component & Service Tests (COMPLETED)
 
-**Priority:** HIGH
-**Estimated Tests:** ~60-80 tests
-**Status:** Backend Phase 2.3 Complete (13/13 tests) ✅
+**Status:** ✅ Complete — frontend Phase 2 suites land well above the original ~60–80 estimate.
 
-#### 2.1 Vue Component Tests
+#### 2.1 Vue Component Tests ✅
+- ✅ `ShowsList.spec.ts` (46) — includes search/filter/sort/view persistence
+- ✅ `CreateShow.spec.ts` (15)
+- ✅ `ShowDetail.spec.ts` (21) — under `components/__tests__/`, not `pages/`
+- ✅ Shared UI: `PhraseListManager` (44), `FormFieldWithValidation` (27)
 
-**ShowsList.vue** (~12 tests)
-- `vue-tvbingo/src/components/__tests__/ShowsList.spec.ts`
-  - [ ] Fetch and display shows on mount
-  - [ ] Loading state display
-  - [ ] Error state with retry button
-  - [ ] Navigate to show details on click
-  - [ ] Edit button navigation
-  - [ ] Delete with confirmation dialog
-  - [ ] Delete API call and list refresh
-  - [ ] Empty state display ("No shows yet")
-  - [ ] Show count display
-  - [ ] Error message display
-  - [ ] Retry after error
-  - [ ] List updates after delete
+#### 2.2 Service Layer ✅
+- ✅ `showService.spec.ts` (16)
 
-**CreateShow.vue** (~10 tests)
-- `vue-tvbingo/src/components/__tests__/CreateShow.spec.ts`
-  - [ ] Form input binding (showTitle, gameTitle, centerSquare)
-  - [ ] Phrase array management (add phrase)
-  - [ ] Remove phrase functionality
-  - [ ] Form submission
-  - [ ] Event emission with form data
-  - [ ] Form reset after submission
-  - [ ] Remove button disabled when only 1 phrase
-  - [ ] Required field validation
-  - [ ] Empty phrase prevention
-  - [ ] Form state management
+#### 2.3 Backend Exception / Validation ✅
+- ✅ `GlobalExceptionHandlerTest` (9)
+- ✅ `UniqueShowTitleValidatorTest` (5)
+- ✅ `ValidPhrasesValidatorTest` (12) — added after original Phase 2.3 plan
 
-**ShowDetail.vue** (~15 tests)
-- `vue-tvbingo/src/pages/__tests__/ShowDetail.spec.ts`
-  - [ ] Load show on mount using route params
-  - [ ] Display show data in form
-  - [ ] Edit form fields (all inputs)
-  - [ ] Add phrase to existing list
-  - [ ] Remove phrase from list
-  - [ ] Save button triggers API call
-  - [ ] Error handling and display
-  - [ ] Field-specific error messages (400 responses)
-  - [ ] Duplicate title conflict handling (409)
-  - [ ] Navigation after successful save
-  - [ ] Cancel button navigation
-  - [ ] Loading state during save
-  - [ ] Validation errors display
-  - [ ] Success message after save
-  - [ ] Navigate to bingo card after save
-
-#### 2.2 Service Layer Tests
-
-**showService.ts** (~10 tests)
-- `vue-tvbingo/src/services/__tests__/showService.spec.ts`
-  - [ ] getShows() returns array of shows
-  - [ ] getShowById() fetches single show
-  - [ ] addShow() creates new show
-  - [ ] updateShow() updates existing show
-  - [ ] deleteShow() removes show
-  - [ ] searchShowsByTitle() filters by query (case-insensitive)
-  - [ ] API error handling (all methods)
-  - [ ] Network error handling
-  - [ ] Empty results handling
-  - [ ] API URL construction (env var)
-
-#### 2.3 Backend Exception Handling Tests ✅
-
-**GlobalExceptionHandler.java** (8 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/exception/GlobalExceptionHandlerTest.java`
-  - ✅ handleValidationExceptions() formats errors to map
-  - ✅ Validation exception returns 400 status
-  - ✅ Multiple validation errors in response
-  - ✅ handleIllegalArgumentException() returns proper error
-  - ✅ IllegalArgumentException returns 400 status
-  - ✅ handleDataIntegrityViolation() handles DB constraints
-  - ✅ DataIntegrityViolation returns 409 status
-  - ✅ Error response format consistency
-
-**UniqueShowTitleValidator.java** (5 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/validation/UniqueShowTitleValidatorTest.java`
-  - ✅ isValid() returns true for unique title
-  - ✅ isValid() returns false for duplicate title
-  - ✅ isValid() returns true for null title (handled by @NotBlank)
-  - ✅ Validator uses repository to check existence
-  - ✅ Validator handles database errors gracefully
+Also in place beyond the original Phase 2 list:
+- ✅ `useUnsavedChangesGuard.spec.ts` (13)
+- ✅ `main.spec.ts` (2)
 
 ---
 
-### ✅ Phase 3: Configuration & Integration Tests (COMPLETED)
+### ✅ Phase 3: Configuration & Integration (COMPLETED)
 
-**Priority:** MEDIUM
-**Estimated Tests:** ~20-30 tests
-**Status:** ✅ 100% Complete (28 tests - 17 backend + 11 frontend)
+**Status:** ✅ Complete
 
-#### 3.1 Backend Configuration Tests
-
-**WebConfig.java** (5 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/config/WebConfigTest.java`
-  - ✅ CORS headers set correctly for allowed origins
-  - ✅ CORS allows credentials
-  - ✅ CORS allows specified HTTP methods
-  - ✅ CORS configuration applied to /api/** paths
-  - ✅ CORS preflight requests handled (OPTIONS)
-
-**SpaWebConfig.java** (4 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/config/SpaWebConfigTest.java`
-  - ✅ Non-API routes forward to index.html
-  - ✅ API routes are not affected (/api/**)
-  - ✅ Static resources served correctly
-  - ✅ Vue Router history mode works
-
-#### 3.2 Router Tests
-
-**Vue Router** (11 tests) ✅
-- `vue-tvbingo/src/router/__tests__/index.spec.ts`
-  - ✅ Route definitions exist for all pages (home, show details, edit, create)
-  - ✅ Route parameters work (id)
-  - ✅ Navigation between routes (programmatic)
-  - ✅ Hash history mode configured
-  - ✅ Navigation guard executes
-  - ✅ Unknown routes handled
-
-#### 3.3 API Contract Tests
-
-**API Contract Validation** (8 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/contract/ApiContractTest.java`
-  - ✅ Response format validation (JSON structure)
-  - ✅ Error response structure consistent
-  - ✅ Field type validation matches OpenAPI spec
-  - ✅ Required fields present in responses
-  - ✅ List response structure
-  - ✅ Empty list response structure
-  - ✅ Content-Type headers correct
-  - ✅ Not found (404) response structure
-
-**Results:**
-- All 28 tests passing
-- Integrated with Gradle build
-- CI pipeline includes Phase 3 tests
-- Backend: 17 tests (WebConfig: 5, SpaWebConfig: 4, ApiContract: 8)
-- Frontend: 11 tests (Router)
+- ✅ WebConfig (5), SpaWebConfig (4), ApiContract (8)
+- ✅ Vue Router (11)
 
 ---
 
-### 🔄 Phase 4: Advanced & E2E Tests (NICE TO HAVE)
+### 🔄 Phase 4: Advanced & E2E (PARTIALLY COMPLETE)
 
-**Priority:** LOWER
-**Estimated Tests:** ~20-40 tests
-**Status:** Phase 4.1 Complete (30/30 tests) ✅, Phase 4.3 Complete (5/5 tests) ✅
+**Priority:** LOWER for remaining E2E work  
+**Status:** Phase 4.1 ✅, Phase 4.3 ✅, Phase 4.2 ❌ not started
 
-#### 4.1 Edge Case Tests ✅ COMPLETE
+#### 4.1 Edge Case Tests ✅
+- ✅ Backend `EdgeCaseTests` (9) + `ConcurrentIntegrationTests` (1)
+- ✅ Frontend `BingoCard.edge-cases.spec.ts` (20)
 
-**Backend Edge Cases** (10 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/EdgeCaseTests.java`
-  - ✅ Very long show titles (>255 chars)
-  - ✅ Very long phrases (>1000 chars)
-  - ✅ Large phrase arrays (100+ items)
-  - ✅ Special characters in titles (emoji, unicode)
-  - ✅ SQL injection attempts in inputs
-  - ✅ XSS attempts in phrase content
-  - ✅ Null vs empty string handling
-  - ✅ Whitespace-only titles
-  - ✅ Concurrent duplicate title checks
-  - ✅ Race condition in phrase updates
+#### 4.2 End-to-End Tests ❌ NOT STARTED
 
-**Frontend Edge Cases** (20 tests)
-- `src/pages/__tests__/BingoCard.edge-cases.spec.ts`
-  - ✅ Bingo card with exactly 24 phrases (2 tests)
-  - ✅ Bingo card with 1000+ phrases (2 tests)
-  - ✅ Network timeout handling (2 tests)
-  - ✅ Rapid button clicking (debounce) (3 tests)
-  - ✅ Browser back button behavior (2 tests)
-  - ✅ LocalStorage/SessionStorage handling (3 tests)
-  - ✅ Window resize on bingo grid (2 tests)
-  - ✅ Touch events on mobile (4 tests)
+No `e2e/` directory. No Playwright or Cypress dependency in `vue-tvbingo/package.json`.
 
-#### 4.2 End-to-End Tests
+**Planned workflows** (~10–15 tests, Playwright recommended):
+- [ ] Create show → add phrases → generate card → win
+- [ ] Edit existing show and verify changes
+- [ ] Delete show with confirmation
+- [ ] Search and filter shows
+- [ ] Error recovery (network failure → retry)
+- [ ] Multiple browser tabs
+- [ ] Mobile responsive behavior
+- [ ] Accessibility (keyboard / screen reader)
+- [ ] Performance with large datasets
+- [ ] Session / preference persistence
 
-**User Workflows** (~10-15 tests)
-- `e2e/specs/` (using Playwright - available via MCP)
-  - [ ] Complete flow: Create show → Add phrases → Generate card → Win
-  - [ ] Edit existing show and verify changes
-  - [ ] Delete show workflow with confirmation
-  - [ ] Search and filter shows
-  - [ ] Error recovery (network failure → retry)
-  - [ ] Multiple browser tabs
-  - [ ] Mobile responsive behavior
-  - [ ] Accessibility (keyboard navigation, screen reader)
-  - [ ] Performance (large datasets)
-  - [ ] Session persistence
+#### 4.3 Performance Tests ✅
+- ✅ `PerformanceTests.java` (5) — concurrent load, large dataset, query timing, memory
 
-#### 4.3 Performance Tests
+**Test data strategy (backend performance / integration):**
+- Programmatic setup per test; `@BeforeEach` clears data
+- Large datasets only inside tests that need them
+- Embedded Postgres isolates each run
 
-**Load & Performance** (5 tests) ✅
-- `spring-tvbingo/src/test/java/org/bomartin/tvbingo/performance/PerformanceTests.java`
-  - ✅ Load test: 100 concurrent requests
-  - ✅ Large dataset: 1000+ shows
-  - ✅ Database query performance
-  - ✅ Response time benchmarks
-  - ✅ Memory usage under load
+---
 
-**Test Data Strategy:**
-- Data is created programmatically at the start of each test using `createTestShows()` helper method
-- Each test uses `@BeforeEach` to ensure clean database state (`showRepository.deleteAll()`)
-- `@AfterEach` cleanup ensures no data leaks between tests - critical for preventing accumulation
-- Large datasets (1000+ shows) are created only within specific tests that need them
-- Embedded Postgres provides full isolation - data never persists beyond test execution
-- No manual cleanup required - Spring Test + Embedded DB handles complete teardown
+## Shows List Search & Filter
 
---- 
-## Testing the filtering and searching functionality on the show list
-### Manual Testing Checklist
+Most search/filter behaviors are covered by `ShowsList.spec.ts` (automated). Remaining value of the checklist below is **manual / visual / device** verification.
 
-1. **Search Functionality**
-   - [ ] Type in search box - results filter in real-time
-   - [ ] Search for show title (e.g., "Office")
-   - [ ] Search for game title (e.g., "Blingo")
-   - [ ] Try uppercase search - should still work
-   - [ ] Search for nonexistent show - see no results state
-   - [ ] Click clear button - search clears and input focuses
-   - [ ] Press Ctrl/Cmd + K - search focuses
-   - [ ] Press / key - search focuses
-   - [ ] Type in search, press Esc - search clears
+### Manual / Device Checklist (supplemental)
 
-2. **Filter Functionality**
-   - [ ] Click each filter button - see active state
-   - [ ] Filter by <10 - see only shows with <10 phrases
-   - [ ] Filter by 10-24 - see only shows with 10-24 phrases
-   - [ ] Filter by 25+ - see only shows with 25+ phrases
-   - [ ] Click All - see all shows again
-   - [ ] Verify active filter has colored background/border
-
-3. **Combined Filters**
-   - [ ] Apply search and filter together
-   - [ ] Verify results match both criteria
-   - [ ] Clear All button appears
-   - [ ] Click Clear All - both clear
-
-4. **Views Integration**
-   - [ ] Apply filters in grid view
-   - [ ] Switch to list view - filters persist
-   - [ ] Apply different filter in list view
-   - [ ] Switch back to grid - filter persists
-
-5. **Mobile Testing**
-   - [ ] Search bar full width
-   - [ ] Filters stack vertically
-   - [ ] Clear All button full width
-   - [ ] All touch targets at least 48px
-
-6. **Accessibility**
-   - [ ] Tab through all controls
-   - [ ] All focus states visible
-   - [ ] Test with screen reader
-   - [ ] Keyboard shortcuts work
+1. **Search** — real-time filter, clear button focus, Ctrl/Cmd+K and `/` focus, Esc clears
+2. **Filters** — `<10`, `10–24`, `25+`, All; active styling
+3. **Combined** — search + filter AND logic; Clear All
+4. **Views** — filters persist across grid ↔ list
+5. **Mobile** — full-width search/filters, 48px touch targets
+6. **A11y** — tab order, focus rings, screen reader smoke check
 
 ---
 
@@ -437,23 +254,25 @@ This document tracks the comprehensive testing plan for the TV Bingo monorepo, i
 ### All Tests
 ```bash
 ./gradlew test          # Frontend + Backend tests
-./gradlew check         # Full verification (tests + type checking)
+./gradlew check         # Full verification (tests + type checking + lint)
 ./gradlew ci            # Complete CI pipeline
 ```
 
 ### Backend Only
 ```bash
-./gradlew backendTest                    # All backend tests
-./gradlew :spring-tvbingo:test          # Same
-./gradlew :spring-tvbingo:test --info   # Verbose output
+./gradlew backendTest
+./gradlew :spring-tvbingo:test
+./gradlew :spring-tvbingo:test --info
 ```
 
 ### Frontend Only
 ```bash
-./gradlew frontendTest              # Via Gradle
-cd vue-tvbingo && npm run test      # Direct npm
-cd vue-tvbingo && npm run test:ui   # Interactive UI
-cd vue-tvbingo && npm run test:coverage  # With coverage report
+./gradlew frontendTest
+./gradlew frontendCoverage
+cd vue-tvbingo && npm run test:run
+cd vue-tvbingo && npm run test        # watch mode
+cd vue-tvbingo && npm run test:ui
+cd vue-tvbingo && npm run test:coverage
 ```
 
 ### Specific Test Files
@@ -461,26 +280,23 @@ cd vue-tvbingo && npm run test:coverage  # With coverage report
 # Backend (from root)
 ./gradlew :spring-tvbingo:test --tests ShowControllerIntegrationTest
 
-# Frontend (from vue-tvbingo directory)
-npm run test -- BingoCard.spec.ts
-npm run test -- apiClient.spec.ts
-```
-
-### Watch Mode (Frontend)
-```bash
-cd vue-tvbingo
-npm run test          # Runs in watch mode by default
+# Frontend (from vue-tvbingo)
+npm run test:run -- BingoCard.spec.ts
+npm run test:run -- apiClient.spec.ts
 ```
 
 ### Coverage Reports
 ```bash
-# Backend coverage (via JaCoCo)
+# Backend (JaCoCo)
 ./gradlew :spring-tvbingo:jacocoTestReport
 # Report: spring-tvbingo/build/reports/jacoco/test/html/index.html
 
-# Frontend coverage
+# Frontend
 cd vue-tvbingo && npm run test:coverage
 # Report: vue-tvbingo/coverage/index.html
+
+# Both
+./gradlew coverage
 ```
 
 ---
@@ -490,44 +306,55 @@ cd vue-tvbingo && npm run test:coverage
 ### Backend Structure
 ```
 spring-tvbingo/src/test/java/org/bomartin/tvbingo/
-├── TvbingoApplicationTests.java         # Context load test
-├── EdgeCaseTests.java                   # ✅ CREATED (Phase 4.1)
+├── TvbingoApplicationTests.java              # 1 — context load
+├── EdgeCaseTests.java                        # 9
+├── ConcurrentIntegrationTests.java           # 1
+├── ShowsIdSequenceMigrationTest.java         # 1
 ├── controller/
-│   └── ShowControllerIntegrationTest.java  # ✅ REST API tests
+│   └── ShowControllerIntegrationTest.java    # 31
 ├── service/
-│   └── ShowServiceTest.java             # ✅ Unit tests
+│   └── ShowServiceTest.java                  # 9
 ├── repository/
-│   └── ShowRepositoryTest.java          # ✅ Integration tests
-├── exception/                            # ✅ CREATED (Phase 2.3)
-│   └── GlobalExceptionHandlerTest.java
-├── validation/                           # ✅ CREATED (Phase 2.3)
-│   └── UniqueShowTitleValidatorTest.java
-├── config/                               # ✅ CREATED (Phase 3)
-│   ├── WebConfigTest.java
-│   └── SpaWebConfigTest.java
-├── contract/                             # ✅ CREATED (Phase 3)
-│   └── ApiContractTest.java
-└── performance/                          # ✅ CREATED (Phase 4.3)
-    └── PerformanceTests.java
+│   └── ShowRepositoryTest.java               # 7
+├── exception/
+│   └── GlobalExceptionHandlerTest.java       # 9
+├── validation/
+│   ├── UniqueShowTitleValidatorTest.java     # 5
+│   └── ValidPhrasesValidatorTest.java        # 12
+├── config/
+│   ├── WebConfigTest.java                    # 5
+│   └── SpaWebConfigTest.java                 # 4
+├── contract/
+│   └── ApiContractTest.java                  # 8
+└── performance/
+    └── PerformanceTests.java                 # 5
 ```
 
 ### Frontend Structure
 ```
 vue-tvbingo/src/
+├── __tests__/
+│   └── main.spec.ts                              # 2
 ├── pages/__tests__/
-│   ├── BingoCard.spec.ts                # ✅ 28 tests (Phase 1)
-│   └── ShowDetail.spec.ts               # ❌ TO CREATE (Phase 2)
+│   ├── BingoCard.spec.ts                         # 30
+│   └── BingoCard.edge-cases.spec.ts              # 20
 ├── components/__tests__/
-│   ├── ShowsList.spec.ts                # ❌ TO CREATE (Phase 2)
-│   └── CreateShow.spec.ts               # ❌ TO CREATE (Phase 2)
+│   ├── ShowsList.spec.ts                         # 46
+│   ├── ShowDetail.spec.ts                        # 21
+│   └── CreateShow.spec.ts                        # 15
+├── components/common/__tests__/
+│   ├── PhraseListManager.spec.ts                 # 44
+│   └── FormFieldWithValidation.spec.ts           # 27
 ├── services/__tests__/
-│   ├── apiClient.spec.ts                # ✅ 27 tests (Phase 1)
-│   └── showService.spec.ts              # ❌ TO CREATE (Phase 2)
-└── router/__tests__/
-    └── index.spec.ts                     # ✅ 11 tests (Phase 3)
+│   ├── apiClient.spec.ts                         # 27
+│   └── showService.spec.ts                       # 16
+├── router/__tests__/
+│   └── index.spec.ts                             # 11
+└── composables/__tests__/
+    └── useUnsavedChangesGuard.spec.ts            # 13
 ```
 
-### E2E Tests Structure (Future)
+### E2E Tests Structure (Future — not created)
 ```
 e2e/
 ├── specs/
@@ -543,31 +370,31 @@ e2e/
 ## Testing Best Practices
 
 ### General Principles
-1. **Arrange-Act-Assert:** Structure all tests with clear setup, execution, and verification
-2. **Test Isolation:** Each test should be independent and not rely on other tests
-3. **Mock External Dependencies:** Use mocks for API calls, database, and external services
-4. **Descriptive Names:** Test names should clearly describe what is being tested
-5. **One Assertion Focus:** Each test should verify one specific behavior
+1. **Arrange-Act-Assert:** Clear setup, execution, verification
+2. **Test Isolation:** No dependence on other tests
+3. **Mock External Dependencies:** API, DB, browser APIs as needed
+4. **Descriptive Names:** Name the behavior under test
+5. **One Assertion Focus:** Prefer one behavior per test
 
 ### Backend Testing
 - Use `@SpringBootTest` for integration tests
-- Use `@WebMvcTest` for controller-only tests
 - Use embedded Postgres for database tests
-- Clean up test data with `@BeforeEach` or `@Sql` scripts
-- Use `MockMvc` for HTTP request/response testing
+- Prefer `TestRestTemplate` for concurrent HTTP (MockMvc is not thread-safe for that)
+- Clean data with `@BeforeEach` / `@Sql`
+- Use `MockMvc` for typical HTTP request/response tests
 
 ### Frontend Testing
 - Use `mount()` for full component testing
-- Use `flushPromises()` for async operations
-- Mock Vue Router and external services
-- Stub child components when testing parent components
-- Test user interactions, not implementation details
+- Use `flushPromises()` for async work
+- Mock Vue Router and services
+- Stub children when focusing on the parent
+- Prefer user interactions over implementation details
 
 ### CI/CD Integration
-- All tests must pass before merge
+- All unit/integration tests must pass before merge
 - Use `./gradlew ci` for full verification
 - Coverage thresholds (future): 80% for critical paths
-- Fast feedback: Unit tests < 5s, Integration < 30s
+- Frontend suite typically finishes in ~2s locally
 
 ---
 
@@ -575,65 +402,53 @@ e2e/
 
 ### Phase 1: Critical Foundation ✅
 - [x] Vitest setup
-- [x] BingoCard.vue tests (28)
-- [x] apiClient.ts tests (27)
-- **Status:** COMPLETE (55 tests)
+- [x] BingoCard.vue tests (+ edge cases)
+- [x] apiClient.ts tests
+- **Status:** COMPLETE
 
-### Phase 2: Component & Service Tests 🔄
-- [ ] ShowsList.vue tests (~12)
-- [ ] CreateShow.vue tests (~10)
-- [ ] ShowDetail.vue tests (~15)
-- [ ] showService.ts tests (~10)
-- [x] GlobalExceptionHandler tests (8) ✅
-- [x] UniqueShowTitleValidator tests (5) ✅
-- **Status:** Backend Phase 2.3 COMPLETE (13/60 tests)
+### Phase 2: Component & Service Tests ✅
+- [x] ShowsList.vue tests (46)
+- [x] CreateShow.vue tests (15)
+- [x] ShowDetail.vue tests (21)
+- [x] showService.ts tests (16)
+- [x] PhraseListManager / FormFieldWithValidation / unsaved-changes / main
+- [x] GlobalExceptionHandler tests (9)
+- [x] UniqueShowTitleValidator tests (5)
+- [x] ValidPhrasesValidator tests (12)
+- **Status:** COMPLETE
 
 ### Phase 3: Configuration & Integration ✅
 - [x] WebConfig tests (5)
 - [x] SpaWebConfig tests (4)
 - [x] Router tests (11)
 - [x] API Contract tests (8)
-- **Status:** COMPLETE (28/28 tests)
+- **Status:** COMPLETE
 
 ### Phase 4: Advanced & E2E 🔄
-- [x] Backend edge cases (10) ✅
-- [x] Frontend edge cases (20) ✅
-- [ ] E2E workflows (~10-15)
-- [x] Performance tests (5) ✅
-- **Status:** Phase 4.1 & 4.3 COMPLETE (35/45 tests)
+- [x] Backend edge cases + concurrency
+- [x] Frontend edge cases (20)
+- [ ] E2E workflows (~10–15) — **not started**
+- [x] Performance tests (5)
+- **Status:** 4.1 & 4.3 COMPLETE; 4.2 outstanding
 
 ---
 
 ## Next Steps
 
-**Immediate (Phase 2):**
-1. Create ShowsList.vue tests
-2. Create CreateShow.vue tests
-3. Create ShowDetail.vue tests
-4. Create showService.ts tests
-
-**Short-term:**
-5. Add exception handler tests
-6. Add validator tests
-
-**Medium-term:**
-7. Configuration tests
-8. API contract tests
-
-**Long-term:**
-9. E2E tests with Playwright
-10. Performance benchmarking
+1. **E2E (Phase 4.2):** Add Playwright (or equivalent), wire Gradle/CI, cover critical user flows
+2. **Coverage polish (optional):** `Toast.vue`, `CreateShowPage.vue`, remaining ShowDetail/ShowsList branches
+3. Keep this doc in sync when adding suites or changing infrastructure
 
 ---
 
 ## Maintenance
 
-This document should be updated:
-- When new tests are added
-- When test infrastructure changes
-- When priorities shift
-- After each phase completion
-- When gaps are discovered
+Update this document when:
+- New tests are added or counts change materially
+- Test infrastructure changes
+- Priorities shift
+- A phase completes
+- Gaps are discovered
 
-**Last Updated:** 2026-01-28 (Phase 2.3 + Phase 3 + Phase 4.1 Complete + Phase 4.3 Complete)
-**Next Review:** After Phase 4.2 E2E tests
+**Last Updated:** 2026-07-12 (counts verified: 107 backend + 272 frontend; Phase 2 marked complete; E2E still absent)  
+**Next Review:** After Phase 4.2 E2E tests land
