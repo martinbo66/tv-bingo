@@ -7,7 +7,7 @@ Reference: [Spring Boot 4.0 Migration Guide](https://github.com/spring-projects/
 This document tracks the incremental upgrade of the TV Bingo backend from Spring Boot 3.5.x to Spring Boot 4.0. Each step is self-contained and can be implemented independently across sessions. Steps should generally be completed in order, but steps 5–7 can be parallelized.
 
 **Current state:** Spring Boot `4.0.7`, Java 25, Spring Data JDBC, Liquibase, springdoc-openapi  
-**Steps 1–4, 6, and 7 are complete.** Steps 5 and 8 remain.
+**Steps 1–7 are complete.** Step 8 (final cleanup) remains.
 
 ## Pre-flight Checks
 
@@ -138,29 +138,17 @@ Expect compilation errors related to Jackson and test infrastructure — those a
 
 ## Step 5 — Verify and update third-party library compatibility
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
 **Why:** Spring Boot 4 requires Spring Framework 7 and Jakarta EE 11. Third-party libraries that transitively depend on Spring must also support these versions.
 
-### Libraries to check
+### Outcomes
 
-| Library | Current version | Minimum compatible | Notes |
+| Library | Before | After | Notes |
 |---|---|---|---|
-| `springdoc-openapi-starter-webmvc-ui` | `2.8.4` | TBD (likely `3.x`) | Check [springdoc releases](https://github.com/springdoc/springdoc-openapi/releases) for Spring Boot 4 support |
-| `io.zonky.test:embedded-postgres` | `2.2.2` | TBD | Check [zonky releases](https://github.com/zonkyio/embedded-postgres/releases) |
-| `io.zonky.test:embedded-database-spring-test` | `2.8.0` | TBD | Check [zonky spring test releases](https://github.com/zonkyio/embedded-database-spring-test/releases) |
-
-### Changes
-
-Update each library version in [`spring-tvbingo/build.gradle`](../spring-tvbingo/build.gradle) once compatible versions are confirmed.
-
-### Verification
-
-```bash
-./gradlew backendBuild backendTest
-```
-
-If springdoc does not yet have a Spring Boot 4-compatible release at upgrade time, consider temporarily removing the dependency and re-adding it once available.
+| `springdoc-openapi-starter-webmvc-ui` | `2.8.4` | `3.0.3` | v3.x targets Spring Boot 4; same artifact name |
+| `io.zonky.test:embedded-postgres` | `2.2.2` | unchanged | No Spring dependency; no change needed |
+| `io.zonky.test:embedded-database-spring-test` | `2.8.0` | unchanged | Already at latest; Boot 4 compat added in v2.7.0 |
 
 ---
 
