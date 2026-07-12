@@ -6,7 +6,8 @@ Reference: [Spring Boot 4.0 Migration Guide](https://github.com/spring-projects/
 
 This document tracks the incremental upgrade of the TV Bingo backend from Spring Boot 3.5.x to Spring Boot 4.0. Each step is self-contained and can be implemented independently across sessions. Steps should generally be completed in order, but steps 5–7 can be parallelized.
 
-**Current state:** Spring Boot `3.5.16`, Java 25, Spring Data JDBC, Liquibase, springdoc-openapi
+**Current state:** Spring Boot `4.0.7`, Java 25, Spring Data JDBC, Liquibase, springdoc-openapi  
+**Steps 1–4, 6, and 7 are complete.** Steps 5 and 8 remain.
 
 ## Pre-flight Checks
 
@@ -22,7 +23,7 @@ After each step, run the same command to confirm nothing regressed.
 
 ## Step 1 — Add the Spring Boot Properties Migrator (diagnostic only)
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
 **Purpose:** Surfaces deprecated/renamed configuration property keys at runtime so they can be fixed before the hard cut to Boot 4.
 
@@ -48,7 +49,7 @@ Fix any reported keys before proceeding. This dependency is **temporary** — re
 
 ## Step 2 — Rename `spring-boot-starter-web`
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
 **Why:** `spring-boot-starter-web` is deprecated in Spring Boot 4. The explicit `spring-boot-starter-webmvc` artifact is the new canonical name.
 
@@ -74,7 +75,7 @@ implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
 ## Step 3 — Switch Liquibase to its dedicated starter
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
 **Why:** Spring Boot 4 requires Liquibase to be pulled in through `spring-boot-starter-liquibase` rather than a bare `liquibase-core` dependency. The starter wires up auto-configuration correctly.
 
@@ -102,7 +103,7 @@ Confirm that Liquibase migrations still run on test startup (check test logs for
 
 ## Step 4 — Bump the Spring Boot Gradle plugin to 4.0
 
-**Status:** [ ] Not started
+**Status:** [x] Complete — upgraded to `4.0.7`, `io.spring.dependency-management` bumped to `1.1.7`
 
 **Why:** This is the core version bump. Steps 1–3 should be completed first so the rename and starter changes land cleanly before the plugin version changes.
 
@@ -165,80 +166,63 @@ If springdoc does not yet have a Spring Boot 4-compatible release at upgrade tim
 
 ## Step 6 — Migrate Jackson 3 package names
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
-**Why:** Spring Boot 4 upgrades to **Jackson 3**, which changes both the Maven group IDs (`com.fasterxml.jackson` → `tools.jackson`) and Java package names. All source files that import Jackson classes must be updated.
+**Why:** Spring Boot 4 upgrades to **Jackson 3** (`tools.jackson.core:jackson-databind:3.x`), which changes both the Maven group IDs (`com.fasterxml.jackson` → `tools.jackson`) and Java package names. Spring Boot no longer registers `com.fasterxml.jackson.databind.ObjectMapper` as a bean; the new type is `tools.jackson.databind.ObjectMapper`.
 
-### Files to update
+### What changed
 
-All of these import `com.fasterxml.jackson.databind.ObjectMapper`:
+All 5 test files that `@Autowired ObjectMapper` had their imports updated:
 
-- [`src/test/.../ConcurrentIntegrationTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/ConcurrentIntegrationTests.java)
-- [`src/test/.../EdgeCaseTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/EdgeCaseTests.java)
-- [`src/test/.../contract/ApiContractTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/contract/ApiContractTest.java)
-- [`src/test/.../controller/ShowControllerIntegrationTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/controller/ShowControllerIntegrationTest.java)
-- [`src/test/.../performance/PerformanceTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/performance/PerformanceTests.java)
+```java
+// Before
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-### Changes
-
-Replace Jackson imports throughout. The exact new package names depend on the Jackson 3 release — confirm against the [Jackson 3 migration notes](https://github.com/FasterXML/jackson) before making changes.
-
-Known renames (verify against final release):
-- `import com.fasterxml.jackson.databind.ObjectMapper` → `import tools.jackson.databind.ObjectMapper`
-- `@JsonComponent` → `@JacksonComponent` (if used)
-
-A project-wide find/replace via `sed` or IDE refactor is safe here since all usages are straightforward `ObjectMapper` instantiation for test serialization.
-
-### Verification
-
-```bash
-./gradlew backendBuild
+// After
+import tools.jackson.databind.ObjectMapper;
 ```
 
-The build must compile without Jackson-related errors before running tests.
+No production source files used Jackson directly — only test files were affected.
 
 ---
 
 ## Step 7 — Fix `@SpringBootTest` test infrastructure
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
-**Why:** Spring Boot 4 removes automatic `MockMvc`, `WebTestClient`, and `TestRestTemplate` injection from `@SpringBootTest`. Tests that rely on `@AutoConfigureMockMvc` with `@SpringBootTest` now need an explicit test starter.
+**Why:** Spring Boot 4 removed `@AutoConfigureMockMvc` and `TestRestTemplate` from the main test jar and moved them to separate, explicitly-declared dependencies. The classes also moved packages.
 
-### Option A — Add the new webmvc test starter (recommended, minimal code changes)
+### What changed
 
-In [`spring-tvbingo/build.gradle`](../spring-tvbingo/build.gradle):
+**New test dependencies added to [`spring-tvbingo/build.gradle`](../spring-tvbingo/build.gradle):**
 
 ```groovy
-testImplementation 'org.springframework.boot:spring-boot-starter-test-webmvc'
+testImplementation 'org.springframework.boot:spring-boot-webmvc-test'    // AutoConfigureMockMvc
+testImplementation 'org.springframework.boot:spring-boot-restclient'      // RestTemplateBuilder (transitive requirement)
+testImplementation 'org.springframework.boot:spring-boot-resttestclient'  // TestRestTemplate
 ```
 
-This restores the previous behavior and requires no changes to existing test classes.
+**`@AutoConfigureMockMvc` package changed** in 6 test files:
 
-### Option B — Migrate full-stack tests to `@WebMvcTest` (optional, faster tests)
+```java
+// Before
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
-Switch tests that only exercise the web layer to `@WebMvcTest` and mock the service layer with `@MockitoBean` (previously `@MockBean`). This is more work but produces faster, more focused tests. Consider this as a follow-up improvement rather than a blocker.
-
-### Files affected by `@SpringBootTest` + `MockMvc`
-
-- [`config/WebConfigTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/config/WebConfigTest.java)
-- [`config/SpaWebConfigTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/config/SpaWebConfigTest.java)
-- [`contract/ApiContractTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/contract/ApiContractTest.java)
-- [`EdgeCaseTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/EdgeCaseTests.java)
-- [`controller/ShowControllerIntegrationTest.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/controller/ShowControllerIntegrationTest.java)
-- [`performance/PerformanceTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/performance/PerformanceTests.java)
-
-### File affected by `TestRestTemplate`
-
-- [`ConcurrentIntegrationTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/ConcurrentIntegrationTests.java) — already uses `@SpringBootTest(webEnvironment = RANDOM_PORT)` pattern; confirm `TestRestTemplate` is injected via `@Autowired` rather than auto-provided by the context.
-
-### Verification
-
-```bash
-./gradlew backendTest
+// After
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 ```
 
-All tests must pass. Pay attention to any tests that previously passed silently because MockMvc was available — they may now fail to start.
+**`TestRestTemplate` package changed** in [`ConcurrentIntegrationTests.java`](../spring-tvbingo/src/test/java/org/bomartin/tvbingo/ConcurrentIntegrationTests.java):
+
+```java
+// Before
+import org.springframework.boot.test.web.client.TestRestTemplate;
+
+// After
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+// ...and add @AutoConfigureTestRestTemplate annotation to the test class
+```
 
 ---
 
@@ -280,8 +264,9 @@ Full CI pipeline (build, test, lint, coverage, Sonar) must pass cleanly.
 | 7 — Test infrastructure | Medium | Medium | Option A (new test starter) is low-risk; Option B is optional |
 | 8 — Final cleanup | Trivial | Low | |
 
-## Key Unknowns (resolve before Step 4)
+## Key Unknowns
 
-1. **Jackson 3 final package names** — The exact Java package path changes in Jackson 3 must be confirmed against the Jackson 3 GA release before Step 6.
-2. **springdoc-openapi Spring Boot 4 release** — As of the time this plan was written, verify whether a Boot 4-compatible version exists. If not, Step 4 must be deferred or springdoc temporarily removed.
-3. **Zonky embedded-postgres Spring Boot 4 support** — Verify Boot 4 / Spring Framework 7 compatibility before Step 4.
+1. **springdoc-openapi Spring Boot 4 release** — Verify whether a Boot 4-compatible version exists before Step 5. If not, the dependency may need to be temporarily removed.
+2. **Zonky embedded-postgres Spring Boot 4 support** — Zonky worked without version changes through steps 1–4 in practice; formally verify for Step 5.
+
+> **Resolved:** Jackson 3 package names confirmed — `com.fasterxml.jackson` → `tools.jackson` (e.g. `tools.jackson.databind.ObjectMapper`). Already applied in Step 6.
