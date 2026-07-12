@@ -7,7 +7,7 @@ Reference: [Spring Boot 4.0 Migration Guide](https://github.com/spring-projects/
 This document tracks the incremental upgrade of the TV Bingo backend from Spring Boot 3.5.x to Spring Boot 4.0. Each step is self-contained and can be implemented independently across sessions. Steps should generally be completed in order, but steps 5–7 can be parallelized.
 
 **Current state:** Spring Boot `4.0.7`, Java 25, Spring Data JDBC, Liquibase, springdoc-openapi  
-**Steps 1–7 are complete.** Step 8 (final cleanup) remains.
+**All steps complete.** Running on Spring Boot 4.0.7.
 
 ## Pre-flight Checks
 
@@ -216,7 +216,7 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRe
 
 ## Step 8 — Final cleanup
 
-**Status:** [ ] Not started
+**Status:** [x] Complete
 
 **Why:** Remove the temporary diagnostic dependency and do a final end-to-end check.
 
