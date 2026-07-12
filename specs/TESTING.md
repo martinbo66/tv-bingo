@@ -217,9 +217,9 @@ Also in place beyond the original Phase 2 list:
 
 | Gradle task | npm script | Scope |
 |-------------|------------|--------|
-| **`./gradlew frontendE2eReadonly`** | `test:e2e:readonly` | Non-destructive only (safe default) |
-| `./gradlew frontendE2eDestructive` | `test:e2e:destructive` | Mutating flows |
-| `./gradlew frontendE2e` | `test:e2e` | All e2e |
+| **`./gradlew e2eReadonly`** | `test:e2e:readonly` | Non-destructive only (safe default) |
+| `./gradlew e2eDestructive` | `test:e2e:destructive` | Mutating flows |
+| `./gradlew e2e` | `test:e2e` | All e2e |
 
 **Read-only** (`vue-tvbingo/e2e/readonly/`) — uses Liquibase baseline shows; never mutates data:
 - ✅ Shows list loads + view toggle
@@ -238,7 +238,7 @@ Also in place beyond the original Phase 2 list:
 - [ ] Multiple browser tabs
 - [ ] Mobile / multi-browser matrix
 - [ ] Accessibility (axe / screen reader)
-- [ ] CI job that boots the app then runs `frontendE2eReadonly`
+- [ ] CI job that boots the app then runs `e2eReadonly`
 
 **Browsers:** `npx playwright install chromium` (once per machine)
 
@@ -296,14 +296,14 @@ cd vue-tvbingo && npm run test:coverage
 ### E2E (Playwright — app must be running)
 ```bash
 # Safe / non-destructive (preferred)
-./gradlew frontendE2eReadonly
+./gradlew e2eReadonly
 # or: cd vue-tvbingo && npm run test:e2e:readonly
 
-./gradlew frontendE2eDestructive   # mutating
-./gradlew frontendE2e              # all
+./gradlew e2eDestructive   # mutating
+./gradlew e2e              # all
 
 # Optional overrides:
-#   E2E_BASE_URL=http://localhost:5173 E2E_API_BASE_URL=http://localhost:8080 ./gradlew frontendE2eReadonly
+#   E2E_BASE_URL=http://localhost:5173 E2E_API_BASE_URL=http://localhost:8080 ./gradlew e2eReadonly
 # Browsers (once): cd vue-tvbingo && npx playwright install chromium
 ```
 
@@ -469,7 +469,7 @@ vue-tvbingo/
 - [x] Backend edge cases + concurrency
 - [x] Frontend edge cases (20)
 - [x] E2E Playwright (`@readonly` + `@destructive`) + Gradle tasks
-- [ ] Wire `frontendE2eReadonly` into CI (needs app bootstrap)
+- [ ] Wire `e2eReadonly` into CI (needs app bootstrap)
 - [x] Performance tests (5)
 - **Status:** Suites complete; CI integration still open
 
@@ -477,7 +477,7 @@ vue-tvbingo/
 
 ## Next Steps
 
-1. **CI:** Boot app/DB in Actions, then run `./gradlew frontendE2eReadonly`
+1. **CI:** Boot app/DB in Actions, then run `./gradlew e2eReadonly`
 2. **Coverage polish (optional):** `Toast.vue`, `CreateShowPage.vue`, remaining ShowDetail/ShowsList branches
 3. Keep this doc in sync when adding suites or changing infrastructure
 
@@ -492,5 +492,5 @@ Update this document when:
 - A phase completes
 - Gaps are discovered
 
-**Last Updated:** 2026-07-12 (Playwright e2e: readonly + destructive; `frontendE2eReadonly` Gradle task)  
-**Next Review:** After CI wires `frontendE2eReadonly`
+**Last Updated:** 2026-07-12 (Playwright e2e: readonly + destructive; `e2eReadonly` Gradle task)  
+**Next Review:** After CI wires `e2eReadonly`
