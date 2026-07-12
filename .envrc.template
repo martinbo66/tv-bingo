@@ -4,3 +4,7 @@ export TVBINGO_DB_PASSWORD=your_secure_password_here
 export TVBINGO_URL=jdbc:postgresql://localhost:5432/tvbingo?currentSchema=tvbingo_schema
 # Sonar credentials
 export SONAR_TOKEN=your-token-here
+# Playwright e2e (optional; defaults match playwright.config.ts)
+# Use 5173 for Vite UI + 8080 for API; or set both to 8080 for Spring-served SPA
+export E2E_BASE_URL=http://localhost:5173
+export E2E_API_BASE_URL=http://localhost:8080

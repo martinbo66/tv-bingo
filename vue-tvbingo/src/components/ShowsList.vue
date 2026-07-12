@@ -435,6 +435,9 @@ onUnmounted(() => {
         v-for="show in sortedShows"
         :key="show.id"
         class="show-card"
+        data-testid="show-card"
+        :data-show-title="show.showTitle"
+        :data-show-id="show.id"
         :title="`${show.showTitle}${show.gameTitle ? ' - ' + show.gameTitle : ''}`"
         @click="navigateToShow(show.id)"
       >
@@ -494,6 +497,9 @@ onUnmounted(() => {
           v-for="show in sortedShows"
           :key="show.id"
           class="list-row"
+          data-testid="show-row"
+          :data-show-title="show.showTitle"
+          :data-show-id="show.id"
           :aria-label="`${show.showTitle}${show.gameTitle ? ' - ' + show.gameTitle : ''}, ${show.phrases.length} phrases`"
           @click="navigateToShow(show.id)"
         >

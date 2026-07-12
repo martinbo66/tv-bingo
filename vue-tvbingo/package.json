@@ -13,6 +13,9 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:readonly": "playwright test --grep @readonly",
+    "test:e2e:destructive": "playwright test --grep @destructive",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "format": "prettier --write src/",
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^22.13.9",
     "@vitejs/plugin-vue": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",

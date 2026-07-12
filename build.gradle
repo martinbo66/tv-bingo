@@ -191,6 +191,30 @@ task frontendCoverage(type: Exec) {
     commandLine npmCommand, 'run', 'test:coverage'
 }
 
+task e2eReadonly(type: Exec) {
+    description = 'Run non-destructive Playwright e2e tests (@readonly). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'verification'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e:readonly'
+}
+
+task e2eDestructive(type: Exec) {
+    description = 'Run mutating Playwright e2e tests (@destructive). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'verification'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e:destructive'
+}
+
+task e2e(type: Exec) {
+    description = 'Run all Playwright e2e tests (readonly + destructive). Requires app at E2E_BASE_URL (default http://localhost:8080).'
+    group = 'verification'
+    dependsOn frontendInstall
+    workingDir frontendDir
+    commandLine npmCommand, 'run', 'test:e2e'
+}
+
 task frontendLint(type: Exec) {
     description = 'Run ESLint on frontend code'
     group = 'frontend'
@@ -456,6 +480,11 @@ task showTasks {
 ║   ./gradlew frontendLint     Run ESLint on frontend code                       ║
 ║   ./gradlew frontendTypeCheck Run TypeScript type checking                     ║
 ║   ./gradlew frontendInstall  Install npm dependencies                          ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║ E2E (Playwright — app must be running)                                         ║
+║   ./gradlew e2eReadonly  Non-destructive e2e only (safe default)               ║
+║   ./gradlew e2eDestructive  Mutating e2e                                       ║
+║   ./gradlew e2e          All e2e                                               ║
 ╠═══════════════════════════════════════════════════════════════════════════════╣
 ║ DOCKER                                                                         ║
 ║   ./gradlew buildUnifiedJar  Build JAR with frontend embedded                  ║

@@ -232,10 +232,14 @@ onMounted(() => {
           </div>
           <h2 class="show-title" @click="navigateToShowDetail">{{ show.showTitle }}</h2>
           <div class="button-row">
-            <button class="regenerate-button" @click="regenerateBingoCard">
+            <button
+              class="regenerate-button"
+              data-testid="regenerate-bingo"
+              @click="regenerateBingoCard"
+            >
               <span class="regen-icon">🔄</span> Regenerate
             </button>
-            <button class="reset-button" @click="resetMarks">
+            <button class="reset-button" data-testid="reset-marks" @click="resetMarks">
               <span class="reset-icon">🧹</span> Reset Marks
             </button>
             <button class="print-button" @click="printBingoCard">
@@ -250,11 +254,12 @@ onMounted(() => {
           </div>
         </div>
         <div style="height: 1rem"></div>
-        <div class="bingo-grid card-shadow">
+        <div class="bingo-grid card-shadow" data-testid="bingo-grid">
           <button
             v-for="(phrase, index) in bingoGrid"
             :key="index"
             class="bingo-cell"
+            :data-testid="`bingo-cell-${index}`"
             :class="{
               selected: selectedCells.has(index),
               'center-square': index === 12,

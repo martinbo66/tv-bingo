@@ -33,7 +33,10 @@ const currentData = computed(() => ({
 }))
 
 // Unsaved changes guard
-const { hasUnsavedChanges, setupGuards } = useUnsavedChangesGuard(originalData, currentData)
+const { hasUnsavedChanges, setupGuards, markClean } = useUnsavedChangesGuard(
+  originalData,
+  currentData
+)
 
 setupGuards()
 
@@ -81,7 +84,8 @@ const createShow = () => {
 
   emit('showCreated', newShow)
 
-  // Note: We don't reset the form here - the parent will navigate away on success
+  // Clear dirty state so the parent's post-create navigation is not blocked
+  markClean()
 }
 
 // Cancel and go back
